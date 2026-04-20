@@ -748,7 +748,7 @@ export function VisualBuilderPanel({ supabase }: Props) {
   }
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+    <div className="flex h-full flex-col overflow-hidden">
       <div className="sticky top-0 z-20 border-b border-slate-200/60 bg-white/80 px-4 py-3 backdrop-blur dark:border-white/10 dark:bg-black/20 sm:px-6">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-3">
@@ -838,7 +838,7 @@ export function VisualBuilderPanel({ supabase }: Props) {
 
       <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-hidden p-3 md:flex-row">
         <div
-          className={`${mobilePane === "sections" ? "flex" : "hidden"} min-h-0 flex-1 flex-col rounded-2xl border border-slate-200 bg-white p-3 dark:border-white/10 dark:bg-[#112121] md:flex md:w-[240px] md:flex-none`}
+          className={`${mobilePane === "sections" ? "flex" : "hidden"} h-full min-h-0 flex-1 flex-col rounded-2xl border border-slate-200 bg-white p-3 dark:border-white/10 dark:bg-[#112121] md:flex md:w-[240px] md:flex-none`}
         >
           <div className="mb-3 text-xs font-bold uppercase tracking-wide text-slate-500">Sections</div>
           <div className="mb-3 grid grid-cols-1 gap-2">
@@ -988,7 +988,7 @@ export function VisualBuilderPanel({ supabase }: Props) {
         </div>
 
         <div
-          className={`${mobilePane === "preview" ? "flex" : "hidden"} min-h-0 flex-1 justify-center overflow-hidden rounded-2xl border border-slate-200 bg-slate-50 dark:border-white/10 dark:bg-black/20 md:flex`}
+          className={`${mobilePane === "preview" ? "flex" : "hidden"} h-full min-h-0 flex-1 justify-center overflow-hidden rounded-2xl border border-slate-200 bg-slate-50 dark:border-white/10 dark:bg-black/20 md:flex`}
         >
           <div className="flex min-h-0 h-full w-full items-center justify-center overflow-hidden p-3">
             <div
@@ -1011,7 +1011,7 @@ export function VisualBuilderPanel({ supabase }: Props) {
         </div>
 
         <div
-          className={`${mobilePane === "inspector" ? "flex" : "hidden"} min-h-0 flex-1 flex-col rounded-2xl border border-slate-200 bg-white p-4 dark:border-white/10 dark:bg-[#112121] md:flex md:w-[340px] md:flex-none`}
+          className={`${mobilePane === "inspector" ? "flex" : "hidden"} h-full min-h-0 flex-1 flex-col rounded-2xl border border-slate-200 bg-white p-4 dark:border-white/10 dark:bg-[#112121] md:flex md:w-[340px] md:flex-none`}
         >
           <div className="mb-3 text-xs font-bold uppercase tracking-wide text-slate-500">Inspector</div>
           <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain pb-24 md:pb-4">
