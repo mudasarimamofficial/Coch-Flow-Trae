@@ -1,6 +1,7 @@
 "use client";
 
 import type { SupabaseClient } from "@supabase/supabase-js";
+import type { ReactNode } from "react";
 import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Select } from "@/components/ui/Select";
@@ -11,7 +12,7 @@ export type IconRef = { type: "library" | "upload"; value: string };
 
 type Props = {
   supabase: SupabaseClient;
-  label: string;
+  label: ReactNode;
   value?: IconRef | null;
   onChange: (next: IconRef | null) => void;
 };
@@ -98,4 +99,3 @@ export function IconPicker({ supabase, label, value, onChange }: Props) {
     </div>
   );
 }
-
