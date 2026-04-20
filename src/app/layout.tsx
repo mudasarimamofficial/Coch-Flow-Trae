@@ -1,8 +1,21 @@
-import { GeistSans } from "geist/font/sans";
-import { GeistMono } from "geist/font/mono";
+import { DM_Sans, Playfair_Display } from "next/font/google";
 import "./globals.css";
 import { ThemeScript } from "@/components/theme/ThemeScript";
 import { getHomepageContent } from "@/utils/homepageContent";
+
+const headingFont = Playfair_Display({
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
+  variable: "--font-heading",
+  display: "swap",
+});
+
+const bodyFont = DM_Sans({
+  subsets: ["latin"],
+  weight: ["300", "400", "500"],
+  variable: "--font-body",
+  display: "swap",
+});
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -25,8 +38,8 @@ export default async function RootLayout({
       border: "rgba(255,255,255,0.07)",
     },
     typography: {
-      headingFont: "",
-      bodyFont: "",
+      headingFont: "var(--font-heading)",
+      bodyFont: "var(--font-body)",
     },
   };
 
@@ -64,7 +77,7 @@ export default async function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={`${GeistSans.variable} ${GeistMono.variable} h-full antialiased`}
+      className={`${headingFont.variable} ${bodyFont.variable} h-full antialiased`}
     >
       <head>
         <link rel="icon" href={faviconHref} type={type} sizes="any" />
@@ -78,10 +91,6 @@ export default async function RootLayout({
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
         <link
           href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
-          rel="stylesheet"
-        />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600&family=DM+Sans:wght@300;400;500&display=swap"
           rel="stylesheet"
         />
         <ThemeScript />
