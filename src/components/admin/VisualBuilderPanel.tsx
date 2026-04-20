@@ -749,20 +749,22 @@ export function VisualBuilderPanel({ supabase }: Props) {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
-      <div className="sticky top-0 z-20 flex items-center justify-between border-b border-slate-200/60 bg-white/80 px-6 py-3 backdrop-blur dark:border-white/10 dark:bg-black/20">
-        <div className="flex items-center gap-3">
-          <div className="text-sm font-semibold">Visual Builder</div>
-          {draft ? (
-            <span className="rounded-full bg-amber-500/15 px-2 py-0.5 text-xs font-semibold text-amber-700 dark:text-amber-200">
-              Draft
-            </span>
-          ) : (
-            <span className="rounded-full bg-emerald-500/15 px-2 py-0.5 text-xs font-semibold text-emerald-700 dark:text-emerald-200">
-              Published
-            </span>
-          )}
-        </div>
-        <div className="flex max-w-full items-center gap-2 overflow-x-auto">
+      <div className="sticky top-0 z-20 border-b border-slate-200/60 bg-white/80 px-4 py-3 backdrop-blur dark:border-white/10 dark:bg-black/20 sm:px-6">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-3">
+            <div className="text-sm font-semibold">Visual Builder</div>
+            {draft ? (
+              <span className="rounded-full bg-amber-500/15 px-2 py-0.5 text-xs font-semibold text-amber-700 dark:text-amber-200">
+                Draft
+              </span>
+            ) : (
+              <span className="rounded-full bg-emerald-500/15 px-2 py-0.5 text-xs font-semibold text-emerald-700 dark:text-emerald-200">
+                Published
+              </span>
+            )}
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2 sm:flex-nowrap sm:justify-end sm:overflow-x-auto sm:pb-1">
           <Button variant="secondary" className="h-10" disabled={historySize === 0} onClick={undo}>
             Undo
           </Button>
@@ -794,6 +796,7 @@ export function VisualBuilderPanel({ supabase }: Props) {
             Revert
           </Button>
         </div>
+      </div>
       </div>
 
       {error ? (
@@ -835,7 +838,7 @@ export function VisualBuilderPanel({ supabase }: Props) {
 
       <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-hidden p-3 md:flex-row">
         <div
-          className={`${mobilePane === "sections" ? "block" : "hidden"} min-h-0 flex-1 overflow-y-auto overscroll-contain rounded-2xl border border-slate-200 bg-white p-3 pb-24 dark:border-white/10 dark:bg-[#112121] md:block md:w-[240px] md:flex-none md:pb-3`}
+          className={`${mobilePane === "sections" ? "flex" : "hidden"} min-h-0 flex-1 flex-col rounded-2xl border border-slate-200 bg-white p-3 dark:border-white/10 dark:bg-[#112121] md:flex md:w-[240px] md:flex-none`}
         >
           <div className="mb-3 text-xs font-bold uppercase tracking-wide text-slate-500">Sections</div>
           <div className="mb-3 grid grid-cols-1 gap-2">
@@ -894,6 +897,8 @@ export function VisualBuilderPanel({ supabase }: Props) {
               Add
             </Button>
           </div>
+
+          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain pb-24 md:pb-3">
           <DndContext
             sensors={sensors}
             collisionDetection={closestCenter}
@@ -978,6 +983,8 @@ export function VisualBuilderPanel({ supabase }: Props) {
               Add Custom Section
             </Button>
           </div>
+
+          </div>
         </div>
 
         <div
@@ -1004,9 +1011,10 @@ export function VisualBuilderPanel({ supabase }: Props) {
         </div>
 
         <div
-          className={`${mobilePane === "inspector" ? "block" : "hidden"} min-h-0 flex-1 overflow-y-auto overscroll-contain rounded-2xl border border-slate-200 bg-white p-4 pb-24 dark:border-white/10 dark:bg-[#112121] md:block md:w-[340px] md:flex-none md:pb-4`}
+          className={`${mobilePane === "inspector" ? "flex" : "hidden"} min-h-0 flex-1 flex-col rounded-2xl border border-slate-200 bg-white p-4 dark:border-white/10 dark:bg-[#112121] md:flex md:w-[340px] md:flex-none`}
         >
           <div className="mb-3 text-xs font-bold uppercase tracking-wide text-slate-500">Inspector</div>
+          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain pb-24 md:pb-4">
           {selectedSection && selectedSection.id !== "footer" ? (
             <div className="mb-4 flex items-center justify-between rounded-xl border border-slate-200 bg-white p-3 dark:border-white/10 dark:bg-[#0b1414]">
               <div className="text-xs font-bold uppercase tracking-wide text-slate-500">{selectedSection.type}</div>
@@ -2387,6 +2395,7 @@ export function VisualBuilderPanel({ supabase }: Props) {
           <div className="mt-6 rounded-xl border border-slate-200 p-3 text-xs text-slate-600 dark:border-white/10 dark:text-slate-300">
             <div className="font-semibold">JSON mode fallback</div>
             <div className="mt-1">Use the Homepage tab for full JSON editing if needed.</div>
+          </div>
           </div>
         </div>
       </div>
