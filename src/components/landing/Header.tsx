@@ -15,7 +15,15 @@ export function Header({ content }: Props) {
     <nav>
       <div className="nav-inner">
         <a href="#" className="nav-logo">
-          <span className="logo-dot" aria-hidden="true" />
+          {content.header.brandIcon?.type === "image" && content.header.brandIcon.url ? (
+            <img
+              src={content.header.brandIcon.url}
+              alt={content.header.brandText}
+              className="logo-img"
+            />
+          ) : (
+            <span className="logo-dot" aria-hidden="true" />
+          )}
           {renderBrandText(content.header.brandText)}
         </a>
 

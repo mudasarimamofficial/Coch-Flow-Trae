@@ -41,6 +41,7 @@ type Props = {
 };
 
 type PreviewMode = "desktop" | "tablet" | "mobile";
+type MobilePane = "preview" | "sections" | "inspector";
 
 type PageSection = NonNullable<HomepageContent["page"]>["sections"][number];
 
@@ -257,6 +258,7 @@ export function VisualBuilderPanel({ supabase }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [mode, setMode] = useState<PreviewMode>("desktop");
+  const [mobilePane, setMobilePane] = useState<MobilePane>("preview");
   const [selectedId, setSelectedId] = useState<string>("hero");
   const [selectedBlockId, setSelectedBlockId] = useState<string | null>(null);
   const [addType, setAddType] = useState<string>("hero");
@@ -295,6 +297,27 @@ export function VisualBuilderPanel({ supabase }: Props) {
     setFutureSize(0);
     historyBatchRef.current = false;
   }, []);
+
+  const loadLandingPreset = useCallback(() => {
+    const base = cloneContent(homepageDefaults);
+    const current = cloneContent(contentRef.current);
+
+    base.site = {
+      ...base.site,
+      favicon: current.site?.favicon || base.site.favicon,
+      customCss: current.site?.customCss || base.site.customCss,
+      customJs: current.site?.customJs || base.site.customJs,
+    };
+    base.socialLinks = current.socialLinks;
+    base.socialLinksV2 = current.socialLinksV2;
+    base.whatsapp = current.whatsapp;
+
+    setDraft(base);
+    setSelectedId("hero");
+    setSelectedBlockId(null);
+    resetHistory();
+    setNotice("Landing preset loaded (not published). Save Draft to keep it.");
+  }, [cloneContent, resetHistory]);
 
   const pageSections: PageSection[] = useMemo(() => {
     const list = content.page?.sections?.length ? content.page.sections : homepageDefaults.page!.sections;
@@ -739,12 +762,15 @@ export function VisualBuilderPanel({ supabase }: Props) {
             </span>
           )}
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex max-w-full items-center gap-2 overflow-x-auto">
           <Button variant="secondary" className="h-10" disabled={historySize === 0} onClick={undo}>
             Undo
           </Button>
           <Button variant="secondary" className="h-10" disabled={futureSize === 0} onClick={redo}>
             Redo
+          </Button>
+          <Button variant="secondary" className="h-10" onClick={loadLandingPreset}>
+            Load Landing Preset
           </Button>
           <Button variant="secondary" className="h-10" onClick={() => setMode("desktop")}>Desktop</Button>
           <Button variant="secondary" className="h-10" onClick={() => setMode("tablet")}>Tablet</Button>
@@ -781,8 +807,36 @@ export function VisualBuilderPanel({ supabase }: Props) {
         </div>
       ) : null}
 
-      <div className="flex min-h-0 flex-1 gap-3 overflow-hidden p-3">
-        <div className="min-h-0 w-[240px] shrink-0 overflow-y-auto rounded-2xl border border-slate-200 bg-white p-3 dark:border-white/10 dark:bg-[#112121]">
+      <div className="md:hidden px-3">
+        <div className="flex items-center gap-2 rounded-2xl border border-slate-200 bg-white p-2 dark:border-white/10 dark:bg-[#112121]">
+          <Button
+            variant={mobilePane === "sections" ? "primary" : "secondary"}
+            className="h-10 flex-1"
+            onClick={() => setMobilePane("sections")}
+          >
+            Sections
+          </Button>
+          <Button
+            variant={mobilePane === "preview" ? "primary" : "secondary"}
+            className="h-10 flex-1"
+            onClick={() => setMobilePane("preview")}
+          >
+            Preview
+          </Button>
+          <Button
+            variant={mobilePane === "inspector" ? "primary" : "secondary"}
+            className="h-10 flex-1"
+            onClick={() => setMobilePane("inspector")}
+          >
+            Inspector
+          </Button>
+        </div>
+      </div>
+
+      <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-hidden p-3 md:flex-row">
+        <div
+          className={`${mobilePane === "sections" ? "block" : "hidden"} min-h-0 flex-1 overflow-y-auto overscroll-contain rounded-2xl border border-slate-200 bg-white p-3 pb-24 dark:border-white/10 dark:bg-[#112121] md:block md:w-[240px] md:flex-none md:pb-3`}
+        >
           <div className="mb-3 text-xs font-bold uppercase tracking-wide text-slate-500">Sections</div>
           <div className="mb-3 grid grid-cols-1 gap-2">
             <Select
@@ -926,7 +980,9 @@ export function VisualBuilderPanel({ supabase }: Props) {
           </div>
         </div>
 
-        <div className="flex min-h-0 flex-1 justify-center overflow-hidden rounded-2xl border border-slate-200 bg-slate-50 dark:border-white/10 dark:bg-black/20">
+        <div
+          className={`${mobilePane === "preview" ? "flex" : "hidden"} min-h-0 flex-1 justify-center overflow-hidden rounded-2xl border border-slate-200 bg-slate-50 dark:border-white/10 dark:bg-black/20 md:flex`}
+        >
           <div className="flex min-h-0 h-full w-full items-center justify-center overflow-hidden p-3">
             <div
               className={`h-full ${previewWidth} overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-white/10 dark:bg-[#0b1414]`}
@@ -947,7 +1003,9 @@ export function VisualBuilderPanel({ supabase }: Props) {
           </div>
         </div>
 
-        <div className="min-h-0 w-[340px] shrink-0 overflow-y-auto rounded-2xl border border-slate-200 bg-white p-4 dark:border-white/10 dark:bg-[#112121]">
+        <div
+          className={`${mobilePane === "inspector" ? "block" : "hidden"} min-h-0 flex-1 overflow-y-auto overscroll-contain rounded-2xl border border-slate-200 bg-white p-4 pb-24 dark:border-white/10 dark:bg-[#112121] md:block md:w-[340px] md:flex-none md:pb-4`}
+        >
           <div className="mb-3 text-xs font-bold uppercase tracking-wide text-slate-500">Inspector</div>
           {selectedSection && selectedSection.id !== "footer" ? (
             <div className="mb-4 flex items-center justify-between rounded-xl border border-slate-200 bg-white p-3 dark:border-white/10 dark:bg-[#0b1414]">

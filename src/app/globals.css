@@ -221,6 +221,13 @@ h6 {
   background: var(--gold);
 }
 
+.cf-landing .logo-img {
+  width: 20px;
+  height: 20px;
+  border-radius: 6px;
+  object-fit: contain;
+}
+
 .cf-landing .nav-links {
   display: flex;
   align-items: center;

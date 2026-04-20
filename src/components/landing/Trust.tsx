@@ -6,7 +6,8 @@ type Props = {
 };
 
 export function Trust({ content }: Props) {
-  if ((content.site as any)?.designPreset?.startsWith("landing")) return null;
+  const preset = ((content.site as any)?.designPreset as string | undefined) || "landing_html_v1";
+  if (preset !== "classic") return null;
   return (
     <section className="border-y border-slate-200/20 bg-slate-50/50 py-12 dark:border-white/10 dark:bg-black/20">
       <div className="mx-auto max-w-7xl px-6">

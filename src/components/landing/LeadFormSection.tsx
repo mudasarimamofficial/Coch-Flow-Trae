@@ -140,6 +140,7 @@ export function LeadFormSection({ content, section }: Props) {
                     value={values.first_name}
                     onChange={(e) => setValues((v) => ({ ...v, first_name: e.target.value }))}
                     autoComplete="given-name"
+                    placeholder={content.application.fields.firstNamePlaceholder || ""}
                   />
                   {fieldErrors.first_name ? <div className="form-note">{fieldErrors.first_name}</div> : null}
                 </div>
@@ -150,6 +151,7 @@ export function LeadFormSection({ content, section }: Props) {
                     value={values.last_name}
                     onChange={(e) => setValues((v) => ({ ...v, last_name: e.target.value }))}
                     autoComplete="family-name"
+                    placeholder={content.application.fields.lastNamePlaceholder || ""}
                   />
                   {fieldErrors.last_name ? <div className="form-note">{fieldErrors.last_name}</div> : null}
                 </div>
@@ -160,7 +162,7 @@ export function LeadFormSection({ content, section }: Props) {
                 <input
                   value={values.email}
                   onChange={(e) => setValues((v) => ({ ...v, email: e.target.value }))}
-                  placeholder="you@company.com"
+                  placeholder={content.application.fields.emailPlaceholder || ""}
                   autoComplete="email"
                 />
                 {fieldErrors.email ? <div className="form-note">{fieldErrors.email}</div> : null}
@@ -172,7 +174,9 @@ export function LeadFormSection({ content, section }: Props) {
                   value={values.revenue || ""}
                   onChange={(e) => setValues((v) => ({ ...v, revenue: e.target.value }))}
                 >
-                  <option value="">Select...</option>
+                  <option value="" disabled>
+                    {content.application.fields.revenuePlaceholder || "Select..."}
+                  </option>
                   {content.application.fields.revenueOptions.map((o) => (
                     <option key={o.value} value={o.value}>
                       {o.label}

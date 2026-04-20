@@ -903,6 +903,38 @@ export function HomepagePanel({ supabase }: Props) {
               }
             />
           </div>
+
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+            <Input
+              label="First name placeholder"
+              value={content.application.fields.firstNamePlaceholder || ""}
+              onChange={(e) =>
+                setContent((c) => ({
+                  ...c,
+                  application: {
+                    ...c.application,
+                    fields: { ...c.application.fields, firstNamePlaceholder: e.target.value },
+                  },
+                }))
+              }
+              placeholder="Hamza"
+            />
+            <Input
+              label="Last name placeholder"
+              value={content.application.fields.lastNamePlaceholder || ""}
+              onChange={(e) =>
+                setContent((c) => ({
+                  ...c,
+                  application: {
+                    ...c.application,
+                    fields: { ...c.application.fields, lastNamePlaceholder: e.target.value },
+                  },
+                }))
+              }
+              placeholder="Mukhtar"
+            />
+          </div>
+
           <Input
             label="Email label"
             value={content.application.fields.emailLabel}
@@ -917,6 +949,20 @@ export function HomepagePanel({ supabase }: Props) {
             }
           />
           <Input
+            label="Email placeholder"
+            value={content.application.fields.emailPlaceholder || ""}
+            onChange={(e) =>
+              setContent((c) => ({
+                ...c,
+                application: {
+                  ...c.application,
+                  fields: { ...c.application.fields, emailPlaceholder: e.target.value },
+                },
+              }))
+            }
+            placeholder="you@example.com"
+          />
+          <Input
             label="Revenue label"
             value={content.application.fields.revenueLabel}
             onChange={(e) =>
@@ -928,6 +974,20 @@ export function HomepagePanel({ supabase }: Props) {
                 },
               }))
             }
+          />
+          <Input
+            label="Revenue placeholder"
+            value={content.application.fields.revenuePlaceholder || ""}
+            onChange={(e) =>
+              setContent((c) => ({
+                ...c,
+                application: {
+                  ...c.application,
+                  fields: { ...c.application.fields, revenuePlaceholder: e.target.value },
+                },
+              }))
+            }
+            placeholder="Select your range"
           />
           <Textarea
             label="Bottleneck label"

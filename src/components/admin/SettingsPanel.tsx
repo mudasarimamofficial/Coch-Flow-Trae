@@ -14,13 +14,13 @@ export function SettingsPanel({ supabase }: Props) {
     homepageDefaults.site.theme ??
     ({
       colors: {
-        primary: "#0fa3a3",
-        secondary: "#0b1414",
-        accent: "#b58a2f",
-        background: "#f6f8f8",
-        text: "#0f172a",
-        surface: "#ffffff",
-        border: "rgba(148, 163, 184, 0.35)",
+        primary: "#C9982A",
+        secondary: "#0F1629",
+        accent: "#E8B84B",
+        background: "#0A0F1E",
+        text: "#FFFFFF",
+        surface: "#141D35",
+        border: "rgba(255,255,255,0.07)",
       },
       typography: {
         headingFont: "",
@@ -33,6 +33,7 @@ export function SettingsPanel({ supabase }: Props) {
   const [settingsSaved, setSettingsSaved] = useState<string | null>(null);
   const [adminEmail, setAdminEmail] = useState("");
   const [theme, setTheme] = useState<HomepageContent["site"]["theme"]>(defaultTheme);
+  const [designPreset, setDesignPreset] = useState<"landing_html_v1" | "classic">("landing_html_v1");
 
   async function loadSettings() {
     setSettingsSaved(null);
@@ -60,6 +61,7 @@ export function SettingsPanel({ supabase }: Props) {
       if (!homeErr && home?.content) {
         const c = home.content as HomepageContent;
         setTheme(c.site?.theme || defaultTheme);
+        setDesignPreset(((c.site as any)?.designPreset as any) === "classic" ? "classic" : "landing_html_v1");
       }
     } finally {
       setSettingsLoading(false);
@@ -101,6 +103,15 @@ export function SettingsPanel({ supabase }: Props) {
           />
 
           <div className="mt-2 text-sm font-bold">Global Theme</div>
+          <Select
+            label="Design preset"
+            value={designPreset}
+            onChange={(e) => setDesignPreset(e.target.value === "classic" ? "classic" : "landing_html_v1")}
+            options={[
+              { value: "landing_html_v1", label: "Landing (HTML v1)" },
+              { value: "classic", label: "Classic" },
+            ]}
+          />
           <Select
             label="Use custom theme"
             value={theme?.enabled ? "yes" : "no"}
@@ -239,6 +250,7 @@ export function SettingsPanel({ supabase }: Props) {
                     ...current,
                     site: {
                       ...current.site,
+                      designPreset,
                       theme: theme || defaultTheme,
                     },
                     branding: {

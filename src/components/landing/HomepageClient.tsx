@@ -78,8 +78,11 @@ export function HomepageClient({ initialContent, isBuilderPreview }: Props) {
         { id: "footer", type: "footer", enabled: true },
       ] as PageSection[]);
 
+  const preset = ((resolved.site as any)?.designPreset as string | undefined) || "landing_html_v1";
+  const useLanding = preset !== "classic";
+
   return (
-    <div className="cf-landing flex flex-1 flex-col">
+    <div className={`${useLanding ? "cf-landing" : ""} flex flex-1 flex-col`}>
       {sections.find((s) => s.type === "hero")?.enabled !== false ? <Header content={resolved} /> : null}
       <main className="flex-1">
         {sections

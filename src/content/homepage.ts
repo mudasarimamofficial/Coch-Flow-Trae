@@ -156,7 +156,11 @@ export type HomepageContent = {
       firstNameLabel: string;
       lastNameLabel: string;
       emailLabel: string;
+      firstNamePlaceholder?: string;
+      lastNamePlaceholder?: string;
+      emailPlaceholder?: string;
       revenueLabel: string;
+      revenuePlaceholder?: string;
       bottleneckLabel: string;
       bottleneckPlaceholder: string;
       revenueOptions: { value: string; label: string }[];
@@ -453,7 +457,11 @@ export const homepageDefaults: HomepageContent = {
       firstNameLabel: "First name",
       lastNameLabel: "Last name",
       emailLabel: "Email address",
+      firstNamePlaceholder: "Hamza",
+      lastNamePlaceholder: "Mukhtar",
+      emailPlaceholder: "you@example.com",
       revenueLabel: "Current monthly revenue",
+      revenuePlaceholder: "Select your range",
       bottleneckLabel: "What is your biggest bottleneck right now?",
       bottleneckPlaceholder: "e.g. I get engagement on my content but no one books a call...",
       revenueOptions: [
