@@ -32,6 +32,8 @@ export function SettingsPanel({ supabase }: Props) {
   const [settingsError, setSettingsError] = useState<string | null>(null);
   const [settingsSaved, setSettingsSaved] = useState<string | null>(null);
   const [adminEmail, setAdminEmail] = useState("");
+  const [resendMasked, setResendMasked] = useState("");
+  const [resendKeyDraft, setResendKeyDraft] = useState("");
   const [theme, setTheme] = useState<HomepageContent["site"]["theme"]>(defaultTheme);
   const [designPreset, setDesignPreset] = useState<"landing_html_v1" | "classic">("landing_html_v1");
 
@@ -42,7 +44,7 @@ export function SettingsPanel({ supabase }: Props) {
     try {
       const { data, error } = await supabase
         .from("settings")
-        .select("id, admin_email")
+        .select("id, admin_email, resend_api_key_masked")
         .eq("id", 1)
         .single();
 
@@ -52,6 +54,7 @@ export function SettingsPanel({ supabase }: Props) {
       }
 
       setAdminEmail((data as { admin_email: string }).admin_email);
+      setResendMasked(String((data as any).resend_api_key_masked || ""));
 
       const { data: home, error: homeErr } = await supabase
         .from("homepage_content")
@@ -101,6 +104,57 @@ export function SettingsPanel({ supabase }: Props) {
             onChange={(e) => setAdminEmail(e.target.value)}
             placeholder="admin@yourdomain.com"
           />
+
+          <Input
+            label="Resend API key"
+            value={resendKeyDraft}
+            onChange={(e) => setResendKeyDraft(e.target.value)}
+            placeholder={resendMasked ? resendMasked : "re_********"}
+            type="password"
+            autoComplete="off"
+          />
+          <div className="text-xs text-slate-600 dark:text-slate-400">
+            {resendMasked ? `Saved: ${resendMasked}` : "No Resend key saved yet."}
+          </div>
+          <Button
+            variant="secondary"
+            className="h-12"
+            disabled={settingsLoading || !resendKeyDraft.trim().length}
+            onClick={async () => {
+              setSettingsSaved(null);
+              setSettingsError(null);
+              setSettingsLoading(true);
+              try {
+                const { data: sessionData } = await supabase.auth.getSession();
+                const token = sessionData.session?.access_token || "";
+                if (!token) {
+                  setSettingsError("You must be signed in as admin.");
+                  return;
+                }
+
+                const res = await fetch("/api/admin/resend-key", {
+                  method: "POST",
+                  headers: {
+                    "content-type": "application/json",
+                    authorization: `Bearer ${token}`,
+                  },
+                  body: JSON.stringify({ apiKey: resendKeyDraft.trim() }),
+                });
+                const json = (await res.json()) as { ok: boolean; message?: string; masked?: string };
+                if (!res.ok || !json.ok) {
+                  setSettingsError(json.message || "Failed to update Resend key");
+                  return;
+                }
+                setResendMasked(json.masked || resendMasked);
+                setResendKeyDraft("");
+                setSettingsSaved("Resend key updated.");
+              } finally {
+                setSettingsLoading(false);
+              }
+            }}
+          >
+            Update Resend Key
+          </Button>
 
           <div className="mt-2 text-sm font-bold">Global Theme</div>
           <Select

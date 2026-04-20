@@ -272,7 +272,7 @@ export const homepageDefaults: HomepageContent = {
     buttonText: "Start Chat",
     headerColorHex: "#25D366",
     position: "right",
-    delayMs: 15000,
+    delayMs: 1200,
     autoOpen: false,
   },
   page: {

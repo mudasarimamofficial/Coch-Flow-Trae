@@ -10,11 +10,22 @@ export function Footer({ content, section }: Props) {
   const showSocial = (section?.settings as any)?.showSocial === true;
   const socialV2 = (content.socialLinksV2 || []).filter((s) => s.enabled && s.url && s.url.trim().length);
   const socialLegacy = (content.socialLinks || []).filter((s) => s.href && s.href.trim().length);
+  const fallbackLogoUrl =
+    "https://ekwydksbprxebgmhbmtj.supabase.co/storage/v1/object/public/assets/header%20icon.png";
+  const logoUrl =
+    content.footer.brandIcon?.type === "image" && content.footer.brandIcon.url
+      ? content.footer.brandIcon.url
+      : fallbackLogoUrl;
   return (
     <footer>
       <div className="container">
         <div className="footer-inner">
-          <div className="footer-logo">{renderBrandText(content.footer.brandText)}</div>
+          <div className="footer-logo">
+            <a href="#">
+              <img src={logoUrl} alt={content.footer.brandText} />
+              {renderBrandText(content.footer.brandText)}
+            </a>
+          </div>
 
           <div className="footer-links">
             {content.footer.links.map((l) => (

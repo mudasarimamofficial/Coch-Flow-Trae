@@ -252,9 +252,15 @@ export async function POST(req: Request) {
       .eq("id", 1)
       .maybeSingle();
 
+    const { data: secretSettings } = await supabase
+      .from("secret_settings")
+      .select("resend_api_key")
+      .eq("id", 1)
+      .maybeSingle();
+
     const toEmail =
       nonEmpty(settings?.admin_email) || nonEmpty(env("ADMIN_NOTIFICATION_EMAIL"));
-    const resendKey = nonEmpty(env("RESEND_API_KEY"));
+    const resendKey = nonEmpty((secretSettings as any)?.resend_api_key) || nonEmpty(env("RESEND_API_KEY"));
     const fromEmail = nonEmpty(env("RESEND_FROM_EMAIL"));
 
     if (toEmail && resendKey && fromEmail) {
