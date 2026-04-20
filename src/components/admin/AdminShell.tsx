@@ -23,7 +23,7 @@ export function AdminShell({ tab, onTabChange, sessionEmail, onSignOut, children
   ];
 
   return (
-    <div className="flex h-screen overflow-hidden">
+    <div className="flex h-[100dvh] overflow-hidden">
       <div className="hidden w-[200px] flex-col border-r border-[var(--cf-border)] bg-[var(--cf-secondary)] px-3 py-6 md:flex">
         <div className="mb-4 text-sm font-bold">CoachFlow AI</div>
         <div className="flex flex-col gap-2">
