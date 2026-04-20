@@ -28,6 +28,8 @@ export function AdminPageClient() {
     "loading" | "signedOut" | "signedInAdmin" | "signedInNonAdmin"
   >("loading");
 
+  const [resendNotice, setResendNotice] = useState<string | null>(null);
+
   const [leads, setLeads] = useState<Lead[]>([]);
   const [leadsLoading, setLeadsLoading] = useState(false);
   const [leadsError, setLeadsError] = useState<string | null>(null);
@@ -131,6 +133,37 @@ export function AdminPageClient() {
     loadLeads();
   }, [sessionEmail, sessionUserId, authStatus, supabase]);
 
+  useEffect(() => {
+    if (authStatus !== "signedInAdmin") {
+      setResendNotice(null);
+      return;
+    }
+    if (!supabase) return;
+    (async () => {
+      const { data } = await supabase.auth.getSession();
+      const token = data.session?.access_token || "";
+      if (!token) return;
+      const res = await fetch("/api/admin/resend-sender", {
+        headers: { authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) return;
+      const json = (await res.json()) as {
+        ok: boolean;
+        effectiveFrom?: string | null;
+        status?: string;
+        message?: string;
+      };
+      if (!json.ok) return;
+      if (String(json.status || "") !== "verified") {
+        const from = (json.effectiveFrom || "").trim();
+        const msg = (json.message || "Resend sender is not verified").trim();
+        setResendNotice(from ? `Email sender: ${from}. ${msg}` : msg);
+      } else {
+        setResendNotice(null);
+      }
+    })();
+  }, [authStatus, supabase]);
+
   if (authStatus === "loading") {
     return (
       <div className="flex flex-1 items-center justify-center">
@@ -220,6 +253,7 @@ export function AdminPageClient() {
       tab={tab}
       onTabChange={setTab}
       sessionEmail={sessionEmail || ""}
+      topNotice={resendNotice}
       onSignOut={async () => {
         await supabase.auth.signOut();
         setLeads([]);

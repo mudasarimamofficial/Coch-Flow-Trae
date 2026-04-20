@@ -9,10 +9,11 @@ type Props = {
   onTabChange: (tab: Tab) => void;
   sessionEmail: string;
   onSignOut: () => Promise<void>;
+  topNotice?: ReactNode;
   children: ReactNode;
 };
 
-export function AdminShell({ tab, onTabChange, sessionEmail, onSignOut, children }: Props) {
+export function AdminShell({ tab, onTabChange, sessionEmail, onSignOut, topNotice, children }: Props) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const navItems: { tab: Tab; label: string; icon: ReactNode }[] = [
     { tab: "builder", label: "Builder", icon: <LayoutDashboard size={18} /> },
@@ -120,6 +121,12 @@ export function AdminShell({ tab, onTabChange, sessionEmail, onSignOut, children
             Sign out
           </Button>
         </div>
+
+        {topNotice ? (
+          <div className="border-b border-[var(--cf-border)] bg-amber-500/10 px-6 py-3 text-sm text-amber-200">
+            {topNotice}
+          </div>
+        ) : null}
 
         {mobileMenuOpen ? (
           <div className="fixed inset-0 z-50 bg-black/40 p-4 md:hidden" onClick={() => setMobileMenuOpen(false)}>

@@ -3,6 +3,7 @@ import { z } from "zod";
 import { Resend } from "resend";
 import { createServiceSupabaseClient } from "@/utils/supabase/serviceClient";
 import { checkRateLimit, getRequestIp } from "@/utils/rateLimit";
+import { checkResendDomainVerification, validateSenderEmailBasic } from "@/utils/resendSender";
 
 export const runtime = "nodejs";
 
@@ -248,7 +249,7 @@ export async function POST(req: Request) {
 
     const { data: settings } = await supabase
       .from("settings")
-      .select("admin_email")
+      .select("admin_email, resend_from_email")
       .eq("id", 1)
       .maybeSingle();
 
@@ -261,9 +262,20 @@ export async function POST(req: Request) {
     const toEmail =
       nonEmpty(settings?.admin_email) || nonEmpty(env("ADMIN_NOTIFICATION_EMAIL"));
     const resendKey = nonEmpty((secretSettings as any)?.resend_api_key) || nonEmpty(env("RESEND_API_KEY"));
-    const fromEmail = nonEmpty(env("RESEND_FROM_EMAIL"));
+    const configuredFromEmail = nonEmpty((settings as any)?.resend_from_email);
+    const envFromEmail = nonEmpty(env("RESEND_FROM_EMAIL"));
+    const candidateFromEmail = configuredFromEmail || envFromEmail;
+    const senderBasic = validateSenderEmailBasic(candidateFromEmail || "");
+    const senderDomainStatus =
+      resendKey && senderBasic.ok && senderBasic.domain
+        ? await checkResendDomainVerification(resendKey, senderBasic.domain)
+        : null;
+    const canSendFrom =
+      Boolean(candidateFromEmail) &&
+      senderBasic.ok &&
+      (senderDomainStatus?.status ? senderDomainStatus.status === "verified" : Boolean(resendKey));
 
-    if (toEmail && resendKey && fromEmail) {
+    if (toEmail && resendKey && canSendFrom && candidateFromEmail) {
       try {
         const resend = new Resend(resendKey);
         const subject = `New Lead Alert — ${sanitized.name}`;
@@ -284,7 +296,7 @@ export async function POST(req: Request) {
         `;
 
         await resend.emails.send({
-          from: fromEmail,
+          from: candidateFromEmail,
           to: toEmail,
           subject,
           html,
@@ -295,7 +307,19 @@ export async function POST(req: Request) {
         emailSkipReason = "send_failed";
       }
     } else {
-      emailSkipReason = !toEmail ? "missing_to_email" : "resend_not_configured";
+      if (!toEmail) {
+        emailSkipReason = "missing_to_email";
+      } else if (!resendKey) {
+        emailSkipReason = "resend_not_configured";
+      } else if (!candidateFromEmail) {
+        emailSkipReason = "missing_from_email";
+      } else if (!senderBasic.ok) {
+        emailSkipReason = "invalid_sender_email";
+      } else if (senderDomainStatus && senderDomainStatus.status !== "verified") {
+        emailSkipReason = "sender_domain_not_verified";
+      } else {
+        emailSkipReason = "resend_not_configured";
+      }
     }
 
     slackSkipReason = "disabled";

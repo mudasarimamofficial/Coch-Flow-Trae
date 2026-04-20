@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { homepageDefaults, type HomepageContent } from "@/content/homepage";
+import { validateSenderEmailBasic } from "@/utils/resendSender";
 
 type Props = {
   supabase: SupabaseClient;
@@ -34,6 +35,10 @@ export function SettingsPanel({ supabase }: Props) {
   const [adminEmail, setAdminEmail] = useState("");
   const [resendMasked, setResendMasked] = useState("");
   const [resendKeyDraft, setResendKeyDraft] = useState("");
+  const [senderEmail, setSenderEmail] = useState("");
+  const [senderStatus, setSenderStatus] = useState<string | null>(null);
+  const [senderMessage, setSenderMessage] = useState<string | null>(null);
+  const [senderEffective, setSenderEffective] = useState<string | null>(null);
   const [theme, setTheme] = useState<HomepageContent["site"]["theme"]>(defaultTheme);
   const [designPreset, setDesignPreset] = useState<"landing_html_v1" | "classic">("landing_html_v1");
 
@@ -44,7 +49,9 @@ export function SettingsPanel({ supabase }: Props) {
     try {
       const { data, error } = await supabase
         .from("settings")
-        .select("id, admin_email, resend_api_key_masked")
+        .select(
+          "id, admin_email, resend_api_key_masked, resend_from_email, resend_sender_status, resend_sender_message",
+        )
         .eq("id", 1)
         .single();
 
@@ -55,6 +62,23 @@ export function SettingsPanel({ supabase }: Props) {
 
       setAdminEmail((data as { admin_email: string }).admin_email);
       setResendMasked(String((data as any).resend_api_key_masked || ""));
+      setSenderEmail(String((data as any).resend_from_email || ""));
+      setSenderStatus(String((data as any).resend_sender_status || ""));
+      setSenderMessage(String((data as any).resend_sender_message || ""));
+
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData.session?.access_token || "";
+      if (token) {
+        const res = await fetch("/api/admin/resend-sender", {
+          headers: { authorization: `Bearer ${token}` },
+        });
+        const json = (await res.json()) as any;
+        if (res.ok && json?.ok) {
+          setSenderEffective(String(json.effectiveFrom || "") || null);
+          setSenderStatus(String(json.status || "") || null);
+          setSenderMessage(String(json.message || "") || null);
+        }
+      }
 
       const { data: home, error: homeErr } = await supabase
         .from("homepage_content")
@@ -154,6 +178,80 @@ export function SettingsPanel({ supabase }: Props) {
             }}
           >
             Update Resend Key
+          </Button>
+
+          <div className="mt-2 text-sm font-bold">Resend Sender</div>
+          <Input
+            label="Sender email (must be a verified Resend domain)"
+            value={senderEmail}
+            onChange={(e) => setSenderEmail(e.target.value)}
+            placeholder="notifications@yourdomain.com"
+          />
+          {(() => {
+            const v = validateSenderEmailBasic(senderEmail || senderEffective || "");
+            const status = String(senderStatus || "").toLowerCase();
+            if (!senderEmail.trim().length && !senderEffective) return null;
+            if (!v.ok) {
+              return (
+                <div className="rounded-lg border border-amber-300/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-200">
+                  {v.message}
+                </div>
+              );
+            }
+            if (status && status !== "verified") {
+              return (
+                <div className="rounded-lg border border-amber-300/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-200">
+                  {senderMessage || "Sender domain is not verified in Resend."}
+                </div>
+              );
+            }
+            if (status === "verified") {
+              return (
+                <div className="rounded-lg border border-emerald-300/30 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200">
+                  Verified sender: {senderEffective || senderEmail}
+                </div>
+              );
+            }
+            return null;
+          })()}
+          <Button
+            variant="secondary"
+            className="h-12"
+            disabled={settingsLoading || !senderEmail.trim().length}
+            onClick={async () => {
+              setSettingsSaved(null);
+              setSettingsError(null);
+              setSettingsLoading(true);
+              try {
+                const { data: sessionData } = await supabase.auth.getSession();
+                const token = sessionData.session?.access_token || "";
+                if (!token) {
+                  setSettingsError("You must be signed in as admin.");
+                  return;
+                }
+                const res = await fetch("/api/admin/resend-sender", {
+                  method: "POST",
+                  headers: {
+                    "content-type": "application/json",
+                    authorization: `Bearer ${token}`,
+                  },
+                  body: JSON.stringify({ senderEmail: senderEmail.trim() }),
+                });
+                const json = (await res.json()) as any;
+                if (!res.ok || !json?.ok) {
+                  setSettingsError(json?.message || "Failed to update sender");
+                  return;
+                }
+                setSenderEffective(String(json.senderEmail || "") || null);
+                setSenderStatus(String(json.status || "") || null);
+                setSenderMessage(String(json.message || "") || null);
+                setSettingsSaved("Sender saved and validated.");
+              } finally {
+                setSettingsLoading(false);
+              }
+            }}
+          >
+            Save & Validate Sender
           </Button>
 
           <div className="mt-2 text-sm font-bold">Global Theme</div>
