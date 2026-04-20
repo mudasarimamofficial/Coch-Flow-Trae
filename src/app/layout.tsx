@@ -48,7 +48,9 @@ export default async function RootLayout({
   const colors = source.colors;
   const typography = source.typography;
   const cssVars = `:root{--cf-primary:${colors.primary};--cf-secondary:${colors.secondary};--cf-accent:${colors.accent};--cf-bg:${colors.background};--cf-text:${colors.text};--cf-surface:${colors.surface};--cf-border:${colors.border};--cf-font-heading:${(typography.headingFont || "").trim()};--cf-font-body:${(typography.bodyFont || "").trim()};--color-primary:${colors.primary};--color-secondary:${colors.secondary};--color-accent:${colors.accent};--color-background:${colors.background};--color-text:${colors.text};--color-surface:${colors.surface};--color-border:${colors.border};}`;
-  const faviconHref = content.site?.favicon?.url || "/favicon.png";
+  const faviconHref =
+    content.site?.favicon?.url ||
+    "https://ekwydksbprxebgmhbmtj.supabase.co/storage/v1/object/public/assets/coch%20flow%20favicon.png";
   const lower = faviconHref.toLowerCase();
   const type =
     lower.endsWith(".png")

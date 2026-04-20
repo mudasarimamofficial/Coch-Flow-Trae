@@ -33,7 +33,10 @@ export function WhatsAppWidget({ content }: Props) {
       modalTitle: cfg.modalTitle || content.header.brandText || "CoachFlow AI",
       modalSubtitle: cfg.modalSubtitle || "Usually replies instantly",
       buttonText: cfg.buttonText || "Start Chat",
-      avatarUrl: cfg.avatar?.url || content.site?.favicon?.url || "",
+      avatarUrl:
+        cfg.avatar?.url ||
+        content.site?.favicon?.url ||
+        "https://ekwydksbprxebgmhbmtj.supabase.co/storage/v1/object/public/assets/coch%20flow%20favicon.png",
       headerColor,
       position,
       delayMs,
