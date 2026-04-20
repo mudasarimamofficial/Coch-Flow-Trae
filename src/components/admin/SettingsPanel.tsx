@@ -1,0 +1,290 @@
+import type { SupabaseClient } from "@supabase/supabase-js";
+import { useEffect, useState } from "react";
+import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
+import { Select } from "@/components/ui/Select";
+import { homepageDefaults, type HomepageContent } from "@/content/homepage";
+
+type Props = {
+  supabase: SupabaseClient;
+};
+
+export function SettingsPanel({ supabase }: Props) {
+  const defaultTheme =
+    homepageDefaults.site.theme ??
+    ({
+      colors: {
+        primary: "#0fa3a3",
+        secondary: "#0b1414",
+        accent: "#b58a2f",
+        background: "#f6f8f8",
+        text: "#0f172a",
+        surface: "#ffffff",
+        border: "rgba(148, 163, 184, 0.35)",
+      },
+      typography: {
+        headingFont: "",
+        bodyFont: "",
+      },
+    } as NonNullable<HomepageContent["site"]["theme"]>);
+
+  const [settingsLoading, setSettingsLoading] = useState(true);
+  const [settingsError, setSettingsError] = useState<string | null>(null);
+  const [settingsSaved, setSettingsSaved] = useState<string | null>(null);
+  const [adminEmail, setAdminEmail] = useState("");
+  const [theme, setTheme] = useState<HomepageContent["site"]["theme"]>(defaultTheme);
+
+  async function loadSettings() {
+    setSettingsSaved(null);
+    setSettingsError(null);
+    setSettingsLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from("settings")
+        .select("id, admin_email")
+        .eq("id", 1)
+        .single();
+
+      if (error) {
+        setSettingsError(error.message);
+        return;
+      }
+
+      setAdminEmail((data as { admin_email: string }).admin_email);
+
+      const { data: home, error: homeErr } = await supabase
+        .from("homepage_content")
+        .select("content")
+        .eq("id", 1)
+        .maybeSingle();
+      if (!homeErr && home?.content) {
+        const c = home.content as HomepageContent;
+        setTheme(c.site?.theme || defaultTheme);
+      }
+    } finally {
+      setSettingsLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    loadSettings();
+  }, []);
+
+  return (
+    <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-4 px-6 pb-10">
+      <div>
+        <h1 className="text-2xl font-bold">Settings</h1>
+        <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
+          Lead notifications will be sent to this email.
+        </p>
+      </div>
+
+      {settingsError ? (
+        <div className="rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700 dark:border-rose-500/20 dark:bg-rose-500/10 dark:text-rose-200">
+          {settingsError}
+        </div>
+      ) : null}
+
+      {settingsSaved ? (
+        <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-200">
+          {settingsSaved}
+        </div>
+      ) : null}
+
+      <div className="rounded-2xl border border-slate-200 bg-white p-6 dark:border-white/10 dark:bg-[#112121]">
+        <div className="flex flex-col gap-4">
+          <Input
+            label="Admin notification email"
+            value={adminEmail}
+            onChange={(e) => setAdminEmail(e.target.value)}
+            placeholder="admin@yourdomain.com"
+          />
+
+          <div className="mt-2 text-sm font-bold">Global Theme</div>
+          <Select
+            label="Use custom theme"
+            value={theme?.enabled ? "yes" : "no"}
+            onChange={(e) => setTheme((t) => ({ ...(t || defaultTheme), enabled: e.target.value === "yes" }))}
+            options={[
+              { value: "no", label: "No (Recommended)" },
+              { value: "yes", label: "Yes" },
+            ]}
+          />
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <Input
+              label="Primary"
+              value={theme?.colors.primary || ""}
+              onChange={(e) =>
+                setTheme((t) => ({
+                  ...(t || defaultTheme),
+                  colors: { ...(t?.colors || defaultTheme.colors), primary: e.target.value },
+                }))
+              }
+              placeholder="#0fa3a3"
+            />
+            <Input
+              label="Accent"
+              value={theme?.colors.accent || ""}
+              onChange={(e) =>
+                setTheme((t) => ({
+                  ...(t || defaultTheme),
+                  colors: { ...(t?.colors || defaultTheme.colors), accent: e.target.value },
+                }))
+              }
+              placeholder="#b58a2f"
+            />
+            <Input
+              label="Background"
+              value={theme?.colors.background || ""}
+              onChange={(e) =>
+                setTheme((t) => ({
+                  ...(t || defaultTheme),
+                  colors: { ...(t?.colors || defaultTheme.colors), background: e.target.value },
+                }))
+              }
+              placeholder="#f6f8f8"
+            />
+            <Input
+              label="Surface"
+              value={theme?.colors.surface || ""}
+              onChange={(e) =>
+                setTheme((t) => ({
+                  ...(t || defaultTheme),
+                  colors: { ...(t?.colors || defaultTheme.colors), surface: e.target.value },
+                }))
+              }
+              placeholder="#ffffff"
+            />
+            <Input
+              label="Text"
+              value={theme?.colors.text || ""}
+              onChange={(e) =>
+                setTheme((t) => ({
+                  ...(t || defaultTheme),
+                  colors: { ...(t?.colors || defaultTheme.colors), text: e.target.value },
+                }))
+              }
+              placeholder="#0f172a"
+            />
+            <Input
+              label="Border"
+              value={theme?.colors.border || ""}
+              onChange={(e) =>
+                setTheme((t) => ({
+                  ...(t || defaultTheme),
+                  colors: { ...(t?.colors || defaultTheme.colors), border: e.target.value },
+                }))
+              }
+              placeholder="rgba(148, 163, 184, 0.35)"
+            />
+            <Input
+              label="Heading font"
+              value={theme?.typography?.headingFont || ""}
+              onChange={(e) =>
+                setTheme((t) => ({
+                  ...(t || defaultTheme),
+                  typography: { ...(t?.typography || {}), headingFont: e.target.value },
+                }))
+              }
+              placeholder="e.g. Inter, system-ui"
+            />
+            <Input
+              label="Body font"
+              value={theme?.typography?.bodyFont || ""}
+              onChange={(e) =>
+                setTheme((t) => ({
+                  ...(t || defaultTheme),
+                  typography: { ...(t?.typography || {}), bodyFont: e.target.value },
+                }))
+              }
+              placeholder="e.g. Inter, system-ui"
+            />
+          </div>
+          <div className="flex items-center gap-3">
+            <Button
+              className="h-12"
+              disabled={settingsLoading}
+              onClick={async () => {
+                setSettingsSaved(null);
+                setSettingsError(null);
+                setSettingsLoading(true);
+                try {
+                  const next = adminEmail.trim();
+                  if (!next || !next.includes("@")) {
+                    setSettingsError("Enter a valid email");
+                    return;
+                  }
+                  const { error } = await supabase
+                    .from("settings")
+                    .update({
+                      admin_email: next,
+                    })
+                    .eq("id", 1);
+                  if (error) {
+                    setSettingsError(error.message);
+                    return;
+                  }
+
+                  const { data: home, error: homeErr } = await supabase
+                    .from("homepage_content")
+                    .select("content")
+                    .eq("id", 1)
+                    .single();
+                  if (homeErr) {
+                    setSettingsError(homeErr.message);
+                    return;
+                  }
+                  const current = home.content as HomepageContent;
+                  const updated: HomepageContent = {
+                    ...current,
+                    site: {
+                      ...current.site,
+                      theme: theme || defaultTheme,
+                    },
+                    branding: {
+                      enabled: Boolean(theme?.enabled),
+                      colors: {
+                        primary: theme?.colors.primary || defaultTheme.colors.primary,
+                        secondary: theme?.colors.secondary || defaultTheme.colors.secondary,
+                        accent: theme?.colors.accent || defaultTheme.colors.accent,
+                        background: theme?.colors.background || defaultTheme.colors.background,
+                        text: theme?.colors.text || defaultTheme.colors.text,
+                        surface: theme?.colors.surface || defaultTheme.colors.surface,
+                        border: theme?.colors.border || defaultTheme.colors.border,
+                      },
+                      typography: {
+                        headingFont: theme?.typography?.headingFont || "",
+                        bodyFont: theme?.typography?.bodyFont || "",
+                      },
+                    },
+                  };
+                  const { error: updateHomeErr } = await supabase
+                    .from("homepage_content")
+                    .update({ content: updated })
+                    .eq("id", 1);
+                  if (updateHomeErr) {
+                    setSettingsError(updateHomeErr.message);
+                    return;
+                  }
+                  setSettingsSaved("Saved");
+                } finally {
+                  setSettingsLoading(false);
+                }
+              }}
+            >
+              Save
+            </Button>
+            <Button
+              variant="secondary"
+              className="h-12"
+              onClick={loadSettings}
+              disabled={settingsLoading}
+            >
+              Reload
+            </Button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
