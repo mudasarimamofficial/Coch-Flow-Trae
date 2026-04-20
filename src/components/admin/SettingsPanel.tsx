@@ -100,27 +100,27 @@ export function SettingsPanel({ supabase }: Props) {
   }, []);
 
   return (
-    <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-4 px-6 pb-10">
+    <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-4 px-4 pb-10 lg:px-6">
       <div>
-        <h1 className="text-2xl font-bold">Settings</h1>
-        <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
+        <h1 className="text-2xl font-bold text-white">Settings</h1>
+        <p className="mt-1 text-sm text-white/60">
           Lead notifications will be sent to this email.
         </p>
       </div>
 
       {settingsError ? (
-        <div className="rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700 dark:border-rose-500/20 dark:bg-rose-500/10 dark:text-rose-200">
+        <div className="rounded-2xl border border-rose-500/20 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">
           {settingsError}
         </div>
       ) : null}
 
       {settingsSaved ? (
-        <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-200">
+        <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200">
           {settingsSaved}
         </div>
       ) : null}
 
-      <div className="rounded-2xl border border-slate-200 bg-white p-6 dark:border-white/10 dark:bg-[#112121]">
+      <div className="rounded-2xl border border-white/10 bg-white/5 p-6">
         <div className="flex flex-col gap-4">
           <Input
             label="Admin notification email"
@@ -137,7 +137,7 @@ export function SettingsPanel({ supabase }: Props) {
             type="password"
             autoComplete="off"
           />
-          <div className="text-xs text-slate-600 dark:text-slate-400">
+          <div className="text-xs text-white/60">
             {resendMasked ? `Saved: ${resendMasked}` : "No Resend key saved yet."}
           </div>
           <Button

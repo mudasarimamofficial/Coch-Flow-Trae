@@ -18,8 +18,42 @@ export async function getHomepageContent(): Promise<HomepageContent> {
       .maybeSingle();
     if (error || !data?.content) return homepageDefaults;
 
+    const { data: pages } = await supabase
+      .from("site_pages")
+      .select("slug, title, nav_label, show_in_header_nav, show_in_footer_nav, status")
+      .eq("status", "published");
+
     const c = data.content as Partial<HomepageContent> | null;
     if (!c) return homepageDefaults;
+
+    const dynamicHeader = (pages || [])
+      .filter((p: any) => Boolean(p?.show_in_header_nav))
+      .map((p: any) => ({
+        label: String(p?.nav_label || p?.title || p?.slug || "").trim() || "Page",
+        href: `/p/${String(p?.slug || "").trim()}`,
+      }))
+      .filter((x: any) => x.label && x.href && x.href !== "/");
+    const dynamicFooter = (pages || [])
+      .filter((p: any) => Boolean(p?.show_in_footer_nav))
+      .map((p: any) => ({
+        label: String(p?.nav_label || p?.title || p?.slug || "").trim() || "Page",
+        href: `/p/${String(p?.slug || "").trim()}`,
+      }))
+      .filter((x: any) => x.label && x.href && x.href !== "/");
+
+    const mergeLinks = (base: { label: string; href: string }[], extra: { label: string; href: string }[]) => {
+      const seen = new Set<string>();
+      const out: { label: string; href: string }[] = [];
+      for (const it of [...base, ...extra]) {
+        const key = `${it.label}`.trim().toLowerCase();
+        const href = `${it.href}`.trim();
+        if (!key || !href) continue;
+        if (seen.has(key)) continue;
+        seen.add(key);
+        out.push({ label: it.label, href });
+      }
+      return out;
+    };
 
     return {
       ...homepageDefaults,
@@ -30,6 +64,10 @@ export async function getHomepageContent(): Promise<HomepageContent> {
         ...(c.header || {}),
         brandIcon: { ...homepageDefaults.header.brandIcon, ...(c.header?.brandIcon || {}) },
         primaryCta: { ...homepageDefaults.header.primaryCta, ...(c.header?.primaryCta || {}) },
+        nav: mergeLinks(
+          (c.header?.nav || homepageDefaults.header.nav) as any,
+          dynamicHeader as any,
+        ),
       },
       hero: {
         ...homepageDefaults.hero,
@@ -77,7 +115,10 @@ export async function getHomepageContent(): Promise<HomepageContent> {
         ...homepageDefaults.footer,
         ...(c.footer || {}),
         brandIcon: { ...homepageDefaults.footer.brandIcon, ...(c.footer?.brandIcon || {}) },
-        links: c.footer?.links || homepageDefaults.footer.links,
+        links: mergeLinks(
+          (c.footer?.links || homepageDefaults.footer.links) as any,
+          dynamicFooter as any,
+        ),
       },
       page: {
         sections: c.page?.sections || homepageDefaults.page?.sections || [],

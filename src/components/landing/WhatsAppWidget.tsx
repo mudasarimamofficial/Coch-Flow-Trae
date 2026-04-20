@@ -42,17 +42,18 @@ export function WhatsAppWidget({ content }: Props) {
       delayMs,
       autoOpen,
     };
-  }, [cfg, content.header.brandText]);
-
-  if (!data) return null;
+  }, [cfg, content.header.brandText, content.site?.favicon?.url]);
 
   useEffect(() => {
+    if (!data) return;
     const t = window.setTimeout(() => {
       setVisible(true);
       if (data.autoOpen) setOpen(true);
     }, data.delayMs);
     return () => window.clearTimeout(t);
-  }, [data.autoOpen, data.delayMs]);
+  }, [data]);
+
+  if (!data) return null;
 
   return (
     <>

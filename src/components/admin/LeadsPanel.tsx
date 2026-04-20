@@ -63,11 +63,11 @@ export function LeadsPanel({
   }, [leads, query, datePreset]);
 
   return (
-    <div className="flex flex-1 flex-col gap-4 px-6 pb-8">
+    <div className="flex flex-1 flex-col gap-4 px-4 pb-8 lg:px-6">
       <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Leads</h1>
-          <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
+          <h1 className="text-2xl font-bold text-white">Leads</h1>
+          <p className="mt-1 text-sm text-white/60">
             Newest first. Click a row to view details.
           </p>
         </div>
@@ -81,7 +81,7 @@ export function LeadsPanel({
           <select
             value={datePreset}
             onChange={(e) => onDatePresetChange(e.target.value as Props["datePreset"])}
-            className="h-12 rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-900 outline-none ring-[#0fa3a3]/30 focus:ring-4 dark:border-white/10 dark:bg-white/5 dark:text-slate-100"
+            className="h-11 rounded-xl border border-white/10 bg-white/5 px-3 text-sm text-white outline-none focus:border-[var(--cf-accent)] focus:ring-2 focus:ring-[var(--cf-accent)]/20"
           >
             <option value="today">Today</option>
             <option value="last7">Last 7 days</option>
@@ -100,16 +100,16 @@ export function LeadsPanel({
       </div>
 
       {leadsError ? (
-        <div className="rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700 dark:border-rose-500/20 dark:bg-rose-500/10 dark:text-rose-200">
+        <div className="rounded-2xl border border-rose-500/20 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">
           {leadsError}
         </div>
       ) : null}
 
       <div className="grid flex-1 grid-cols-1 gap-4 lg:grid-cols-[1.2fr_0.8fr]">
-        <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white dark:border-white/10 dark:bg-[#112121]">
+        <div className="overflow-hidden rounded-2xl border border-white/10 bg-white/5">
           <div className="overflow-x-auto">
             <table className="min-w-full text-left text-sm">
-              <thead className="border-b border-slate-200/60 bg-slate-50 text-xs uppercase tracking-wide text-slate-500 dark:border-white/10 dark:bg-white/5 dark:text-slate-400">
+              <thead className="border-b border-white/10 bg-white/5 text-xs uppercase tracking-wide text-white/50">
                 <tr>
                   <th className="px-4 py-3">Name</th>
                   <th className="px-4 py-3">Email</th>

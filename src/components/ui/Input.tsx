@@ -1,20 +1,16 @@
-import type { InputHTMLAttributes } from "react";
+import type { InputHTMLAttributes, ReactNode } from "react";
 
 type Props = InputHTMLAttributes<HTMLInputElement> & {
   error?: string;
-  label?: string;
+  label?: ReactNode;
 };
 
 export function Input({ label, error, className = "", ...props }: Props) {
   return (
     <label className="flex flex-col gap-2">
-      {label ? (
-        <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
-          {label}
-        </span>
-      ) : null}
+      {label ? <span className="text-xs font-semibold tracking-wide text-white/70">{label}</span> : null}
       <input
-        className={`h-12 rounded-lg bg-slate-50 px-4 text-slate-900 outline-none ring-1 ring-slate-200 transition placeholder:text-slate-400 focus:ring-2 focus:ring-[#0fa3a3] dark:bg-white/5 dark:text-white dark:ring-white/10 ${className}`}
+        className={`h-11 rounded-xl border border-white/10 bg-white/5 px-4 text-sm text-white outline-none placeholder:text-white/35 focus:border-[var(--cf-accent)] focus:ring-2 focus:ring-[var(--cf-accent)]/20 ${className}`}
         {...props}
       />
       {error ? <span className="text-xs text-rose-500">{error}</span> : null}

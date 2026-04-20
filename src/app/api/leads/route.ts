@@ -194,7 +194,6 @@ export async function POST(req: Request) {
 
     const supabase = createServiceSupabaseClient();
     let emailStatus: "sent" | "skipped" = "skipped";
-    let slackStatus: "sent" | "skipped" = "skipped";
     let emailSkipReason: string | null = null;
     let slackSkipReason: string | null = null;
 
@@ -333,7 +332,7 @@ export async function POST(req: Request) {
         slack: { status: "skipped", reason: slackSkipReason },
         config: {
           notificationsToEmail: Boolean(toEmail),
-          resendConfigured: Boolean(resendKey && fromEmail),
+          resendConfigured: Boolean(resendKey && candidateFromEmail),
         },
       },
       { status: 200 },

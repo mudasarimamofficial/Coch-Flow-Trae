@@ -40,7 +40,7 @@ export function Pricing({ content, section }: Props) {
 
               <a
                 href={t.ctaHref}
-                className={t.highlight ? "btn-primary" : "btn-ghost"}
+                className="btn-primary"
                 style={{ width: "100%", justifyContent: "center" }}
               >
                 {t.ctaText}

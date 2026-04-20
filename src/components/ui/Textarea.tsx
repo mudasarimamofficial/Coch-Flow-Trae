@@ -1,20 +1,16 @@
-import type { TextareaHTMLAttributes } from "react";
+import type { ReactNode, TextareaHTMLAttributes } from "react";
 
 type Props = TextareaHTMLAttributes<HTMLTextAreaElement> & {
   error?: string;
-  label?: string;
+  label?: ReactNode;
 };
 
 export function Textarea({ label, error, className = "", ...props }: Props) {
   return (
     <label className="flex flex-col gap-2">
-      {label ? (
-        <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
-          {label}
-        </span>
-      ) : null}
+      {label ? <span className="text-xs font-semibold tracking-wide text-white/70">{label}</span> : null}
       <textarea
-        className={`rounded-lg bg-slate-50 p-4 text-slate-900 outline-none ring-1 ring-slate-200 transition placeholder:text-slate-400 focus:ring-2 focus:ring-[#0fa3a3] dark:bg-white/5 dark:text-white dark:ring-white/10 ${className}`}
+        className={`min-h-[120px] rounded-xl border border-white/10 bg-white/5 p-4 text-sm text-white outline-none placeholder:text-white/35 focus:border-[var(--cf-accent)] focus:ring-2 focus:ring-[var(--cf-accent)]/20 ${className}`}
         {...props}
       />
       {error ? <span className="text-xs text-rose-500">{error}</span> : null}

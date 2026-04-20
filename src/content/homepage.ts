@@ -77,7 +77,8 @@ export type HomepageContent = {
         | "footer"
         | "custom"
         | "testimonials"
-        | "custom_html";
+        | "custom_html"
+        | "rich_text";
       enabled: boolean;
       settings?: Record<string, unknown>;
       blocks?: {
@@ -263,7 +264,7 @@ export const homepageDefaults: HomepageContent = {
     },
   ],
   whatsapp: {
-    enabled: true,
+    enabled: false,
     phone: "+923191106310",
     message: "Hi, I want to learn more about your services",
     tooltip: "Chat with us!",
@@ -278,7 +279,6 @@ export const homepageDefaults: HomepageContent = {
   page: {
     sections: [
       { id: "hero", type: "hero", enabled: true, settings: { heroBackground: true } },
-      { id: "trust", type: "trust", enabled: true },
       { id: "features", type: "features", enabled: true, settings: { label: "What we do" } },
       {
         id: "workflow",
@@ -308,14 +308,14 @@ export const homepageDefaults: HomepageContent = {
     brandText: "CoachFlow AI",
     brandIcon: { type: "material", name: "psychology" },
     nav: [
-      { label: "Workflow", href: "#workflow" },
-      { label: "Features", href: "#features" },
+      { label: "How It Works", href: "#workflow" },
+      { label: "What We Do", href: "#features" },
       { label: "Pricing", href: "#pricing" },
     ],
     primaryCta: { text: "Apply Now", href: "#lead-form" },
   },
   hero: {
-    badge: { icon: "auto_awesome", text: "Next-Gen B2B Lead Gen" },
+    badge: { icon: "auto_awesome", text: "Client Acquisition Infrastructure" },
     heading: {
       prefix: "Predictable Booked Calls For ",
       highlight: "Masculinity Coaches",
@@ -331,7 +331,7 @@ export const homepageDefaults: HomepageContent = {
     secondaryCta: { text: "See How It Works", href: "#workflow" },
   },
   trust: {
-    eyebrow: "Built exclusively for masculinity coaches selling $1k–$5k programs.",
+    eyebrow: "Built exclusively for masculinity coaches selling $1k–$5k programmes.",
     icons: [
       { type: "material", name: "sports_martial_arts" },
       { type: "material", name: "fitness_center" },
@@ -342,53 +342,54 @@ export const homepageDefaults: HomepageContent = {
   },
   features: {
     id: "features",
-    heading: "Built for High-Ticket Scale",
+    heading: "How CoachFlow AI fills your calendar",
     subcopy:
-      "Everything you need to fill your pipeline with ideal prospects, automated through cutting-edge AI.",
+      "Three core capabilities working together to turn cold prospects into booked sales calls — consistently, every month.",
     cards: [
       {
-        icon: "radar",
-        title: "Hyper-Targeting AI",
-        copy: "We don't guess. Our models scrape millions of data points to identify men actively seeking growth and transformation.",
+        icon: "search",
+        title: "Precision Prospect Identification",
+        copy: "We identify men actively seeking transformation and growth — the exact people your coaching programme is built for. No guesswork. No wasted outreach.",
       },
       {
-        icon: "forum",
-        title: "Conversational Agents",
-        copy: "Automated, empathetic outreach that sounds human. We handle the initial friction and book them straight to your calendar.",
+        icon: "chat",
+        title: "Real Conversations. Not Spam.",
+        copy: "Our team starts genuine, personalised conversations on your behalf across Instagram, LinkedIn, and email — building trust before a single sales call happens.",
       },
       {
-        icon: "analytics",
-        title: "Conversion Tracking",
-        copy: "Real-time dashboards showing your pipeline health, cost per acquisition, and projected revenue growth.",
+        icon: "pulse",
+        title: "Full Pipeline Visibility",
+        copy: "Real-time dashboards showing your prospect pipeline, booked calls, and revenue trajectory. You always know exactly what is working and what is being optimised.",
       },
     ],
   },
   workflow: {
     id: "workflow",
-    heading: "The CoachFlow Framework",
-    subcopy: "A systematic approach to scaling your coaching business predictably.",
+    heading: "A systematic path to predictable revenue",
+    subcopy:
+      "Five steps that transform your coaching business from inconsistent leads to a structured client acquisition machine.",
     expandIcon: "expand_more",
     steps: [
       {
-        title: "Niche & Offer Calibration",
-        copy: "We start by auditing your current offer and deeply defining your ideal client avatar. We ensure your messaging resonates specifically with high-value male clients seeking transformation.",
+        title: "Offer and niche calibration",
+        copy: "We start by auditing your current offer and deeply defining your ideal client avatar. Every message, every outreach sequence, every campaign is built around the specific man your coaching programme transforms.",
         open: true,
       },
       {
-        title: "Intelligence Gathering",
-        copy: "Deploying our proprietary scraping infrastructure to build a hyper-targeted list of prospects who match your calibrated avatar perfectly.",
+        title: "Targeted prospect database build",
+        copy: "We build a hyper-targeted list of coaches' ideal clients using behavioural and interest signals — men who are actively searching for the transformation you provide. Quality over volume at every stage.",
       },
       {
-        title: "Omnichannel Outreach",
-        copy: "Executing personalized, conversational campaigns across Email, LinkedIn, and Instagram. Our AI agents handle objections and nurture leads.",
+        title: "Strategic multi-channel outreach",
+        copy: "Our team executes personalised outreach campaigns across Instagram, LinkedIn, and email — starting real conversations that feel human, not automated. We handle every reply, every objection, every follow-up.",
       },
       {
-        title: "Calendar Delivery",
-        copy: "Qualified prospects are seamlessly booked directly onto your calendar, pre-framed and ready to invest in your coaching program.",
+        title: "Qualified call delivery to your calendar",
+        copy: "Prospects are qualified, pre-framed, and booked directly onto your calendar. You show up to calls with men who already understand your offer and are ready to invest — not cold strangers.",
       },
       {
-        title: "Optimization & Scale",
-        copy: "Continuous A/B testing of scripts, targeting, and follow-up sequences to lower acquisition costs and increase volume as you grow.",
+        title: "Weekly optimisation and scaling",
+        copy: "Every campaign is analysed weekly. Scripts are tested. Targeting is refined. Conversion rates improve continuously. The system gets stronger every single month you are with us.",
       },
     ],
   },
@@ -483,9 +484,9 @@ export const homepageDefaults: HomepageContent = {
     brandText: "CoachFlow AI",
     brandIcon: { type: "material", name: "psychology" },
     links: [
-      { label: "Privacy Policy", href: "#" },
-      { label: "Terms of Service", href: "#" },
-      { label: "Contact", href: "#" },
+      { label: "Privacy Policy", href: "/p/privacy-policy" },
+      { label: "Terms of Service", href: "/p/terms-of-service" },
+      { label: "Contact", href: "/p/contact" },
     ],
     copyright: "© 2026 CoachFlow AI. All rights reserved.",
   },

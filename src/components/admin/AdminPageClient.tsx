@@ -12,6 +12,7 @@ import { CustomCodePanel } from "@/components/admin/CustomCodePanel";
 import { HomepagePanel } from "@/components/admin/HomepagePanel";
 import { VisualBuilderPanel } from "@/components/admin/VisualBuilderPanel";
 import { SettingsPanel } from "@/components/admin/SettingsPanel";
+import { PagesPanel } from "@/components/admin/pages/PagesPanel";
 
 export function AdminPageClient() {
   const router = useRouter();
@@ -262,7 +263,18 @@ export function AdminPageClient() {
       }}
     >
       {tab === "builder" ? (
-        <VisualBuilderPanel supabase={supabase} />
+        <VisualBuilderPanel
+          supabase={supabase}
+          onNavigateTab={setTab}
+          onSignOut={async () => {
+            await supabase.auth.signOut();
+            setLeads([]);
+            setSelectedId(null);
+            setQuery("");
+          }}
+        />
+      ) : tab === "pages" ? (
+        <PagesPanel supabase={supabase} />
       ) : tab === "leads" ? (
         <LeadsPanel
           leads={leads}

@@ -10,6 +10,7 @@ import { Trust } from "@/components/landing/Trust";
 import { Workflow } from "@/components/landing/Workflow";
 import { CustomHtmlSection } from "@/components/landing/CustomHtmlSection";
 import { AuditBridgeSection } from "@/components/landing/AuditBridgeSection";
+import { renderRichTextFromSectionSettings } from "@/components/landing/RichTextSection";
 
 export type PageSection = NonNullable<HomepageContent["page"]>["sections"][number];
 
@@ -27,6 +28,7 @@ export const SECTION_REGISTRY: Record<
   footer: ({ content, section }) => <Footer content={content} section={section} />,
   testimonials: ({ section }) => <TestimonialsSection section={section} />,
   custom_html: ({ section }) => <CustomHtmlSection section={section} />,
+  rich_text: ({ section }) => renderRichTextFromSectionSettings((section.settings as any) || null),
   custom: ({ content, section }) => {
     const cs = (content.customSections || []).find((c) => c.id === section.id);
     if (!cs || !cs.enabled) return null;

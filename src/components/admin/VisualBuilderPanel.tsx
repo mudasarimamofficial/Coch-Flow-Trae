@@ -15,7 +15,8 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
@@ -35,9 +36,25 @@ import { CustomHtmlSection } from "@/components/landing/CustomHtmlSection";
 import { IconPicker, type IconRef } from "@/components/admin/builder/IconPicker";
 import { MediaPickerModal } from "@/components/admin/builder/MediaPickerModal";
 import { applyBuilderOverrides } from "@/utils/homepageBuilder";
+import type { Tab } from "@/components/admin/types";
+import {
+  Monitor,
+  Tablet as TabletIcon,
+  Smartphone,
+  Undo2,
+  Redo2,
+  MoreHorizontal,
+  PanelLeft,
+  Eye,
+  SlidersHorizontal,
+  Layers,
+  LogOut,
+} from "lucide-react";
 
 type Props = {
   supabase: SupabaseClient;
+  onNavigateTab?: (tab: Tab) => void;
+  onSignOut?: () => Promise<void>;
 };
 
 type PreviewMode = "desktop" | "tablet" | "mobile";
@@ -139,9 +156,11 @@ function mergeContent(c: Partial<HomepageContent> | null): HomepageContent {
   };
 }
 
-function SectionRow({ item, selected, onSelect, onToggle, onDuplicate }: {
+function SectionRow({ item, selected, subtitle, children, onSelect, onToggle, onDuplicate }: {
   item: SectionItem;
   selected: boolean;
+  subtitle?: string;
+  children?: string[];
   onSelect: () => void;
   onToggle: () => void;
   onDuplicate?: () => void;
@@ -152,46 +171,69 @@ function SectionRow({ item, selected, onSelect, onToggle, onDuplicate }: {
     transition,
   } as const;
 
+  const title = String(item.type || "").replaceAll("_", " ");
+  const nested = Array.isArray(children) ? children.filter(Boolean) : [];
+
   return (
     <div
       ref={setNodeRef}
       style={style}
       className={
         selected
-          ? "flex items-center gap-2 rounded-lg border border-[#0fa3a3]/40 bg-[#0fa3a3]/10 px-3 py-2"
-          : "flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 dark:border-white/10 dark:bg-[#112121]"
+          ? "rounded-2xl border border-[var(--cf-accent)]/40 bg-[var(--cf-accent)]/10"
+          : "rounded-2xl border border-white/10 bg-white/5 hover:bg-white/7"
       }
     >
-      <button
-        type="button"
-        className="cursor-grab text-slate-400 active:cursor-grabbing"
-        {...attributes}
-        {...listeners}
-        aria-label="Drag"
-      >
-        <MaterialIcon name="drag_indicator" className="text-[20px]" />
-      </button>
-      <button type="button" className="flex-1 text-left text-sm font-semibold" onClick={onSelect}>
-        {item.type}
-      </button>
-      {onDuplicate ? (
-        <button
-          type="button"
-          className="text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
-          onClick={onDuplicate}
-          aria-label="Duplicate"
-        >
-          <MaterialIcon name="content_copy" className="text-[20px]" />
-        </button>
-      ) : null}
-      <button
-        type="button"
-        className={item.enabled ? "text-[#0fa3a3]" : "text-slate-400"}
-        onClick={onToggle}
-        aria-label="Toggle"
-      >
-        <MaterialIcon name={item.enabled ? "visibility" : "visibility_off"} className="text-[20px]" />
-      </button>
+      <div className="px-3 py-3">
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            className="cursor-grab text-white/45 active:cursor-grabbing"
+            {...attributes}
+            {...listeners}
+            aria-label="Drag"
+          >
+            <MaterialIcon name="drag_indicator" className="text-[20px]" />
+          </button>
+          <button type="button" className="flex-1 text-left" onClick={onSelect}>
+            <div className="text-sm font-semibold text-white">{title}</div>
+            {subtitle && subtitle.trim().length ? (
+              <div className="mt-0.5 line-clamp-1 text-xs text-white/50">{subtitle}</div>
+            ) : null}
+          </button>
+          <div className="ml-auto flex items-center gap-1">
+            {onDuplicate ? (
+              <button
+                type="button"
+                className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-white/70 hover:bg-white/10 hover:text-white"
+                onClick={onDuplicate}
+                aria-label="Duplicate"
+              >
+                <MaterialIcon name="content_copy" className="text-[18px]" />
+              </button>
+            ) : null}
+            <button
+              type="button"
+              className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-white/70 hover:bg-white/10 hover:text-white"
+              onClick={onToggle}
+              aria-label="Toggle"
+            >
+              <MaterialIcon name={item.enabled ? "visibility" : "visibility_off"} className="text-[18px]" />
+            </button>
+          </div>
+        </div>
+
+        {nested.length ? (
+          <div className="mt-3 hidden space-y-2 pl-7 lg:block">
+            {nested.map((c) => (
+              <div key={c} className="flex items-center gap-2 text-xs text-white/60">
+                <span className="h-1.5 w-1.5 rounded-full bg-white/25" />
+                <span className="truncate">{c}</span>
+              </div>
+            ))}
+          </div>
+        ) : null}
+      </div>
       {isDragging ? <span className="sr-only">Dragging</span> : null}
     </div>
   );
@@ -250,7 +292,53 @@ function BlockRow({ id, title, selected, onSelect, onDuplicate, onRemove }: {
   );
 }
 
-export function VisualBuilderPanel({ supabase }: Props) {
+function pill(text: string, tone: "published" | "draft") {
+  const cls =
+    tone === "published"
+      ? "bg-emerald-500/15 text-emerald-200 border-emerald-500/20"
+      : "bg-amber-500/15 text-amber-200 border-amber-500/20";
+  return <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-semibold ${cls}`}>{text}</span>;
+}
+
+function deviceButton(active: boolean, onClick: () => void, icon: ReactNode, label: string) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={
+        active
+          ? "inline-flex h-9 w-10 items-center justify-center rounded-lg bg-white/10 text-white"
+          : "inline-flex h-9 w-10 items-center justify-center rounded-lg text-white/60 hover:bg-white/5 hover:text-white"
+      }
+      aria-label={label}
+    >
+      {icon}
+    </button>
+  );
+}
+
+function labelRow(left: string, right?: string) {
+  return (
+    <span className="flex items-center justify-between gap-3">
+      <span className="text-xs font-semibold tracking-wide text-white/70">{left}</span>
+      {right ? <span className="text-[11px] font-semibold text-white/45">{right}</span> : null}
+    </span>
+  );
+}
+
+function InspectorGroup({ title, children }: { title: string; children: ReactNode }) {
+  return (
+    <div className="rounded-2xl border border-white/10 bg-white/5 p-3">
+      <div className="mb-3 flex items-center justify-between">
+        <div className="text-xs font-bold uppercase tracking-wide text-white/50">{title}</div>
+      </div>
+      <div className="flex flex-col gap-3">{children}</div>
+    </div>
+  );
+}
+
+export function VisualBuilderPanel({ supabase, onNavigateTab, onSignOut }: Props) {
+  const router = useRouter();
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 6 } }));
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -259,6 +347,8 @@ export function VisualBuilderPanel({ supabase }: Props) {
   const [notice, setNotice] = useState<string | null>(null);
   const [mode, setMode] = useState<PreviewMode>("desktop");
   const [mobilePane, setMobilePane] = useState<MobilePane>("preview");
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [mobileActionsOpen, setMobileActionsOpen] = useState(false);
   const [selectedId, setSelectedId] = useState<string>("hero");
   const [selectedBlockId, setSelectedBlockId] = useState<string | null>(null);
   const [addType, setAddType] = useState<string>("hero");
@@ -577,10 +667,13 @@ export function VisualBuilderPanel({ supabase }: Props) {
 
   function makeId(prefix: string) {
     const safePrefix = prefix.replace(/[^a-z0-9_]+/gi, "_");
-    const rand =
-      typeof crypto !== "undefined" && "randomUUID" in crypto
-        ? (crypto as any).randomUUID()
-        : `${Date.now()}_${Math.random().toString(16).slice(2)}`;
+    const rand = (() => {
+      if (typeof crypto !== "undefined") {
+        const c = crypto as unknown as { randomUUID?: () => string };
+        if (typeof c.randomUUID === "function") return c.randomUUID();
+      }
+      return `${Date.now()}_${Math.random().toString(16).slice(2)}`;
+    })();
     return `${safePrefix}_${rand}`;
   }
 
@@ -744,123 +837,312 @@ export function VisualBuilderPanel({ supabase }: Props) {
   }, [selectedId]);
 
   if (loading) {
-    return <div className="px-6 py-10 text-sm text-slate-500">Loading…</div>;
+    return <div className="px-6 py-10 text-sm text-white/60">Loading…</div>;
   }
 
-  return (
-    <div className="flex h-full flex-col overflow-hidden">
-      <div className="sticky top-0 z-20 border-b border-slate-200/60 bg-white/80 px-4 py-3 backdrop-blur dark:border-white/10 dark:bg-black/20 sm:px-6">
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-center gap-3">
-            <div className="text-sm font-semibold">Visual Builder</div>
-            {draft ? (
-              <span className="rounded-full bg-amber-500/15 px-2 py-0.5 text-xs font-semibold text-amber-700 dark:text-amber-200">
-                Draft
-              </span>
-            ) : (
-              <span className="rounded-full bg-emerald-500/15 px-2 py-0.5 text-xs font-semibold text-emerald-700 dark:text-emerald-200">
-                Published
-              </span>
-            )}
-          </div>
+  const statusTone = draft ? "draft" : "published";
+  const statusText = draft ? "Draft" : "Published";
 
-          <div className="flex flex-wrap items-center gap-2 sm:flex-nowrap sm:justify-end sm:overflow-x-auto sm:pb-1">
-          <Button variant="secondary" className="h-10" disabled={historySize === 0} onClick={undo}>
-            Undo
-          </Button>
-          <Button variant="secondary" className="h-10" disabled={futureSize === 0} onClick={redo}>
-            Redo
-          </Button>
-          <Button variant="secondary" className="h-10" onClick={loadLandingPreset}>
-            Load Landing Preset
-          </Button>
-          <Button variant="secondary" className="h-10" onClick={() => setMode("desktop")}>Desktop</Button>
-          <Button variant="secondary" className="h-10" onClick={() => setMode("tablet")}>Tablet</Button>
-          <Button variant="secondary" className="h-10" onClick={() => setMode("mobile")}>Mobile</Button>
-          <Button className="h-10" disabled={saving} onClick={() => saveDraft(content)}>
-            Save Draft
-          </Button>
-          <Button className="h-10" disabled={!draft || publishing} onClick={publishNow}>
-            Publish
-          </Button>
-          <Button
-            variant="secondary"
-            className="h-10"
-            onClick={async () => {
-              await supabase.from("homepage_content_drafts").upsert({ id: 1, content: {} }, { onConflict: "id" });
-              setDraft(null);
-              resetHistory();
-              setNotice("Reverted to published");
-            }}
-          >
-            Revert
-          </Button>
+  const navItems: { tab: Tab; label: string }[] = [
+    { tab: "leads", label: "Leads" },
+    { tab: "builder", label: "Builder" },
+    { tab: "pages", label: "Pages" },
+    { tab: "homepage", label: "JSON" },
+    { tab: "custom", label: "Custom" },
+    { tab: "settings", label: "Settings" },
+  ];
+
+  const sectionMeta = (id: string) => {
+    const s = pageSections.find((x) => x.id === id);
+    const t = String(s?.type || "");
+    if (t === "hero") {
+      return {
+        subtitle: String(((resolved.hero as any)?.trust?.text as string) || "Built exclusively for…"),
+        children: ["Headline", "Sub-headline", "Hero CTAs"],
+      };
+    }
+    if (t === "features") {
+      return { subtitle: String(resolved.features.subcopy || ""), children: [] as string[] };
+    }
+    if (t === "workflow") {
+      return { subtitle: String(resolved.workflow.subcopy || ""), children: [] as string[] };
+    }
+    if (t === "pricing") {
+      return { subtitle: String(resolved.pricing.note || ""), children: [] as string[] };
+    }
+    if (t === "application") {
+      return { subtitle: String(resolved.application.subcopy || ""), children: [] as string[] };
+    }
+    if (t === "footer") {
+      return { subtitle: String((resolved.footer.links?.[0]?.label as any) || "Legal links"), children: [] as string[] };
+    }
+    if (t === "audit_bridge") {
+      return { subtitle: String((s?.settings as any)?.heading || ""), children: [] as string[] };
+    }
+    if (t === "custom_html") {
+      return { subtitle: "HTML/CSS/JS", children: [] as string[] };
+    }
+    if (t === "testimonials") {
+      return { subtitle: "Testimonials", children: [] as string[] };
+    }
+    if (t === "custom") {
+      return { subtitle: "Custom section", children: [] as string[] };
+    }
+    return { subtitle: "", children: [] as string[] };
+  };
+
+  return (
+    <div className="flex h-full flex-col overflow-hidden bg-[var(--cf-bg)]">
+      <div className="hidden lg:block">
+        <div className="sticky top-0 z-30 border-b border-white/10 bg-[var(--cf-secondary)]/80 px-6 py-3 backdrop-blur">
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3">
+              <div className="text-xs text-white/60">/admin</div>
+              <div className="text-sm font-semibold text-white/90">Visual Builder</div>
+              {pill(statusText, statusTone)}
+            </div>
+
+            <div className="flex flex-1 items-center justify-center">
+              <div className="flex items-center gap-1 rounded-xl border border-white/10 bg-white/5 p-1">
+                {deviceButton(mode === "desktop", () => setMode("desktop"), <Monitor className="h-4 w-4" />, "Desktop")}
+                {deviceButton(mode === "tablet", () => setMode("tablet"), <TabletIcon className="h-4 w-4" />, "Tablet")}
+                {deviceButton(mode === "mobile", () => setMode("mobile"), <Smartphone className="h-4 w-4" />, "Mobile")}
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                className="inline-flex h-9 items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 text-xs font-semibold text-white/80 hover:bg-white/10 disabled:opacity-50"
+                disabled={historySize === 0}
+                onClick={undo}
+              >
+                <Undo2 className="h-4 w-4" />
+                Undo
+              </button>
+              <button
+                type="button"
+                className="inline-flex h-9 items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 text-xs font-semibold text-white/80 hover:bg-white/10 disabled:opacity-50"
+                disabled={futureSize === 0}
+                onClick={redo}
+              >
+                <Redo2 className="h-4 w-4" />
+                Redo
+              </button>
+              <button
+                type="button"
+                className="inline-flex h-9 items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 text-xs font-semibold text-white/80 hover:bg-white/10"
+                onClick={loadLandingPreset}
+              >
+                Load landing preset
+              </button>
+              <button
+                type="button"
+                className="inline-flex h-9 items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 text-xs font-semibold text-white/80 hover:bg-white/10 disabled:opacity-50"
+                disabled={saving}
+                onClick={() => saveDraft(content)}
+              >
+                Save Draft
+              </button>
+              <button
+                type="button"
+                className="inline-flex h-9 items-center gap-2 rounded-xl bg-[var(--cf-accent)] px-3 text-xs font-bold text-[#0A0F1E] hover:brightness-95 disabled:opacity-50"
+                disabled={!draft || publishing}
+                onClick={publishNow}
+              >
+                Publish
+              </button>
+              <button
+                type="button"
+                className="inline-flex h-9 items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 text-xs font-semibold text-white/80 hover:bg-white/10"
+                onClick={async () => {
+                  await supabase.from("homepage_content_drafts").upsert({ id: 1, content: {} }, { onConflict: "id" });
+                  setDraft(null);
+                  resetHistory();
+                  setNotice("Reverted to published");
+                }}
+              >
+                Revert
+              </button>
+
+              <button
+                type="button"
+                className="ml-2 inline-flex h-9 items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 text-xs font-semibold text-white/80 hover:bg-white/10"
+                onClick={async () => {
+                  if (onSignOut) await onSignOut();
+                  else await supabase.auth.signOut();
+                  router.refresh();
+                }}
+              >
+                <LogOut className="h-4 w-4" />
+                Sign out
+              </button>
+            </div>
+          </div>
         </div>
       </div>
+
+      <div className="lg:hidden">
+        <div className="sticky top-0 z-30 border-b border-white/10 bg-[var(--cf-secondary)]/85 px-4 py-3 backdrop-blur">
+          <div className="flex items-center justify-between gap-3">
+            <button
+              type="button"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-white/90"
+              onClick={() => setMobileMenuOpen(true)}
+              aria-label="Open menu"
+            >
+              <PanelLeft className="h-4 w-4" />
+            </button>
+
+            <div className="flex min-w-0 flex-1 items-center gap-2">
+              <span className="inline-flex h-2 w-2 rounded-full bg-[var(--cf-accent)]" />
+              <div className="truncate text-sm font-semibold text-white">
+                CoachFlow <span className="text-[var(--cf-accent)]">AI</span>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              className="inline-flex h-10 items-center justify-center rounded-xl bg-[var(--cf-accent)] px-4 text-sm font-bold text-[#0A0F1E] disabled:opacity-50"
+              disabled={!draft || publishing}
+              onClick={publishNow}
+            >
+              Publish
+            </button>
+
+            <button
+              type="button"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-white/90"
+              onClick={() => setMobileActionsOpen(true)}
+              aria-label="More"
+            >
+              <MoreHorizontal className="h-5 w-5" />
+            </button>
+          </div>
+
+          <div className="mt-3 flex items-center justify-between">
+            <div className="text-xs text-white/60">/admin – Visual Builder</div>
+            {pill(statusText, statusTone)}
+          </div>
+        </div>
       </div>
 
       {error ? (
-        <div className="mx-6 mt-4 rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700 dark:border-rose-500/20 dark:bg-rose-500/10 dark:text-rose-200">
+        <div className="mx-4 mt-4 rounded-2xl border border-rose-500/20 bg-rose-500/10 px-4 py-3 text-sm text-rose-200 lg:mx-6">
           {error}
         </div>
       ) : null}
       {notice ? (
-        <div className="mx-6 mt-4 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-200">
+        <div className="mx-4 mt-4 rounded-2xl border border-emerald-500/20 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200 lg:mx-6">
           {notice}
         </div>
       ) : null}
 
-      <div className="md:hidden px-3">
-        <div className="flex items-center gap-2 rounded-2xl border border-slate-200 bg-white p-2 dark:border-white/10 dark:bg-[#112121]">
-          <Button
-            variant={mobilePane === "sections" ? "primary" : "secondary"}
-            className="h-10 flex-1"
-            onClick={() => setMobilePane("sections")}
-          >
-            Sections
-          </Button>
-          <Button
-            variant={mobilePane === "preview" ? "primary" : "secondary"}
-            className="h-10 flex-1"
-            onClick={() => setMobilePane("preview")}
-          >
-            Preview
-          </Button>
-          <Button
-            variant={mobilePane === "inspector" ? "primary" : "secondary"}
-            className="h-10 flex-1"
-            onClick={() => setMobilePane("inspector")}
-          >
-            Inspector
-          </Button>
-        </div>
-      </div>
-
-      <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-hidden p-3 md:flex-row">
+      <div className="relative flex min-h-0 flex-1 flex-col gap-3 overflow-hidden p-3 pb-24 lg:flex-row lg:pb-3">
         <div
-          className={`${mobilePane === "sections" ? "flex" : "hidden"} h-full min-h-0 flex-1 flex-col rounded-2xl border border-slate-200 bg-white p-3 dark:border-white/10 dark:bg-[#112121] md:flex md:w-[240px] md:flex-none`}
+          className={`${mobilePane === "sections" ? "flex" : "hidden"} h-full min-h-0 flex-1 flex-col rounded-2xl border border-white/10 bg-[var(--cf-secondary)]/60 p-3 lg:flex lg:w-[280px] lg:flex-none`}
         >
-          <div className="mb-3 text-xs font-bold uppercase tracking-wide text-slate-500">Sections</div>
-          <div className="mb-3 grid grid-cols-1 gap-2">
-            <Select
-              label="Add section"
-              value={addType}
-              onChange={(e) => setAddType(e.target.value)}
-              options={[
-                { value: "hero", label: "Hero" },
-                { value: "features", label: "Features" },
-                { value: "workflow", label: "Workflow" },
-                { value: "pricing", label: "Pricing" },
-                { value: "audit_bridge", label: "Audit Bridge" },
-                { value: "application", label: "Lead Form" },
-                { value: "footer", label: "Footer" },
-                { value: "testimonials", label: "Testimonials" },
-                { value: "custom_html", label: "Custom HTML" },
-              ]}
-            />
-            <Button
-              className="h-10"
-              onClick={() => {
+          <div className="mb-3 flex items-center justify-between">
+            <div className="text-xs font-bold uppercase tracking-wide text-white/50">Sections</div>
+            <div className="text-xs text-white/40">Drag to reorder</div>
+          </div>
+
+          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain pb-20 lg:pb-3">
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragEnd={(e) => {
+                const { active, over } = e;
+                if (!over || active.id === over.id) return;
+                const oldIndex = pageSections.findIndex((s) => s.id === active.id);
+                const newIndex = pageSections.findIndex((s) => s.id === over.id);
+                const next = arrayMove(pageSections, oldIndex, newIndex);
+                setContent({
+                  ...content,
+                  page: { sections: next },
+                });
+              }}
+            >
+              <SortableContext items={pageSections.map((s) => s.id)} strategy={verticalListSortingStrategy}>
+                <div className="flex flex-col gap-2">
+                  {pageSections.map((s) => {
+                    const meta = sectionMeta(s.id);
+                    return (
+                      <SectionRow
+                        key={s.id}
+                        item={s}
+                        selected={selectedId === s.id}
+                        subtitle={meta.subtitle}
+                        children={meta.children}
+                        onSelect={() => setSelectedId(s.id)}
+                        onDuplicate={() => duplicateSection(s.id)}
+                        onToggle={() => {
+                          const next = pageSections.map((x) => (x.id === s.id ? { ...x, enabled: !x.enabled } : x));
+                          setContent({ ...content, page: { sections: next } });
+                        }}
+                      />
+                    );
+                  })}
+                </div>
+              </SortableContext>
+            </DndContext>
+
+            <div className="mt-3">
+              <div
+                className={
+                  selectedId === "__whatsapp"
+                    ? "rounded-2xl border border-[var(--cf-accent)]/40 bg-[var(--cf-accent)]/10"
+                    : "rounded-2xl border border-white/10 bg-white/5 hover:bg-white/7"
+                }
+              >
+                <div className="flex items-center gap-3 px-3 py-3">
+                  <button type="button" className="flex-1 text-left" onClick={() => setSelectedId("__whatsapp")}>
+                    <div className="text-sm font-semibold text-white">WhatsApp</div>
+                    <div className="mt-0.5 line-clamp-1 text-xs text-white/50">Floating chat widget</div>
+                  </button>
+                  <button
+                    type="button"
+                    className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-white/70 hover:bg-white/10 hover:text-white"
+                    onClick={() => {
+                      setContent({
+                        ...content,
+                        whatsapp: {
+                          ...(content.whatsapp || homepageDefaults.whatsapp!),
+                          enabled: !content.whatsapp?.enabled,
+                        },
+                      });
+                    }}
+                    aria-label="Toggle"
+                  >
+                    <MaterialIcon name={content.whatsapp?.enabled ? "visibility" : "visibility_off"} className="text-[18px]" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-3 grid grid-cols-1 gap-2">
+            <div className="grid grid-cols-[1fr_auto] gap-2">
+              <Select
+                label="Add section"
+                value={addType}
+                onChange={(e) => setAddType(e.target.value)}
+                options={[
+                  { value: "hero", label: "Hero" },
+                  { value: "features", label: "Features" },
+                  { value: "workflow", label: "Workflow" },
+                  { value: "pricing", label: "Pricing" },
+                  { value: "audit_bridge", label: "Audit Bridge" },
+                  { value: "application", label: "Lead Form" },
+                  { value: "footer", label: "Footer" },
+                  { value: "testimonials", label: "Testimonials" },
+                  { value: "custom_html", label: "Custom HTML" },
+                ]}
+              />
+              <Button
+                variant="secondary"
+                className="h-11 px-4"
+                onClick={() => {
                 const id = `${addType}_${Date.now()}`;
                 const next: PageSection = {
                   id,
@@ -896,86 +1178,14 @@ export function VisualBuilderPanel({ supabase }: Props) {
             >
               Add
             </Button>
-          </div>
-
-          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain pb-24 md:pb-3">
-          <DndContext
-            sensors={sensors}
-            collisionDetection={closestCenter}
-            onDragEnd={(e) => {
-              const { active, over } = e;
-              if (!over || active.id === over.id) return;
-              const oldIndex = pageSections.findIndex((s) => s.id === active.id);
-              const newIndex = pageSections.findIndex((s) => s.id === over.id);
-              const next = arrayMove(pageSections, oldIndex, newIndex);
-              setContent({
-                ...content,
-                page: { sections: next },
-              });
-            }}
-          >
-            <SortableContext items={pageSections.map((s) => s.id)} strategy={verticalListSortingStrategy}>
-              <div className="flex flex-col gap-2">
-                {pageSections.map((s) => (
-                  <SectionRow
-                    key={s.id}
-                    item={s}
-                    selected={selectedId === s.id}
-                    onSelect={() => setSelectedId(s.id)}
-                    onDuplicate={() => duplicateSection(s.id)}
-                    onToggle={() => {
-                      const next = pageSections.map((x) => (x.id === s.id ? { ...x, enabled: !x.enabled } : x));
-                      setContent({ ...content, page: { sections: next } });
-                    }}
-                  />
-                ))}
-              </div>
-            </SortableContext>
-          </DndContext>
-
-          <div className="mt-2">
-            <div
-              className={
-                selectedId === "__whatsapp"
-                  ? "flex items-center gap-2 rounded-lg border border-[#0fa3a3]/40 bg-[#0fa3a3]/10 px-3 py-2"
-                  : "flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 dark:border-white/10 dark:bg-[#112121]"
-              }
-            >
-              <button type="button" className="flex-1 text-left text-sm font-semibold" onClick={() => setSelectedId("__whatsapp")}>
-                whatsapp
-              </button>
-              <button
-                type="button"
-                className={content.whatsapp?.enabled ? "text-[#0fa3a3]" : "text-slate-400"}
-                onClick={() => {
-                  setContent({
-                    ...content,
-                    whatsapp: {
-                      ...(content.whatsapp || homepageDefaults.whatsapp!),
-                      enabled: !content.whatsapp?.enabled,
-                    },
-                  });
-                }}
-                aria-label="Toggle"
-              >
-                <MaterialIcon name={content.whatsapp?.enabled ? "visibility" : "visibility_off"} className="text-[20px]" />
-              </button>
             </div>
-          </div>
-          <div className="mt-4">
             <Button
               variant="secondary"
-              className="h-10 w-full"
+              className="h-11 w-full"
               onClick={() => {
                 const id = `custom_${Date.now()}`;
-                const nextSections: PageSection[] = [
-                  ...pageSections,
-                  { id, type: "custom" as const, enabled: true },
-                ];
-                const nextCustom = [
-                  ...(content.customSections || []),
-                  { id, enabled: true, html: "<div></div>", css: "", js: "" },
-                ];
+                const nextSections: PageSection[] = [...pageSections, { id, type: "custom" as const, enabled: true }];
+                const nextCustom = [...(content.customSections || []), { id, enabled: true, html: "<div></div>", css: "", js: "" }];
                 setContent({ ...content, page: { sections: nextSections }, customSections: nextCustom });
                 setSelectedId(id);
               }}
@@ -983,17 +1193,13 @@ export function VisualBuilderPanel({ supabase }: Props) {
               Add Custom Section
             </Button>
           </div>
-
-          </div>
         </div>
 
         <div
-          className={`${mobilePane === "preview" ? "flex" : "hidden"} h-full min-h-0 flex-1 justify-center overflow-hidden rounded-2xl border border-slate-200 bg-slate-50 dark:border-white/10 dark:bg-black/20 md:flex`}
+          className={`${mobilePane === "preview" ? "flex" : "hidden"} relative h-full min-h-0 flex-1 justify-center overflow-hidden rounded-2xl border border-white/10 bg-[radial-gradient(1200px_circle_at_50%_0%,rgba(255,255,255,0.10),transparent_60%)] lg:flex`}
         >
-          <div className="flex min-h-0 h-full w-full items-center justify-center overflow-hidden p-3">
-            <div
-              className={`h-full ${previewWidth} overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-white/10 dark:bg-[#0b1414]`}
-            >
+          <div className="flex h-full min-h-0 w-full items-center justify-center overflow-hidden p-3 lg:p-5">
+            <div className={`h-full ${previewWidth} overflow-hidden rounded-2xl border border-white/10 bg-[#0A0F1E] shadow-[0_18px_50px_rgba(0,0,0,0.55)]`}>
               <iframe
                 ref={iframeRef}
                 title="Homepage preview"
@@ -1008,13 +1214,28 @@ export function VisualBuilderPanel({ supabase }: Props) {
               />
             </div>
           </div>
+
+          <div className="pointer-events-none absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-black/25 to-transparent" />
+
+          <div className="lg:hidden">
+            <button
+              type="button"
+              className="absolute right-4 top-20 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-semibold text-white/90 shadow-lg"
+              onClick={() => setMobilePane("inspector")}
+            >
+              Edit {String(selectedSection?.type || "section").replaceAll("_", " ")}
+            </button>
+          </div>
         </div>
 
         <div
-          className={`${mobilePane === "inspector" ? "flex" : "hidden"} h-full min-h-0 flex-1 flex-col rounded-2xl border border-slate-200 bg-white p-4 dark:border-white/10 dark:bg-[#112121] md:flex md:w-[340px] md:flex-none`}
+          className={`${mobilePane === "inspector" ? "flex" : "hidden"} h-full min-h-0 flex-1 flex-col rounded-2xl border border-white/10 bg-[var(--cf-secondary)]/60 p-4 lg:flex lg:w-[360px] lg:flex-none`}
         >
-          <div className="mb-3 text-xs font-bold uppercase tracking-wide text-slate-500">Inspector</div>
-          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain pb-24 md:pb-4">
+          <div className="mb-3 flex items-center justify-between">
+            <div className="text-xs font-bold uppercase tracking-wide text-white/50">Inspector</div>
+            <div className="lg:hidden text-xs font-semibold text-white/70">SECTION: {String(selectedSection?.type || "").replaceAll("_", " ").toUpperCase()}</div>
+          </div>
+          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain pb-24 lg:pb-4">
           {selectedSection && selectedSection.id !== "footer" ? (
             <div className="mb-4 flex items-center justify-between rounded-xl border border-slate-200 bg-white p-3 dark:border-white/10 dark:bg-[#0b1414]">
               <div className="text-xs font-bold uppercase tracking-wide text-slate-500">{selectedSection.type}</div>
@@ -1258,137 +1479,154 @@ export function VisualBuilderPanel({ supabase }: Props) {
           ) : null}
 
           {selectedId === "hero" ? (
-            <div className="flex flex-col gap-4">
-              <Input
-                label="Headline prefix"
-                value={content.hero.heading.prefix}
-                onChange={(e) => {
-                  setContent({ ...content, hero: { ...content.hero, heading: { ...content.hero.heading, prefix: e.target.value } } });
-                  updateSection("hero", (s) => ({ ...s, settings: { ...(s.settings || {}), headingPrefix: e.target.value } }));
-                }}
-              />
-              <Input
-                label="Headline highlight"
-                value={content.hero.heading.highlight}
-                onChange={(e) => {
-                  setContent({ ...content, hero: { ...content.hero, heading: { ...content.hero.heading, highlight: e.target.value } } });
-                  updateSection("hero", (s) => ({ ...s, settings: { ...(s.settings || {}), headingHighlight: e.target.value } }));
-                }}
-              />
-              <Textarea
-                label="Subheadline"
-                value={content.hero.subcopy}
-                onChange={(e) => {
-                  setContent({ ...content, hero: { ...content.hero, subcopy: e.target.value } });
-                  updateSection("hero", (s) => ({ ...s, settings: { ...(s.settings || {}), subcopy: e.target.value } }));
-                }}
-                rows={4}
-              />
-              <Textarea
-                label="Note"
-                value={content.hero.note || ""}
-                onChange={(e) => {
-                  setContent({ ...content, hero: { ...content.hero, note: e.target.value } });
-                  updateSection("hero", (s) => ({ ...s, settings: { ...(s.settings || {}), note: e.target.value } }));
-                }}
-                rows={3}
-              />
+            <div className="flex flex-col gap-3">
+              <InspectorGroup title="Hero Background">
+                <Select
+                  label={labelRow("Hero background")}
+                  value={((pageSections.find((s) => s.id === "hero")?.settings as any)?.heroBackground ?? true) ? "on" : "off"}
+                  onChange={(e) => {
+                    const on = e.target.value === "on";
+                    updateSection("hero", (s) => ({ ...s, settings: { ...(s.settings || {}), heroBackground: on } }));
+                  }}
+                  options={[
+                    { value: "on", label: "On" },
+                    { value: "off", label: "Off" },
+                  ]}
+                />
+              </InspectorGroup>
 
-              <Select
-                label="Hero background"
-                value={((pageSections.find((s) => s.id === "hero")?.settings as any)?.heroBackground ?? true) ? "on" : "off"}
-                onChange={(e) => {
-                  const on = e.target.value === "on";
-                  updateSection("hero", (s) => ({ ...s, settings: { ...(s.settings || {}), heroBackground: on } }));
-                }}
-                options={[
-                  { value: "on", label: "On" },
-                  { value: "off", label: "Off" },
-                ]}
-              />
+              <InspectorGroup title="Content">
+                <Input
+                  label={labelRow("Headline prefix", `${content.hero.heading.prefix.length} chars`)}
+                  value={content.hero.heading.prefix}
+                  onChange={(e) => {
+                    setContent({ ...content, hero: { ...content.hero, heading: { ...content.hero.heading, prefix: e.target.value } } });
+                    updateSection("hero", (s) => ({ ...s, settings: { ...(s.settings || {}), headingPrefix: e.target.value } }));
+                  }}
+                />
+                <Input
+                  label={labelRow("Headline highlight", `${content.hero.heading.highlight.length} chars`)}
+                  value={content.hero.heading.highlight}
+                  onChange={(e) => {
+                    setContent({ ...content, hero: { ...content.hero, heading: { ...content.hero.heading, highlight: e.target.value } } });
+                    updateSection("hero", (s) => ({ ...s, settings: { ...(s.settings || {}), headingHighlight: e.target.value } }));
+                  }}
+                />
+                <Textarea
+                  label={labelRow("Sub-headline", `${content.hero.subcopy.length} chars`)}
+                  value={content.hero.subcopy}
+                  onChange={(e) => {
+                    setContent({ ...content, hero: { ...content.hero, subcopy: e.target.value } });
+                    updateSection("hero", (s) => ({ ...s, settings: { ...(s.settings || {}), subcopy: e.target.value } }));
+                  }}
+                  rows={4}
+                />
+                <Textarea
+                  label={(() => {
+                    const trustValue = [
+                      String(content.hero.trust?.text || "").trim(),
+                      ...(content.hero.trust?.pills || []).map((x) => String(x || "").trim()),
+                    ]
+                      .filter((x) => x.length)
+                      .join("\n");
+                    return labelRow("Hero trust text", `${trustValue.length} chars`);
+                  })()}
+                  value={[
+                    String(content.hero.trust?.text || "").trim(),
+                    ...(content.hero.trust?.pills || []).map((x) => String(x || "").trim()),
+                  ]
+                    .filter((x) => x.length)
+                    .join("\n")}
+                  onChange={(e) => {
+                    const lines = e.target.value
+                      .split("\n")
+                      .map((x) => x.trim())
+                      .filter((x) => x.length);
+                    const text = lines[0] || "";
+                    const pills = lines.slice(1);
+                    const trust = { text, pills };
+                    setContent({ ...content, hero: { ...content.hero, trust } });
+                  }}
+                  rows={5}
+                />
+                <Textarea
+                  label={labelRow("Note", `${String(content.hero.note || "").length} chars`)}
+                  value={content.hero.note || ""}
+                  onChange={(e) => {
+                    setContent({ ...content, hero: { ...content.hero, note: e.target.value } });
+                    updateSection("hero", (s) => ({ ...s, settings: { ...(s.settings || {}), note: e.target.value } }));
+                  }}
+                  rows={3}
+                />
+              </InspectorGroup>
 
-              <Input
-                label="Hero trust text"
-                value={String((content.hero as any).trust?.text || "")}
-                onChange={(e) => {
-                  const trust = { ...((content.hero as any).trust || {}), text: e.target.value };
-                  setContent({ ...content, hero: { ...(content.hero as any), trust } } as any);
-                }}
-              />
-              <Textarea
-                label="Hero trust pills (one per line)"
-                value={String((((content.hero as any).trust?.pills as any) || []).join("\n"))}
-                onChange={(e) => {
-                  const pills = e.target.value
-                    .split("\n")
-                    .map((x) => x.trim())
-                    .filter((x) => x.length);
-                  const trust = { ...((content.hero as any).trust || {}), pills };
-                  setContent({ ...content, hero: { ...(content.hero as any), trust } } as any);
-                }}
-                rows={3}
-              />
-              <Input
-                label="Primary CTA text"
-                value={content.hero.primaryCta.text}
-                onChange={(e) => {
-                  setContent({ ...content, hero: { ...content.hero, primaryCta: { ...content.hero.primaryCta, text: e.target.value } } });
-                  updateSection("hero", (s) => ({ ...s, settings: { ...(s.settings || {}), primaryText: e.target.value } }));
-                }}
-              />
-              <Input
-                label="Primary CTA href"
-                value={content.hero.primaryCta.href}
-                onChange={(e) => {
-                  setContent({ ...content, hero: { ...content.hero, primaryCta: { ...content.hero.primaryCta, href: e.target.value } } });
-                  updateSection("hero", (s) => ({ ...s, settings: { ...(s.settings || {}), primaryHref: e.target.value } }));
-                }}
-              />
-              <Input
-                label="Secondary CTA text"
-                value={content.hero.secondaryCta.text}
-                onChange={(e) => {
-                  setContent({ ...content, hero: { ...content.hero, secondaryCta: { ...content.hero.secondaryCta, text: e.target.value } } });
-                  updateSection("hero", (s) => ({ ...s, settings: { ...(s.settings || {}), secondaryText: e.target.value } }));
-                }}
-              />
-              <Input
-                label="Secondary CTA href"
-                value={content.hero.secondaryCta.href}
-                onChange={(e) => {
-                  setContent({ ...content, hero: { ...content.hero, secondaryCta: { ...content.hero.secondaryCta, href: e.target.value } } });
-                  updateSection("hero", (s) => ({ ...s, settings: { ...(s.settings || {}), secondaryHref: e.target.value } }));
-                }}
-              />
+              <InspectorGroup title="Call To Action">
+                <Input
+                  label={labelRow("Primary CTA text", `${content.hero.primaryCta.text.length} chars`)}
+                  value={content.hero.primaryCta.text}
+                  onChange={(e) => {
+                    setContent({ ...content, hero: { ...content.hero, primaryCta: { ...content.hero.primaryCta, text: e.target.value } } });
+                    updateSection("hero", (s) => ({ ...s, settings: { ...(s.settings || {}), primaryText: e.target.value } }));
+                  }}
+                />
+                <Input
+                  label={labelRow("Primary CTA href", `${content.hero.primaryCta.href.length} chars`)}
+                  value={content.hero.primaryCta.href}
+                  onChange={(e) => {
+                    setContent({ ...content, hero: { ...content.hero, primaryCta: { ...content.hero.primaryCta, href: e.target.value } } });
+                    updateSection("hero", (s) => ({ ...s, settings: { ...(s.settings || {}), primaryHref: e.target.value } }));
+                  }}
+                />
+                <Input
+                  label={labelRow("Secondary CTA text", `${content.hero.secondaryCta.text.length} chars`)}
+                  value={content.hero.secondaryCta.text}
+                  onChange={(e) => {
+                    setContent({ ...content, hero: { ...content.hero, secondaryCta: { ...content.hero.secondaryCta, text: e.target.value } } });
+                    updateSection("hero", (s) => ({ ...s, settings: { ...(s.settings || {}), secondaryText: e.target.value } }));
+                  }}
+                />
+                <Input
+                  label={labelRow("Secondary CTA href", `${content.hero.secondaryCta.href.length} chars`)}
+                  value={content.hero.secondaryCta.href}
+                  onChange={(e) => {
+                    setContent({ ...content, hero: { ...content.hero, secondaryCta: { ...content.hero.secondaryCta, href: e.target.value } } });
+                    updateSection("hero", (s) => ({ ...s, settings: { ...(s.settings || {}), secondaryHref: e.target.value } }));
+                  }}
+                />
+              </InspectorGroup>
             </div>
           ) : selectedId === "pricing" ? (
-            <div className="flex flex-col gap-4">
-              <Input
-                label="Section heading"
-                value={content.pricing.heading}
-                onChange={(e) => setContent({ ...content, pricing: { ...content.pricing, heading: e.target.value } })}
-              />
-              <Textarea
-                label="Section subcopy"
-                value={content.pricing.subcopy}
-                onChange={(e) => setContent({ ...content, pricing: { ...content.pricing, subcopy: e.target.value } })}
-                rows={3}
-              />
-              <Textarea
-                label="Bottom note"
-                value={String((selectedSection?.settings as any)?.note || content.pricing.note || "")}
-                onChange={(e) => {
-                  setContent({ ...content, pricing: { ...content.pricing, note: e.target.value } });
-                  updateSection("pricing", (s) => ({ ...s, settings: { ...(s.settings || {}), note: e.target.value } }));
-                }}
-                rows={2}
-              />
-              <Textarea
-                label="Tiers are controlled by blocks in Pricing"
-                value={"Use the block editor below (section blocks)."}
-                readOnly
-                rows={2}
-              />
+            <div className="flex flex-col gap-3">
+              <InspectorGroup title="Content">
+                <Input
+                  label={labelRow("Section heading", `${content.pricing.heading.length} chars`)}
+                  value={content.pricing.heading}
+                  onChange={(e) => setContent({ ...content, pricing: { ...content.pricing, heading: e.target.value } })}
+                />
+                <Textarea
+                  label={labelRow("Section subcopy", `${content.pricing.subcopy.length} chars`)}
+                  value={content.pricing.subcopy}
+                  onChange={(e) => setContent({ ...content, pricing: { ...content.pricing, subcopy: e.target.value } })}
+                  rows={3}
+                />
+                <Textarea
+                  label={labelRow("Bottom note", `${String((selectedSection?.settings as any)?.note || content.pricing.note || "").length} chars`)}
+                  value={String((selectedSection?.settings as any)?.note || content.pricing.note || "")}
+                  onChange={(e) => {
+                    setContent({ ...content, pricing: { ...content.pricing, note: e.target.value } });
+                    updateSection("pricing", (s) => ({ ...s, settings: { ...(s.settings || {}), note: e.target.value } }));
+                  }}
+                  rows={2}
+                />
+              </InspectorGroup>
+
+              <InspectorGroup title="Tiers">
+                <Textarea
+                  label={labelRow("Tier blocks")}
+                  value={"Use the block editor below (section blocks)."}
+                  readOnly
+                  rows={2}
+                />
               {selectedSection?.blocks?.length ? (
                 <DndContext
                   sensors={sensors}
@@ -1541,109 +1779,115 @@ export function VisualBuilderPanel({ supabase }: Props) {
                     />
                   </div>
                 ))}
+              </InspectorGroup>
             </div>
           ) : selectedId === "footer" ? (
-            <div className="flex flex-col gap-4">
-              <Textarea
-                label="Copyright"
-                value={content.footer.copyright}
-                onChange={(e) => setContent({ ...content, footer: { ...content.footer, copyright: e.target.value } })}
-                rows={2}
-              />
-              <div className="text-xs font-bold uppercase tracking-wide text-slate-500">Social links (blocks)</div>
-              <Button
-                variant="secondary"
-                className="h-10"
-                onClick={() => {
-                  updateSection("footer", (s) => ({
-                    ...s,
-                    blocks: [
-                      ...(s.blocks || []),
-                      {
-                        id: `social_${Date.now()}`,
-                        type: "social_link",
-                        content: { platform: "instagram", url: "", enabled: true, icon: { type: "library", value: "instagram" } },
-                      },
-                    ],
-                  }));
-                }}
-              >
-                Add social link
-              </Button>
-              {(selectedSection?.blocks || [])
-                .filter((b) => b.type === "social_link")
-                .map((b) => (
-                  <div key={b.id} className="rounded-xl border border-slate-200 p-3 dark:border-white/10">
-                    <Input
-                      label="Platform"
-                      value={String(b.content?.platform || "")}
-                      onChange={(e) =>
-                        updateSection("footer", (s) => ({
-                          ...s,
-                          blocks: (s.blocks || []).map((x) =>
-                            x.id === b.id ? { ...x, content: { ...x.content, platform: e.target.value } } : x,
-                          ),
-                        }))
-                      }
-                    />
-                    <Input
-                      label="URL"
-                      value={String(b.content?.url || "")}
-                      onChange={(e) =>
-                        updateSection("footer", (s) => ({
-                          ...s,
-                          blocks: (s.blocks || []).map((x) =>
-                            x.id === b.id ? { ...x, content: { ...x.content, url: e.target.value } } : x,
-                          ),
-                        }))
-                      }
-                    />
-                    <Select
-                      label="Enabled"
-                      value={b.content?.enabled === false ? "no" : "yes"}
-                      onChange={(e) =>
-                        updateSection("footer", (s) => ({
-                          ...s,
-                          blocks: (s.blocks || []).map((x) =>
-                            x.id === b.id
-                              ? { ...x, content: { ...x.content, enabled: e.target.value === "yes" } }
-                              : x,
-                          ),
-                        }))
-                      }
-                      options={[
-                        { value: "yes", label: "Yes" },
-                        { value: "no", label: "No" },
-                      ]}
-                    />
-                    <IconPicker
-                      supabase={supabase}
-                      label="Icon"
-                      value={(b.content?.icon as IconRef | undefined) || { type: "library", value: String(b.content?.platform || "website") }}
-                      onChange={(next) =>
-                        updateSection("footer", (s) => ({
-                          ...s,
-                          blocks: (s.blocks || []).map((x) =>
-                            x.id === b.id ? { ...x, content: { ...x.content, icon: next } } : x,
-                          ),
-                        }))
-                      }
-                    />
-                  </div>
-                ))}
-              <Textarea
-                label="Legacy socialLinks (JSON fallback)"
-                value={JSON.stringify(content.socialLinks || [], null, 2)}
-                onChange={(e) => {
-                  try {
-                    const next = JSON.parse(e.target.value) as HomepageContent["socialLinks"];
-                    if (!Array.isArray(next)) return;
-                    setContent({ ...content, socialLinks: next });
-                  } catch {
-                  }
-                }}
-                rows={6}
-              />
+            <div className="flex flex-col gap-3">
+              <InspectorGroup title="Content">
+                <Textarea
+                  label={labelRow("Copyright", `${content.footer.copyright.length} chars`)}
+                  value={content.footer.copyright}
+                  onChange={(e) => setContent({ ...content, footer: { ...content.footer, copyright: e.target.value } })}
+                  rows={2}
+                />
+              </InspectorGroup>
+
+              <InspectorGroup title="Social Links">
+                <Button
+                  variant="secondary"
+                  className="h-10"
+                  onClick={() => {
+                    updateSection("footer", (s) => ({
+                      ...s,
+                      blocks: [
+                        ...(s.blocks || []),
+                        {
+                          id: `social_${Date.now()}`,
+                          type: "social_link",
+                          content: { platform: "instagram", url: "", enabled: true, icon: { type: "library", value: "instagram" } },
+                        },
+                      ],
+                    }));
+                  }}
+                >
+                  Add social link
+                </Button>
+                {(selectedSection?.blocks || [])
+                  .filter((b) => b.type === "social_link")
+                  .map((b) => (
+                    <div key={b.id} className="rounded-2xl border border-white/10 bg-white/5 p-3">
+                      <Input
+                        label={labelRow("Platform")}
+                        value={String(b.content?.platform || "")}
+                        onChange={(e) =>
+                          updateSection("footer", (s) => ({
+                            ...s,
+                            blocks: (s.blocks || []).map((x) =>
+                              x.id === b.id ? { ...x, content: { ...x.content, platform: e.target.value } } : x,
+                            ),
+                          }))
+                        }
+                      />
+                      <Input
+                        label={labelRow("URL")}
+                        value={String(b.content?.url || "")}
+                        onChange={(e) =>
+                          updateSection("footer", (s) => ({
+                            ...s,
+                            blocks: (s.blocks || []).map((x) =>
+                              x.id === b.id ? { ...x, content: { ...x.content, url: e.target.value } } : x,
+                            ),
+                          }))
+                        }
+                      />
+                      <Select
+                        label={labelRow("Enabled")}
+                        value={b.content?.enabled === false ? "no" : "yes"}
+                        onChange={(e) =>
+                          updateSection("footer", (s) => ({
+                            ...s,
+                            blocks: (s.blocks || []).map((x) =>
+                              x.id === b.id
+                                ? { ...x, content: { ...x.content, enabled: e.target.value === "yes" } }
+                                : x,
+                            ),
+                          }))
+                        }
+                        options={[
+                          { value: "yes", label: "Yes" },
+                          { value: "no", label: "No" },
+                        ]}
+                      />
+                      <IconPicker
+                        supabase={supabase}
+                        label={labelRow("Icon")}
+                        value={(b.content?.icon as IconRef | undefined) || { type: "library", value: String(b.content?.platform || "website") }}
+                        onChange={(next) =>
+                          updateSection("footer", (s) => ({
+                            ...s,
+                            blocks: (s.blocks || []).map((x) =>
+                              x.id === b.id ? { ...x, content: { ...x.content, icon: next } } : x,
+                            ),
+                          }))
+                        }
+                      />
+                    </div>
+                  ))}
+
+                <Textarea
+                  label={labelRow("Legacy socialLinks (JSON fallback)", `${JSON.stringify(content.socialLinks || [], null, 2).length} chars`)}
+                  value={JSON.stringify(content.socialLinks || [], null, 2)}
+                  onChange={(e) => {
+                    try {
+                      const next = JSON.parse(e.target.value) as HomepageContent["socialLinks"];
+                      if (!Array.isArray(next)) return;
+                      setContent({ ...content, socialLinks: next });
+                    } catch {
+                    }
+                  }}
+                  rows={6}
+                />
+              </InspectorGroup>
             </div>
           ) : selectedSection?.type === "workflow" ? (
             <div className="flex flex-col gap-4">
@@ -2189,18 +2433,20 @@ export function VisualBuilderPanel({ supabase }: Props) {
               />
             </div>
           ) : selectedId === "application" ? (
-            <div className="flex flex-col gap-4">
-              <Input
-                label="Form heading"
-                value={content.application.heading}
-                onChange={(e) => setContent({ ...content, application: { ...content.application, heading: e.target.value } })}
-              />
-              <Textarea
-                label="Form subcopy"
-                value={content.application.subcopy}
-                onChange={(e) => setContent({ ...content, application: { ...content.application, subcopy: e.target.value } })}
-                rows={3}
-              />
+            <div className="flex flex-col gap-3">
+              <InspectorGroup title="Content">
+                <Input
+                  label={labelRow("Form heading", `${content.application.heading.length} chars`)}
+                  value={content.application.heading}
+                  onChange={(e) => setContent({ ...content, application: { ...content.application, heading: e.target.value } })}
+                />
+                <Textarea
+                  label={labelRow("Form subcopy", `${content.application.subcopy.length} chars`)}
+                  value={content.application.subcopy}
+                  onChange={(e) => setContent({ ...content, application: { ...content.application, subcopy: e.target.value } })}
+                  rows={3}
+                />
+              </InspectorGroup>
             </div>
           ) : selectedId === "__whatsapp" ? (
             <div className="flex flex-col gap-4">
@@ -2392,10 +2638,160 @@ export function VisualBuilderPanel({ supabase }: Props) {
             <div className="text-sm text-slate-600 dark:text-slate-400">Select a section to edit.</div>
           )}
 
-          <div className="mt-6 rounded-xl border border-slate-200 p-3 text-xs text-slate-600 dark:border-white/10 dark:text-slate-300">
-            <div className="font-semibold">JSON mode fallback</div>
-            <div className="mt-1">Use the Homepage tab for full JSON editing if needed.</div>
+          <div className="mt-6 rounded-2xl border border-white/10 bg-white/5 p-3 text-xs text-white/60">
+            <div className="font-semibold text-white/80">JSON mode fallback</div>
+            <div className="mt-1">Use the JSON tab for full editing if needed.</div>
           </div>
+          </div>
+        </div>
+      </div>
+
+      {mobileMenuOpen ? (
+        <div className="fixed inset-0 z-50 bg-black/60 p-4 lg:hidden" onClick={() => setMobileMenuOpen(false)}>
+          <div
+            className="w-full max-w-sm rounded-2xl border border-white/10 bg-[var(--cf-secondary)] p-3 shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between px-2 py-2">
+              <div className="text-sm font-bold text-white">Menu</div>
+              <button
+                type="button"
+                className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-white/90"
+                onClick={() => setMobileMenuOpen(false)}
+                aria-label="Close menu"
+              >
+                ×
+              </button>
+            </div>
+            <div className="mt-2 flex flex-col gap-1">
+              {navItems.map((i) => (
+                <button
+                  key={i.tab}
+                  type="button"
+                  className={
+                    i.tab === "builder"
+                      ? "flex items-center gap-3 rounded-xl bg-white/10 px-3 py-3 text-sm font-bold text-white"
+                      : "flex items-center gap-3 rounded-xl px-3 py-3 text-sm text-white/80 hover:bg-white/5"
+                  }
+                  onClick={() => {
+                    if (onNavigateTab) onNavigateTab(i.tab);
+                    setMobileMenuOpen(false);
+                  }}
+                >
+                  <span className="inline-flex w-6 justify-center">•</span>
+                  {i.label}
+                </button>
+              ))}
+
+              <div className="mt-2 border-t border-white/10 pt-2">
+                <Button
+                  variant="secondary"
+                  className="h-11 w-full"
+                  onClick={async () => {
+                    if (onSignOut) await onSignOut();
+                    else await supabase.auth.signOut();
+                    setMobileMenuOpen(false);
+                    router.refresh();
+                  }}
+                >
+                  <LogOut className="mr-2 h-4 w-4" />
+                  Sign out
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      {mobileActionsOpen ? (
+        <div className="fixed inset-0 z-50 bg-black/60 p-4 lg:hidden" onClick={() => setMobileActionsOpen(false)}>
+          <div
+            className="w-full max-w-sm rounded-2xl border border-white/10 bg-[var(--cf-secondary)] p-3 shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between px-2 py-2">
+              <div className="text-sm font-bold text-white">Actions</div>
+              <button
+                type="button"
+                className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-white/90"
+                onClick={() => setMobileActionsOpen(false)}
+                aria-label="Close actions"
+              >
+                ×
+              </button>
+            </div>
+
+            <div className="mt-2 grid grid-cols-1 gap-2">
+              <Button variant="secondary" className="h-11" disabled={historySize === 0} onClick={undo}>
+                <Undo2 className="mr-2 h-4 w-4" />
+                Undo
+              </Button>
+              <Button variant="secondary" className="h-11" disabled={futureSize === 0} onClick={redo}>
+                <Redo2 className="mr-2 h-4 w-4" />
+                Redo
+              </Button>
+              <Button variant="secondary" className="h-11" onClick={loadLandingPreset}>
+                Load landing preset
+              </Button>
+              <Button variant="secondary" className="h-11" disabled={saving} onClick={() => saveDraft(content)}>
+                Save Draft
+              </Button>
+              <Button
+                variant="secondary"
+                className="h-11"
+                onClick={async () => {
+                  await supabase.from("homepage_content_drafts").upsert({ id: 1, content: {} }, { onConflict: "id" });
+                  setDraft(null);
+                  resetHistory();
+                  setNotice("Reverted to published");
+                }}
+              >
+                Revert
+              </Button>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      <div className="lg:hidden">
+        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-white/10 bg-[var(--cf-secondary)]/90 backdrop-blur">
+          <div className="grid grid-cols-3">
+            <button
+              type="button"
+              onClick={() => setMobilePane("sections")}
+              className={
+                mobilePane === "sections"
+                  ? "flex flex-col items-center gap-1 border-b-2 border-[var(--cf-accent)] py-2 text-[var(--cf-accent)]"
+                  : "flex flex-col items-center gap-1 border-b-2 border-transparent py-2 text-white/70"
+              }
+            >
+              <Layers className="h-4 w-4" />
+              <span className="text-[11px] font-semibold">Sections</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setMobilePane("preview")}
+              className={
+                mobilePane === "preview"
+                  ? "flex flex-col items-center gap-1 border-b-2 border-[var(--cf-accent)] py-2 text-[var(--cf-accent)]"
+                  : "flex flex-col items-center gap-1 border-b-2 border-transparent py-2 text-white/70"
+              }
+            >
+              <Eye className="h-4 w-4" />
+              <span className="text-[11px] font-semibold">Preview</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setMobilePane("inspector")}
+              className={
+                mobilePane === "inspector"
+                  ? "flex flex-col items-center gap-1 border-b-2 border-[var(--cf-accent)] py-2 text-[var(--cf-accent)]"
+                  : "flex flex-col items-center gap-1 border-b-2 border-transparent py-2 text-white/70"
+              }
+            >
+              <SlidersHorizontal className="h-4 w-4" />
+              <span className="text-[11px] font-semibold">Inspector</span>
+            </button>
           </div>
         </div>
       </div>

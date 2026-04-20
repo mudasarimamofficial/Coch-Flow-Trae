@@ -11,17 +11,11 @@ export function Header({ content }: Props) {
   const ctaEnabled = primaryCta ? (primaryCta.enabled ?? true) : false;
   const ctaHref = primaryCta ? (primaryCta.href as string) : "#";
   const ctaLabel = primaryCta ? ((primaryCta.label as string) || (primaryCta.text as string) || "") : "";
-  const fallbackLogoUrl =
-    "https://ekwydksbprxebgmhbmtj.supabase.co/storage/v1/object/public/assets/header%20icon.png";
-  const logoUrl =
-    content.header.brandIcon?.type === "image" && content.header.brandIcon.url
-      ? content.header.brandIcon.url
-      : fallbackLogoUrl;
   return (
     <nav>
       <div className="nav-inner">
         <a href="#" className="nav-logo">
-          <img src={logoUrl} alt={content.header.brandText} className="logo-img" />
+          <div className="logo-dot" />
           {renderBrandText(content.header.brandText)}
         </a>
 

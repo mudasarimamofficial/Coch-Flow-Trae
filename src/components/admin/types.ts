@@ -16,5 +16,5 @@ export type Settings = {
   slack_webhook_url: string | null;
 };
 
-export type Tab = "builder" | "leads" | "homepage" | "custom" | "settings";
+export type Tab = "builder" | "pages" | "leads" | "homepage" | "custom" | "settings";
 

@@ -61,26 +61,24 @@ export function Features({ content, section }: Props) {
 
 function renderFeatureIcon(key: string) {
   const k = (key || "").toLowerCase();
-  if (k.includes("radar") || k.includes("search")) {
+  if (k.includes("search")) {
     return (
       <svg viewBox="0 0 24 24" aria-hidden="true">
-        <circle cx="11" cy="11" r="7" />
-        <line x1="16.65" y1="16.65" x2="21" y2="21" />
+        <circle cx="11" cy="11" r="8" />
+        <path d="m21 21-4.35-4.35" />
       </svg>
     );
   }
-  if (k.includes("forum") || k.includes("chat") || k.includes("message")) {
+  if (k.includes("chat") || k.includes("forum") || k.includes("message")) {
     return (
       <svg viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z" />
-        <line x1="7" y1="9" x2="17" y2="9" />
-        <line x1="7" y1="13" x2="13" y2="13" />
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
       </svg>
     );
   }
   return (
     <svg viewBox="0 0 24 24" aria-hidden="true">
-      <polyline points="3 12 7 12 10 6 14 18 17 12 21 12" />
+      <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
     </svg>
   );
 }

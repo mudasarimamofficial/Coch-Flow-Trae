@@ -10,7 +10,7 @@ const schema = z.object({
   last_name: z.string().min(1, "Last name is required").max(120),
   email: z.string().email("Enter a valid email").max(240),
   revenue: z.string().min(1, "Select a revenue range").max(120),
-  message: z.string().min(2, "Tell us your bottleneck").max(4000),
+  message: z.string().max(4000).optional().nullable(),
   company: z.string().optional().nullable(),
 });
 
@@ -51,25 +51,7 @@ export function LeadFormSection({ content, section }: Props) {
     <section id="lead-form">
       <div className="container">
         <div className="form-wrap" id={content.application.id}>
-          {submitted ? (
-            <div className="form-header">
-              <div className="gold-line" style={{ display: "block", margin: "0 auto 20px" }} />
-              <h2>{content.application.successTitle}</h2>
-              <p>{content.application.successBody}</p>
-              <button
-                type="button"
-                className="btn-primary"
-                style={{ width: "100%", justifyContent: "center", marginTop: 16 }}
-                onClick={() => {
-                  setSubmitted(false);
-                  setError(null);
-                }}
-              >
-                {content.application.submitAnotherText}
-                <span className="arrow">→</span>
-              </button>
-            </div>
-          ) : (
+          <div id="form-content" style={{ display: submitted ? "none" : "block" }}>
             <form
               onSubmit={async (e) => {
                 e.preventDefault();
@@ -170,10 +152,7 @@ export function LeadFormSection({ content, section }: Props) {
 
               <div className="form-group">
                 <label>{content.application.fields.revenueLabel}</label>
-                <select
-                  value={values.revenue || ""}
-                  onChange={(e) => setValues((v) => ({ ...v, revenue: e.target.value }))}
-                >
+                <select value={values.revenue || ""} onChange={(e) => setValues((v) => ({ ...v, revenue: e.target.value }))}>
                   <option value="" disabled>
                     {content.application.fields.revenuePlaceholder || "Select..."}
                   </option>
@@ -193,7 +172,6 @@ export function LeadFormSection({ content, section }: Props) {
                   onChange={(e) => setValues((v) => ({ ...v, message: e.target.value }))}
                   placeholder={content.application.fields.bottleneckPlaceholder}
                 />
-                {fieldErrors.message ? <div className="form-note">{fieldErrors.message}</div> : null}
               </div>
 
               <input
@@ -205,18 +183,20 @@ export function LeadFormSection({ content, section }: Props) {
                 onChange={(e) => setValues((v) => ({ ...v, company: e.target.value }))}
               />
 
-              <button
-                type="submit"
-                className="btn-primary form-submit"
-                disabled={submitting}
-              >
+              <button type="submit" className="btn-primary form-submit" disabled={submitting}>
                 {submitting ? "Submitting..." : content.application.submitText}
                 <span className="arrow">→</span>
               </button>
 
-              {content.application.footnote ? <div className="form-note">{content.application.footnote}</div> : null}
+              {content.application.footnote ? <p className="form-note">{content.application.footnote}</p> : null}
             </form>
-          )}
+          </div>
+
+          <div className="form-success" id="form-success" style={{ display: submitted ? "block" : "none" }}>
+            <div className="gold-line" style={{ display: "block", margin: "0 auto 20px" }} />
+            <h3>{content.application.successTitle}</h3>
+            <p>{content.application.successBody}</p>
+          </div>
         </div>
       </div>
     </section>
