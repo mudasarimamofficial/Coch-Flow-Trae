@@ -53,12 +53,29 @@ export function AdminShell({ tab, onTabChange, sessionEmail, onSignOut, topNotic
       setIsMobile(Boolean(mqMobile.matches));
     };
     update();
-    mqNarrow.addEventListener("change", update);
-    mqMobile.addEventListener("change", update);
+    const add = (mq: MediaQueryList, cb: () => void) => {
+      const anyMq = mq as unknown as {
+        addEventListener?: (type: "change", listener: () => void) => void;
+        addListener?: (listener: () => void) => void;
+      };
+      if (anyMq.addEventListener) anyMq.addEventListener("change", cb);
+      else if (anyMq.addListener) anyMq.addListener(cb);
+    };
+    const remove = (mq: MediaQueryList, cb: () => void) => {
+      const anyMq = mq as unknown as {
+        removeEventListener?: (type: "change", listener: () => void) => void;
+        removeListener?: (listener: () => void) => void;
+      };
+      if (anyMq.removeEventListener) anyMq.removeEventListener("change", cb);
+      else if (anyMq.removeListener) anyMq.removeListener(cb);
+    };
+
+    add(mqNarrow, update);
+    add(mqMobile, update);
     window.addEventListener("resize", update);
     return () => {
-      mqNarrow.removeEventListener("change", update);
-      mqMobile.removeEventListener("change", update);
+      remove(mqNarrow, update);
+      remove(mqMobile, update);
       window.removeEventListener("resize", update);
     };
   }, []);
@@ -86,7 +103,7 @@ export function AdminShell({ tab, onTabChange, sessionEmail, onSignOut, topNotic
         >
           <div className={sidebarCollapsed ? "mb-4 flex items-center justify-center" : "mb-5 flex items-center gap-2 px-2"}>
             <img
-              src="/apple-touch-icon.png"
+              src="https://ekwydksbprxebgmhbmtj.supabase.co/storage/v1/object/public/assets/header%20icon.png"
               alt="CoachFlow"
               className={sidebarCollapsed ? "h-8 w-8 rounded-xl" : "h-7 w-7 rounded-xl"}
             />

@@ -27,8 +27,18 @@ export function PagesPanel({ supabase }: Props) {
     const mq = window.matchMedia("(max-width: 768px)");
     const update = () => setIsMobile(Boolean(mq.matches));
     update();
-    mq.addEventListener("change", update);
-    return () => mq.removeEventListener("change", update);
+    const anyMq = mq as unknown as {
+      addEventListener?: (type: "change", listener: () => void) => void;
+      addListener?: (listener: () => void) => void;
+      removeEventListener?: (type: "change", listener: () => void) => void;
+      removeListener?: (listener: () => void) => void;
+    };
+    if (anyMq.addEventListener) anyMq.addEventListener("change", update);
+    else if (anyMq.addListener) anyMq.addListener(update);
+    return () => {
+      if (anyMq.removeEventListener) anyMq.removeEventListener("change", update);
+      else if (anyMq.removeListener) anyMq.removeListener(update);
+    };
   }, []);
 
   const filteredPages = useMemo(() => {
