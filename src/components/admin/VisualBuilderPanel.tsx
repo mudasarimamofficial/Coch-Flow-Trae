@@ -23,16 +23,6 @@ import { Select } from "@/components/ui/Select";
 import { Textarea } from "@/components/ui/Textarea";
 import { homepageDefaults, type HomepageContent } from "@/content/homepage";
 import { MaterialIcon } from "@/components/ui/MaterialIcon";
-import { Header } from "@/components/landing/Header";
-import { Hero } from "@/components/landing/Hero";
-import { Trust } from "@/components/landing/Trust";
-import { Features } from "@/components/landing/Features";
-import { Workflow } from "@/components/landing/Workflow";
-import { Pricing } from "@/components/landing/Pricing";
-import { LeadFormSection } from "@/components/landing/LeadFormSection";
-import { Footer } from "@/components/landing/Footer";
-import { TestimonialsSection } from "@/components/landing/TestimonialsSection";
-import { CustomHtmlSection } from "@/components/landing/CustomHtmlSection";
 import { IconPicker, type IconRef } from "@/components/admin/builder/IconPicker";
 import { MediaPickerModal } from "@/components/admin/builder/MediaPickerModal";
 import { applyBuilderOverrides } from "@/utils/homepageBuilder";
@@ -1073,14 +1063,15 @@ export function VisualBuilderPanel({ supabase, onNavigateTab, onSignOut }: Props
                         item={s}
                         selected={selectedId === s.id}
                         subtitle={meta.subtitle}
-                        children={meta.children}
                         onSelect={() => setSelectedId(s.id)}
                         onDuplicate={() => duplicateSection(s.id)}
                         onToggle={() => {
                           const next = pageSections.map((x) => (x.id === s.id ? { ...x, enabled: !x.enabled } : x));
                           setContent({ ...content, page: { sections: next } });
                         }}
-                      />
+                      >
+                        {meta.children}
+                      </SectionRow>
                     );
                   })}
                 </div>

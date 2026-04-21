@@ -57,7 +57,7 @@ export function PageEditor({
   const statusLabel = useMemo(() => (status === "published" ? "Published" : "Draft"), [status]);
 
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-4 dark:border-white/10 dark:bg-[#112121]">
+    <div className="rounded-xl border border-white/10 bg-white/5 p-4">
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         <Input label="Title" value={title} onChange={(e) => onTitleChange(e.target.value)} placeholder="Privacy Policy" />
         <Input label="Slug" value={slug} onChange={(e) => onSlugChange(e.target.value)} placeholder="privacy-policy" />
@@ -99,10 +99,10 @@ export function PageEditor({
       </div>
 
       <div className="mt-4 flex flex-wrap items-center gap-2">
-        <Button className="h-10" disabled={loading} onClick={onSaveDraft}>
+        <Button variant="secondary" className="h-10" disabled={loading} onClick={onSaveDraft}>
           Save Draft
         </Button>
-        <Button variant="secondary" className="h-10" disabled={loading} onClick={onPublish}>
+        <Button className="h-10" disabled={loading} onClick={onPublish}>
           Publish
         </Button>
         <Button variant="secondary" className="h-10" disabled={loading} onClick={onUnpublish}>
@@ -117,9 +117,10 @@ export function PageEditor({
         <Button variant="secondary" className="h-10" disabled={loading} onClick={onCreateNew}>
           Create New
         </Button>
-        <div className="ml-auto text-xs font-bold uppercase tracking-wide text-slate-500">{statusLabel}</div>
+        <div className="ml-auto inline-flex items-center rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-semibold text-white/70">
+          {statusLabel}
+        </div>
       </div>
     </div>
   );
 }
-

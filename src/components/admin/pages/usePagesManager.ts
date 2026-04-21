@@ -26,6 +26,23 @@ export function usePagesManager(supabase: SupabaseClient) {
     [sections, selectedSectionId],
   );
 
+  function nextUniqueSlug(preferred: string, excludeId?: string | null) {
+    const base = normalizeSlug(preferred);
+    const taken = new Set(
+      pages
+        .filter((p) => (excludeId ? p.id !== excludeId : true))
+        .map((p) => String(p.slug || "").trim().toLowerCase())
+        .filter((s) => s.length),
+    );
+    if (!base.length) return "";
+    if (!taken.has(base)) return base;
+    for (let i = 2; i <= 50; i += 1) {
+      const candidate = `${base}-${i}`;
+      if (!taken.has(candidate)) return candidate;
+    }
+    return `${base}-${Date.now()}`;
+  }
+
   async function loadPages() {
     setError(null);
     setSaved(null);
@@ -84,6 +101,11 @@ export function usePagesManager(supabase: SupabaseClient) {
         setError("Slug is required");
         return;
       }
+      const uniqueCheck = nextUniqueSlug(s, selected.id);
+      if (uniqueCheck !== s) {
+        setError("Slug already exists. Choose a unique slug.");
+        return;
+      }
       const { error: err } = await supabase
         .from("site_pages")
         .update({
@@ -118,6 +140,11 @@ export function usePagesManager(supabase: SupabaseClient) {
     try {
       const t = title.trim();
       const s = normalizeSlug(slug);
+      const uniqueCheck = nextUniqueSlug(s, selected.id);
+      if (uniqueCheck !== s) {
+        setError("Slug already exists. Choose a unique slug.");
+        return;
+      }
       const draft = withSections(sections);
       const { error: err } = await supabase
         .from("site_pages")
@@ -200,7 +227,8 @@ export function usePagesManager(supabase: SupabaseClient) {
     setLoading(true);
     try {
       const t = title.trim();
-      const s = normalizeSlug(slug);
+      const baseSlug = normalizeSlug(slug.length ? slug : t || "new-page");
+      const s = nextUniqueSlug(baseSlug, null);
       if (!t.length) {
         setError("Title is required");
         return;
@@ -212,7 +240,7 @@ export function usePagesManager(supabase: SupabaseClient) {
       const initial: PageSection[] = [
         { id: nowId("rich"), type: "rich_text", enabled: true, settings: { title: t, content: "<p>Update this content.</p>" } },
       ];
-      const { error: err } = await supabase
+      const { data: inserted, error: err } = await supabase
         .from("site_pages")
         .insert({
           title: t,
@@ -225,13 +253,47 @@ export function usePagesManager(supabase: SupabaseClient) {
           meta_description: metaDescription.trim().length ? metaDescription.trim() : null,
           draft_content: withSections(initial),
           published_content: withSections(initial),
-        });
+        })
+        .select("id")
+        .maybeSingle();
       if (err) {
+        const msg = err.message || "";
+        if (msg.includes("site_pages_slug_key")) {
+          const retrySlug = nextUniqueSlug(`${s}-page`, null);
+          const { data: retryInserted, error: retryErr } = await supabase
+            .from("site_pages")
+            .insert({
+              title: t,
+              slug: retrySlug,
+              nav_label: navLabel.trim().length ? navLabel.trim() : null,
+              show_in_header_nav: showHeader,
+              show_in_footer_nav: showFooter,
+              status: "draft",
+              meta_title: metaTitle.trim().length ? metaTitle.trim() : null,
+              meta_description: metaDescription.trim().length ? metaDescription.trim() : null,
+              draft_content: withSections(initial),
+              published_content: withSections(initial),
+            })
+            .select("id")
+            .maybeSingle();
+          if (retryErr) {
+            setError(retryErr.message);
+            return;
+          }
+          setSaved("Page created");
+          await loadPages();
+          if (retryInserted?.id) setSelectedId(retryInserted.id);
+          setSlug(retrySlug);
+          return;
+        }
+
         setError(err.message);
         return;
       }
       setSaved("Page created");
       await loadPages();
+      if (inserted?.id) setSelectedId(inserted.id);
+      setSlug(s);
     } finally {
       setLoading(false);
     }
