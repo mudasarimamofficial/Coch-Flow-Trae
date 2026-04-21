@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/Button";
-import { Code2, FileJson, Files, LayoutDashboard, PanelLeft, RotateCcw, Settings, Users } from "lucide-react";
+import { Code2, FileJson, Files, LayoutDashboard, MoreHorizontal, PanelLeft, Settings, Users, X } from "lucide-react";
 import type { Tab } from "@/components/admin/types";
 
 type Props = {
@@ -15,9 +15,10 @@ type Props = {
 
 export function AdminShell({ tab, onTabChange, sessionEmail, onSignOut, topNotice, children }: Props) {
   const [noticeDismissed, setNoticeDismissed] = useState(false);
-  const [isPortraitBlocked, setIsPortraitBlocked] = useState(false);
   const [isNarrow, setIsNarrow] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [mobileMoreOpen, setMobileMoreOpen] = useState(false);
   const navItems: { tab: Tab; label: string; icon: ReactNode }[] = [
     { tab: "builder", label: "Builder", icon: <LayoutDashboard size={18} /> },
     { tab: "pages", label: "Pages", icon: <Files size={18} /> },
@@ -45,20 +46,19 @@ export function AdminShell({ tab, onTabChange, sessionEmail, onSignOut, topNotic
   }, []);
 
   useEffect(() => {
-    const mqPortrait = window.matchMedia("(orientation: portrait)");
     const mqNarrow = window.matchMedia("(max-width: 1024px)");
+    const mqMobile = window.matchMedia("(max-width: 768px)");
     const update = () => {
-      setIsPortraitBlocked(Boolean(mqPortrait.matches && mqNarrow.matches));
       setIsNarrow(Boolean(mqNarrow.matches));
+      setIsMobile(Boolean(mqMobile.matches));
     };
     update();
-
-    mqPortrait.addEventListener("change", update);
     mqNarrow.addEventListener("change", update);
+    mqMobile.addEventListener("change", update);
     window.addEventListener("resize", update);
     return () => {
-      mqPortrait.removeEventListener("change", update);
       mqNarrow.removeEventListener("change", update);
+      mqMobile.removeEventListener("change", update);
       window.removeEventListener("resize", update);
     };
   }, []);
@@ -67,105 +67,95 @@ export function AdminShell({ tab, onTabChange, sessionEmail, onSignOut, topNotic
     if (isNarrow) setSidebarCollapsed(true);
   }, [isNarrow]);
 
+  useEffect(() => {
+    if (isMobile) {
+      setSidebarCollapsed(true);
+      setMobileMoreOpen(false);
+    }
+  }, [isMobile]);
+
   return (
     <div className="cf-admin flex h-[100dvh] overflow-hidden bg-[var(--cf-bg)] text-[var(--cf-text)]">
-      {isPortraitBlocked ? (
-        <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-[var(--cf-surface-lowest)] px-6">
-          <div className="w-full max-w-md rounded-2xl border border-white/10 bg-[var(--cf-surface-container)] p-6 shadow-2xl">
-            <div className="flex items-center gap-3">
-              <div className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-[var(--cf-accent)]">
-                <RotateCcw size={20} />
+      {!isMobile ? (
+        <aside
+          className={
+            sidebarCollapsed
+              ? "flex w-[72px] flex-col border-r border-white/10 bg-[var(--cf-secondary)] px-2 py-4"
+              : "flex w-[248px] flex-col border-r border-white/10 bg-[var(--cf-secondary)] px-3 py-5"
+          }
+        >
+          <div className={sidebarCollapsed ? "mb-4 flex items-center justify-center" : "mb-5 flex items-center gap-2 px-2"}>
+            <span className="inline-flex h-2 w-2 rounded-full bg-[var(--cf-accent)]" />
+            {!sidebarCollapsed ? (
+              <div className="text-sm font-bold">
+                CoachFlow <span className="text-[var(--cf-accent)]">AI</span>
               </div>
-              <div>
-                <div className="text-base font-semibold text-[var(--cf-text)]">Rotate to landscape</div>
-                <div className="mt-1 text-sm text-[var(--cf-text)]/70">
-                  The admin panel is landscape-only on mobile for full functionality.
-                </div>
-              </div>
-            </div>
-            <div className="mt-5 grid grid-cols-1 gap-2">
-              <Button
-                variant="secondary"
-                className="h-11"
-                onClick={() => {
-                  try {
-                    window.location.reload();
-                  } catch {
-                    return;
-                  }
-                }}
-              >
-                Refresh
-              </Button>
-            </div>
+            ) : null}
           </div>
-        </div>
-      ) : null}
-      <aside
-        className={
-          sidebarCollapsed
-            ? "flex w-[72px] flex-col border-r border-white/10 bg-[var(--cf-secondary)] px-2 py-4"
-            : "flex w-[248px] flex-col border-r border-white/10 bg-[var(--cf-secondary)] px-3 py-5"
-        }
-      >
-        <div className={sidebarCollapsed ? "mb-4 flex items-center justify-center" : "mb-5 flex items-center gap-2 px-2"}>
-          <span className="inline-flex h-2 w-2 rounded-full bg-[var(--cf-accent)]" />
+
+          <nav className="flex flex-col gap-1">
+            {navItems.map((i) => (
+              <button
+                key={i.tab}
+                type="button"
+                onClick={() => onTabChange(i.tab)}
+                title={sidebarCollapsed ? i.label : undefined}
+                className={
+                  tab === i.tab
+                    ? sidebarCollapsed
+                      ? "flex items-center justify-center rounded-2xl bg-white/10 p-3 text-white"
+                      : "flex items-center gap-3 rounded-2xl bg-white/10 px-3 py-2.5 text-left text-sm font-semibold text-white"
+                    : sidebarCollapsed
+                      ? "flex items-center justify-center rounded-2xl p-3 text-white/70 hover:bg-white/5 hover:text-white"
+                      : "flex items-center gap-3 rounded-2xl px-3 py-2.5 text-left text-sm text-white/70 hover:bg-white/5 hover:text-white"
+                }
+              >
+                <span className={sidebarCollapsed ? "inline-flex" : "inline-flex w-6 justify-center"}>{i.icon}</span>
+                {!sidebarCollapsed ? i.label : null}
+              </button>
+            ))}
+          </nav>
+
           {!sidebarCollapsed ? (
-            <div className="text-sm font-bold">
-              CoachFlow <span className="text-[var(--cf-accent)]">AI</span>
+            <div className="mt-auto px-2 pt-4">
+              <div className="mb-2 text-xs text-white/50">Signed in as</div>
+              <div className="truncate text-xs font-semibold text-white/80">{sessionEmail}</div>
             </div>
           ) : null}
-        </div>
-
-        <nav className="flex flex-col gap-1">
-          {navItems.map((i) => (
-            <button
-              key={i.tab}
-              type="button"
-              onClick={() => onTabChange(i.tab)}
-              title={sidebarCollapsed ? i.label : undefined}
-              className={
-                tab === i.tab
-                  ? sidebarCollapsed
-                    ? "flex items-center justify-center rounded-2xl bg-white/10 p-3 text-white"
-                    : "flex items-center gap-3 rounded-2xl bg-white/10 px-3 py-2.5 text-left text-sm font-semibold text-white"
-                  : sidebarCollapsed
-                    ? "flex items-center justify-center rounded-2xl p-3 text-white/70 hover:bg-white/5 hover:text-white"
-                    : "flex items-center gap-3 rounded-2xl px-3 py-2.5 text-left text-sm text-white/70 hover:bg-white/5 hover:text-white"
-              }
-            >
-              <span className={sidebarCollapsed ? "inline-flex" : "inline-flex w-6 justify-center"}>{i.icon}</span>
-              {!sidebarCollapsed ? i.label : null}
-            </button>
-          ))}
-        </nav>
-
-        {!sidebarCollapsed ? (
-          <div className="mt-auto px-2 pt-4">
-            <div className="mb-2 text-xs text-white/50">Signed in as</div>
-            <div className="truncate text-xs font-semibold text-white/80">{sessionEmail}</div>
-          </div>
-        ) : null}
-      </aside>
+        </aside>
+      ) : null}
 
       <div className="flex min-h-0 flex-1 flex-col">
         {tab !== "builder" ? (
           <div className="flex items-center justify-between border-b border-white/10 bg-[var(--cf-secondary)] px-4 py-3 lg:px-6">
             <div className="flex items-center gap-3">
+              {!isMobile ? (
+                <button
+                  type="button"
+                  className="-ml-1 inline-flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-white/90"
+                  onClick={() => setSidebarCollapsed((v) => !v)}
+                  aria-label="Toggle sidebar"
+                >
+                  <PanelLeft size={18} />
+                </button>
+              ) : null}
+              {!isMobile ? <div className="text-xs text-white/60">/admin</div> : null}
+              <div className="text-sm font-semibold text-white">{tabLabel}</div>
+            </div>
+            {!isMobile ? (
+              <Button variant="secondary" className="h-10" onClick={onSignOut}>
+                Sign out
+              </Button>
+            ) : (
               <button
                 type="button"
-                className="-ml-1 inline-flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-white/90"
-                onClick={() => setSidebarCollapsed((v) => !v)}
-                aria-label="Toggle sidebar"
+                className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-white/80"
+                onClick={() => setMobileMoreOpen(true)}
+                aria-label="More"
               >
-                <PanelLeft size={18} />
+                <MoreHorizontal size={18} />
               </button>
-              <div className="text-xs text-white/60">/admin</div>
-              <div className="text-sm font-semibold">{tabLabel}</div>
-            </div>
-            <Button variant="secondary" className="h-10" onClick={onSignOut}>
-              Sign out
-            </Button>
+            )}
           </div>
         ) : null}
 
@@ -198,8 +188,133 @@ export function AdminShell({ tab, onTabChange, sessionEmail, onSignOut, topNotic
         ) : null}
 
         {tab === "builder" ? <div className="min-h-0 flex-1 overflow-hidden">{children}</div> : null}
-        {tab !== "builder" ? <div className="min-h-0 flex-1 overflow-y-auto">{children}</div> : null}
+        {tab !== "builder" ? (
+          <div className={isMobile ? "min-h-0 flex-1 overflow-y-auto pb-20" : "min-h-0 flex-1 overflow-y-auto"}>
+            {children}
+          </div>
+        ) : null}
       </div>
+
+      {isMobile && tab !== "builder" ? (
+        <div className="fixed bottom-0 left-0 right-0 z-40 border-t border-white/10 bg-[var(--cf-secondary)]/95 backdrop-blur">
+          <div className="mx-auto grid max-w-xl grid-cols-5 px-2 py-2">
+            <button
+              type="button"
+              className={
+                tab === "builder"
+                  ? "flex h-12 flex-col items-center justify-center rounded-xl bg-white/10 text-white"
+                  : "flex h-12 flex-col items-center justify-center rounded-xl text-white/70 hover:bg-white/5 hover:text-white"
+              }
+              onClick={() => onTabChange("builder")}
+            >
+              <LayoutDashboard size={18} />
+              <div className="mt-1 text-[11px] font-semibold">Builder</div>
+            </button>
+            <button
+              type="button"
+              className={
+                tab === "pages"
+                  ? "flex h-12 flex-col items-center justify-center rounded-xl bg-white/10 text-white"
+                  : "flex h-12 flex-col items-center justify-center rounded-xl text-white/70 hover:bg-white/5 hover:text-white"
+              }
+              onClick={() => onTabChange("pages")}
+            >
+              <Files size={18} />
+              <div className="mt-1 text-[11px] font-semibold">Pages</div>
+            </button>
+            <button
+              type="button"
+              className={
+                tab === "leads"
+                  ? "flex h-12 flex-col items-center justify-center rounded-xl bg-white/10 text-white"
+                  : "flex h-12 flex-col items-center justify-center rounded-xl text-white/70 hover:bg-white/5 hover:text-white"
+              }
+              onClick={() => onTabChange("leads")}
+            >
+              <Users size={18} />
+              <div className="mt-1 text-[11px] font-semibold">Leads</div>
+            </button>
+            <button
+              type="button"
+              className={
+                tab === "settings"
+                  ? "flex h-12 flex-col items-center justify-center rounded-xl bg-white/10 text-white"
+                  : "flex h-12 flex-col items-center justify-center rounded-xl text-white/70 hover:bg-white/5 hover:text-white"
+              }
+              onClick={() => onTabChange("settings")}
+            >
+              <Settings size={18} />
+              <div className="mt-1 text-[11px] font-semibold">Settings</div>
+            </button>
+            <button
+              type="button"
+              className="flex h-12 flex-col items-center justify-center rounded-xl text-white/70 hover:bg-white/5 hover:text-white"
+              onClick={() => setMobileMoreOpen(true)}
+            >
+              <MoreHorizontal size={18} />
+              <div className="mt-1 text-[11px] font-semibold">More</div>
+            </button>
+          </div>
+        </div>
+      ) : null}
+
+      {isMobile && mobileMoreOpen ? (
+        <div className="fixed inset-0 z-50 bg-black/60 p-4" onClick={() => setMobileMoreOpen(false)}>
+          <div
+            className="mx-auto w-full max-w-md overflow-hidden rounded-2xl border border-white/10 bg-[var(--cf-secondary)] shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between border-b border-white/10 px-4 py-3">
+              <div className="text-sm font-semibold text-white">Menu</div>
+              <button
+                type="button"
+                className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-white/80"
+                onClick={() => setMobileMoreOpen(false)}
+                aria-label="Close"
+              >
+                <X size={18} />
+              </button>
+            </div>
+            <div className="p-3">
+              <button
+                type="button"
+                className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-sm text-white/80 hover:bg-white/5"
+                onClick={() => {
+                  onTabChange("homepage");
+                  setMobileMoreOpen(false);
+                }}
+              >
+                <FileJson size={18} />
+                JSON editor
+              </button>
+              <button
+                type="button"
+                className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-sm text-white/80 hover:bg-white/5"
+                onClick={() => {
+                  onTabChange("custom");
+                  setMobileMoreOpen(false);
+                }}
+              >
+                <Code2 size={18} />
+                Custom code
+              </button>
+              <div className="mt-2 border-t border-white/10 pt-2">
+                <Button
+                  variant="secondary"
+                  className="h-11 w-full"
+                  onClick={async () => {
+                    await onSignOut();
+                    setMobileMoreOpen(false);
+                  }}
+                >
+                  Sign out
+                </Button>
+                <div className="mt-2 text-xs text-white/50">Signed in as {sessionEmail}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

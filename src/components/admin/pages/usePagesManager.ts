@@ -325,6 +325,19 @@ export function usePagesManager(supabase: SupabaseClient) {
     setSections((prev) => prev.map((s) => (s.id === next.id ? next : s)));
   }
 
+  function reorderSections(activeId: string, overId: string) {
+    if (activeId === overId) return;
+    setSections((prev) => {
+      const from = prev.findIndex((s) => s.id === activeId);
+      const to = prev.findIndex((s) => s.id === overId);
+      if (from < 0 || to < 0) return prev;
+      const next = prev.slice();
+      const [moved] = next.splice(from, 1);
+      next.splice(to, 0, moved);
+      return next;
+    });
+  }
+
   function deleteSection(id: string) {
     const next = sections.filter((s) => s.id !== id);
     setSections(next);
@@ -341,7 +354,7 @@ export function usePagesManager(supabase: SupabaseClient) {
     status, setStatus,
     sections, selectedSectionId, setSelectedSectionId, selectedSection,
     loadPages, saveDraft, publish, unpublish, revertDraft, createNew, deleteSelected,
-    addRichTextSection, updateSection, deleteSection,
+    addRichTextSection, updateSection, deleteSection, reorderSections,
     createNewWithValues,
   };
 }

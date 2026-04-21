@@ -13,8 +13,6 @@ import { HomepagePanel } from "@/components/admin/HomepagePanel";
 import { VisualBuilderPanel } from "@/components/admin/VisualBuilderPanel";
 import { SettingsPanel } from "@/components/admin/SettingsPanel";
 import { PagesPanel } from "@/components/admin/pages/PagesPanel";
-import { RotateCcw } from "lucide-react";
-import { Button } from "@/components/ui/Button";
 
 export function AdminPageClient() {
   const router = useRouter();
@@ -33,8 +31,6 @@ export function AdminPageClient() {
 
   const [resendNotice, setResendNotice] = useState<string | null>(null);
 
-  const [isPortraitBlocked, setIsPortraitBlocked] = useState(false);
-
   const [leads, setLeads] = useState<Lead[]>([]);
   const [leadsLoading, setLeadsLoading] = useState(false);
   const [leadsError, setLeadsError] = useState<string | null>(null);
@@ -51,22 +47,6 @@ export function AdminPageClient() {
     return normEmail(v) === bootstrapAdminEmail;
   }
 
-  useEffect(() => {
-    const mqPortrait = window.matchMedia("(orientation: portrait)");
-    const mqNarrow = window.matchMedia("(max-width: 1024px)");
-    const update = () => {
-      setIsPortraitBlocked(Boolean(mqPortrait.matches && mqNarrow.matches));
-    };
-    update();
-    mqPortrait.addEventListener("change", update);
-    mqNarrow.addEventListener("change", update);
-    window.addEventListener("resize", update);
-    return () => {
-      mqPortrait.removeEventListener("change", update);
-      mqNarrow.removeEventListener("change", update);
-      window.removeEventListener("resize", update);
-    };
-  }, []);
 
   async function resolveSessionEmail(client: SupabaseClient, maybeEmail: string | null) {
     if (maybeEmail && maybeEmail.trim().length) return maybeEmail;
@@ -185,41 +165,6 @@ export function AdminPageClient() {
       }
     })();
   }, [authStatus, supabase]);
-
-  if (isPortraitBlocked) {
-    return (
-      <div className="cf-admin flex h-[100dvh] items-center justify-center bg-[var(--cf-surface-lowest)] px-6 text-[var(--cf-text)]">
-        <div className="w-full max-w-md rounded-2xl border border-white/10 bg-[var(--cf-surface-container)] p-6 shadow-2xl">
-          <div className="flex items-center gap-3">
-            <div className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-[var(--cf-accent)]">
-              <RotateCcw size={20} />
-            </div>
-            <div>
-              <div className="text-base font-semibold text-[var(--cf-text)]">Rotate to landscape</div>
-              <div className="mt-1 text-sm text-[var(--cf-text)]/70">
-                The admin panel is landscape-only on mobile for full functionality.
-              </div>
-            </div>
-          </div>
-          <div className="mt-5">
-            <Button
-              variant="secondary"
-              className="h-11 w-full"
-              onClick={() => {
-                try {
-                  window.location.reload();
-                } catch {
-                  return;
-                }
-              }}
-            >
-              Refresh
-            </Button>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   if (authStatus === "loading") {
     return (
