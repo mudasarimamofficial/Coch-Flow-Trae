@@ -903,6 +903,9 @@ h6 {
 }
 
 .cf-landing .footer-logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
   font-family: "Playfair Display", serif;
   font-size: 16px;
   color: var(--white);

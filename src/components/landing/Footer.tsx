@@ -10,11 +10,16 @@ export function Footer({ content, section }: Props) {
   const showSocial = (section?.settings as any)?.showSocial === true;
   const socialV2 = (content.socialLinksV2 || []).filter((s) => s.enabled && s.url && s.url.trim().length);
   const socialLegacy = (content.socialLinks || []).filter((s) => s.href && s.href.trim().length);
+  const icon = content.footer.brandIcon;
+  const iconUrl = icon?.type === "image" ? (icon.url || "") : "";
   return (
     <footer>
       <div className="container">
         <div className="footer-inner">
-          <div className="footer-logo">{renderBrandText(content.footer.brandText)}</div>
+          <div className="footer-logo">
+            {iconUrl ? <img className="logo-img" src={iconUrl} alt="CoachFlow" /> : null}
+            {renderBrandText(content.footer.brandText)}
+          </div>
 
           <div className="footer-links">
             {content.footer.links.map((l) => (
