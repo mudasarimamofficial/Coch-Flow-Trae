@@ -85,7 +85,11 @@ export function AdminShell({ tab, onTabChange, sessionEmail, onSignOut, topNotic
           }
         >
           <div className={sidebarCollapsed ? "mb-4 flex items-center justify-center" : "mb-5 flex items-center gap-2 px-2"}>
-            <span className="inline-flex h-2 w-2 rounded-full bg-[var(--cf-accent)]" />
+            <img
+              src="/apple-touch-icon.png"
+              alt="CoachFlow"
+              className={sidebarCollapsed ? "h-8 w-8 rounded-xl" : "h-7 w-7 rounded-xl"}
+            />
             {!sidebarCollapsed ? (
               <div className="text-sm font-bold">
                 CoachFlow <span className="text-[var(--cf-accent)]">AI</span>

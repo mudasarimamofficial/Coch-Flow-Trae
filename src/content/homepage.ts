@@ -201,7 +201,7 @@ export const homepageDefaults: HomepageContent = {
   site: {
     favicon: {
       type: "image",
-      url: "https://ekwydksbprxebgmhbmtj.supabase.co/storage/v1/object/public/homepage/favicon/1774778592577-coachflow-favicon.png",
+      url: "/favicon.png",
     },
     designPreset: "landing_html_v1",
     theme: {
@@ -306,7 +306,7 @@ export const homepageDefaults: HomepageContent = {
   customSections: [],
   header: {
     brandText: "CoachFlow AI",
-    brandIcon: { type: "material", name: "psychology" },
+    brandIcon: { type: "image", url: "/apple-touch-icon.png" },
     nav: [
       { label: "How It Works", href: "#workflow" },
       { label: "What We Do", href: "#features" },
@@ -482,7 +482,7 @@ export const homepageDefaults: HomepageContent = {
   },
   footer: {
     brandText: "CoachFlow AI",
-    brandIcon: { type: "material", name: "psychology" },
+    brandIcon: { type: "image", url: "/apple-touch-icon.png" },
     links: [
       { label: "Privacy Policy", href: "/p/privacy-policy" },
       { label: "Terms of Service", href: "/p/terms-of-service" },

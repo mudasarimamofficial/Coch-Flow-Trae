@@ -13,11 +13,17 @@ export function Header({ content }: Props) {
   const ctaHref = primaryCta ? (primaryCta.href as string) : "#";
   const ctaLabel = primaryCta ? ((primaryCta.label as string) || (primaryCta.text as string) || "") : "";
   const enabledNavItems = navItems.filter((x) => x.enabled !== false);
+  const icon = content.header.brandIcon;
+  const iconUrl = icon?.type === "image" ? (icon.url || "") : "";
   return (
     <nav>
       <div className="nav-inner">
         <a href="#" className="nav-logo">
-          <div className="logo-dot" />
+          {iconUrl ? (
+            <img className="logo-img" src={iconUrl} alt="CoachFlow" />
+          ) : (
+            <div className="logo-dot" />
+          )}
           {renderBrandText(content.header.brandText)}
         </a>
 
