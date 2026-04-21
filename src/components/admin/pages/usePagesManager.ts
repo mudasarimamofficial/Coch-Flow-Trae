@@ -153,7 +153,7 @@ export function usePagesManager(supabase: SupabaseClient) {
     const nextSections = toSections(selected.draft_content);
     setSections(nextSections);
     setSelectedSectionId(nextSections[0]?.id || null);
-  }, [selectedId]);
+  }, [selected]);
 
   async function saveDraft() {
     if (!selected) return;

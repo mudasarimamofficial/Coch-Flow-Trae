@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { homepageDefaults, type HomepageContent } from "@/content/homepage";
+import { normalizeHomepageContent } from "@/utils/normalizeHomepageContent";
 import { validateSenderEmailBasic } from "@/utils/resendSender";
 
 type Props = {
@@ -86,7 +87,7 @@ export function SettingsPanel({ supabase }: Props) {
         .eq("id", 1)
         .maybeSingle();
       if (!homeErr && home?.content) {
-        const c = home.content as HomepageContent;
+        const c = normalizeHomepageContent(home.content as Partial<HomepageContent>);
         setTheme(c.site?.theme || defaultTheme);
         setDesignPreset(((c.site as any)?.designPreset as any) === "classic" ? "classic" : "landing_html_v1");
       }
@@ -397,7 +398,7 @@ export function SettingsPanel({ supabase }: Props) {
                     setSettingsError(homeErr.message);
                     return;
                   }
-                  const current = home.content as HomepageContent;
+                  const current = normalizeHomepageContent(home.content as Partial<HomepageContent>);
                   const updated: HomepageContent = {
                     ...current,
                     site: {

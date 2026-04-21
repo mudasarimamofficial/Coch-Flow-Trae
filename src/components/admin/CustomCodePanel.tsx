@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Textarea } from "@/components/ui/Textarea";
 import { homepageDefaults, type HomepageContent } from "@/content/homepage";
+import { normalizeHomepageContent } from "@/utils/normalizeHomepageContent";
 
 type Props = {
   supabase: SupabaseClient;
@@ -30,8 +31,8 @@ export function CustomCodePanel({ supabase }: Props) {
         setContent(homepageDefaults);
         return;
       }
-      const c = (data?.content as HomepageContent | null) || null;
-      setContent(c && c.header?.brandText ? c : homepageDefaults);
+      const c = (data?.content as Partial<HomepageContent> | null) || null;
+      setContent(normalizeHomepageContent(c));
     } finally {
       setLoading(false);
     }
