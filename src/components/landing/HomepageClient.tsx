@@ -5,6 +5,7 @@ import type { HomepageContent } from "@/content/homepage";
 import { createBrowserSupabaseClient } from "@/utils/supabase/browserClient";
 import { WhatsAppWidget } from "@/components/landing/WhatsAppWidget";
 import { applyBuilderOverrides } from "@/utils/homepageBuilder";
+import { sanitizeContentStrings } from "@/utils/textSanitize";
 import { SectionErrorBoundary } from "@/components/landing/SectionErrorBoundary";
 import { SectionWrapper } from "@/components/landing/SectionWrapper";
 import { SECTION_REGISTRY, type PageSection } from "@/components/landing/sectionRegistry";
@@ -16,7 +17,7 @@ type Props = {
 };
 
 export function HomepageClient({ initialContent, isBuilderPreview }: Props) {
-  const [content, setContent] = useState<HomepageContent>(initialContent);
+  const [content, setContent] = useState<HomepageContent>(() => sanitizeContentStrings(initialContent));
   const [hasPreviewOverride, setHasPreviewOverride] = useState(false);
 
   useEffect(() => {
@@ -35,7 +36,7 @@ export function HomepageClient({ initialContent, isBuilderPreview }: Props) {
             .select("content")
             .eq("id", 1)
             .maybeSingle();
-          if (data?.content) setContent(data.content as HomepageContent);
+          if (data?.content) setContent(sanitizeContentStrings(data.content as HomepageContent));
         },
       )
       .subscribe();
@@ -56,7 +57,7 @@ export function HomepageClient({ initialContent, isBuilderPreview }: Props) {
       if (!data || data.type !== "coachflow_builder_preview") return;
       if (!data.content) return;
       setHasPreviewOverride(true);
-      setContent(data.content as HomepageContent);
+      setContent(sanitizeContentStrings(data.content as HomepageContent));
     }
     window.addEventListener("message", onMessage);
     return () => {
@@ -64,7 +65,7 @@ export function HomepageClient({ initialContent, isBuilderPreview }: Props) {
     };
   }, [isBuilderPreview]);
 
-  const resolved = applyBuilderOverrides(content);
+  const resolved = applyBuilderOverrides(sanitizeContentStrings(content));
 
   const sections: PageSection[] = resolved.page?.sections?.length
     ? (resolved.page.sections as PageSection[])
