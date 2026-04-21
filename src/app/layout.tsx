@@ -1,4 +1,4 @@
-import { DM_Sans, Playfair_Display } from "next/font/google";
+import { DM_Sans, Inter, Playfair_Display } from "next/font/google";
 import "./globals.css";
 import { ThemeScript } from "@/components/theme/ThemeScript";
 import { getHomepageContent } from "@/utils/homepageContent";
@@ -14,6 +14,13 @@ const bodyFont = DM_Sans({
   subsets: ["latin"],
   weight: ["300", "400", "500"],
   variable: "--font-body",
+  display: "swap",
+});
+
+const adminFont = Inter({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-admin",
   display: "swap",
 });
 
@@ -77,7 +84,7 @@ export default async function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={`${headingFont.variable} ${bodyFont.variable} h-full antialiased`}
+      className={`${headingFont.variable} ${bodyFont.variable} ${adminFont.variable} h-full antialiased`}
     >
       <head>
         <link rel="icon" href={faviconHref} type={type} sizes="any" />

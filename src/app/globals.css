@@ -29,6 +29,17 @@ body {
     sans-serif;
 }
 
+.cf-admin {
+  --cf-bg: #0e131d;
+  --cf-secondary: #12151c;
+  --cf-border: rgba(255, 255, 255, 0.08);
+  --cf-text: #dee2f0;
+  --cf-muted: rgba(222, 226, 240, 0.65);
+  --cf-accent: #e9c349;
+  font-family: var(--font-admin), var(--cf-font-body, var(--font-body)), system-ui, -apple-system, Segoe UI, Roboto,
+    Helvetica, Arial, sans-serif;
+}
+
 h1,
 h2,
 h3,

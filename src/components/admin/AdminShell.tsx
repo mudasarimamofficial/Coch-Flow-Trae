@@ -43,7 +43,7 @@ export function AdminShell({ tab, onTabChange, sessionEmail, onSignOut, topNotic
   }, []);
 
   return (
-    <div className="flex h-[100dvh] overflow-hidden bg-[var(--cf-bg)] text-[var(--cf-text)]">
+    <div className="cf-admin flex h-[100dvh] overflow-hidden bg-[var(--cf-bg)] text-[var(--cf-text)]">
       <aside className="hidden w-[220px] flex-col border-r border-white/10 bg-[var(--cf-secondary)] px-3 py-5 lg:flex">
         <div className="mb-5 flex items-center gap-2 px-2 text-sm font-bold">
           <span className="inline-flex h-2 w-2 rounded-full bg-[var(--cf-accent)]" />
