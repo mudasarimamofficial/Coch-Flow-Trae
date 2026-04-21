@@ -31,11 +31,21 @@ body {
 
 .cf-admin {
   --cf-bg: #0e131d;
-  --cf-secondary: #12151c;
-  --cf-border: rgba(255, 255, 255, 0.08);
+  --cf-surface: #0e131d;
+  --cf-surface-lowest: #090e18;
+  --cf-surface-low: #171c25;
+  --cf-surface-container: #1b202a;
+  --cf-surface-high: #252a34;
+  --cf-surface-highest: #30353f;
+  --cf-outline-variant: #45474b;
+  --cf-outline: #909095;
   --cf-text: #dee2f0;
+  --cf-text-variant: #c6c6cb;
   --cf-muted: rgba(222, 226, 240, 0.65);
   --cf-accent: #e9c349;
+  --cf-accent-ink: #342800;
+  --cf-border: rgba(255, 255, 255, 0.08);
+  --cf-secondary: var(--cf-surface-container);
   font-family: var(--font-admin), var(--cf-font-body, var(--font-body)), system-ui, -apple-system, Segoe UI, Roboto,
     Helvetica, Arial, sans-serif;
 }

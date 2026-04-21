@@ -43,6 +43,76 @@ export function usePagesManager(supabase: SupabaseClient) {
     return `${base}-${Date.now()}`;
   }
 
+  async function createNewWithValues(params: { title: string; slug?: string; navLabel?: string }) {
+    setError(null);
+    setSaved(null);
+    setLoading(true);
+    try {
+      const t = params.title.trim();
+      const baseSlug = normalizeSlug((params.slug || "").length ? (params.slug as string) : t || "new-page");
+      const s = nextUniqueSlug(baseSlug, null);
+      if (!t.length) {
+        setError("Title is required");
+        return;
+      }
+      if (!s.length) {
+        setError("Slug is required");
+        return;
+      }
+
+      const initial: PageSection[] = [
+        { id: nowId("rich"), type: "rich_text", enabled: true, settings: { title: t, content: "<p>Update this content.</p>" } },
+      ];
+
+      const insertRow = async (slugValue: string) =>
+        supabase
+          .from("site_pages")
+          .insert({
+            title: t,
+            slug: slugValue,
+            nav_label: (params.navLabel || navLabel).trim().length ? (params.navLabel || navLabel).trim() : null,
+            show_in_header_nav: showHeader,
+            show_in_footer_nav: showFooter,
+            status: "draft",
+            meta_title: metaTitle.trim().length ? metaTitle.trim() : null,
+            meta_description: metaDescription.trim().length ? metaDescription.trim() : null,
+            draft_content: withSections(initial),
+            published_content: withSections(initial),
+          })
+          .select("id")
+          .maybeSingle();
+
+      const { data: inserted, error: err } = await insertRow(s);
+      if (err) {
+        const msg = err.message || "";
+        if (msg.includes("site_pages_slug_key")) {
+          const retrySlug = nextUniqueSlug(`${s}-2`, null);
+          const { data: retryInserted, error: retryErr } = await insertRow(retrySlug);
+          if (retryErr) {
+            setError(retryErr.message);
+            return;
+          }
+          setSaved("Page created");
+          await loadPages();
+          if (retryInserted?.id) setSelectedId(retryInserted.id);
+          setTitle(t);
+          setSlug(retrySlug);
+          return;
+        }
+        setError(err.message);
+        return;
+      }
+
+      setSaved("Page created");
+      await loadPages();
+      if (inserted?.id) setSelectedId(inserted.id);
+      setTitle(t);
+      setSlug(s);
+    } finally {
+      setLoading(false);
+    }
+  }
+
   async function loadPages() {
     setError(null);
     setSaved(null);
@@ -222,81 +292,7 @@ export function usePagesManager(supabase: SupabaseClient) {
   }
 
   async function createNew() {
-    setError(null);
-    setSaved(null);
-    setLoading(true);
-    try {
-      const t = title.trim();
-      const baseSlug = normalizeSlug(slug.length ? slug : t || "new-page");
-      const s = nextUniqueSlug(baseSlug, null);
-      if (!t.length) {
-        setError("Title is required");
-        return;
-      }
-      if (!s.length) {
-        setError("Slug is required");
-        return;
-      }
-      const initial: PageSection[] = [
-        { id: nowId("rich"), type: "rich_text", enabled: true, settings: { title: t, content: "<p>Update this content.</p>" } },
-      ];
-      const { data: inserted, error: err } = await supabase
-        .from("site_pages")
-        .insert({
-          title: t,
-          slug: s,
-          nav_label: navLabel.trim().length ? navLabel.trim() : null,
-          show_in_header_nav: showHeader,
-          show_in_footer_nav: showFooter,
-          status: "draft",
-          meta_title: metaTitle.trim().length ? metaTitle.trim() : null,
-          meta_description: metaDescription.trim().length ? metaDescription.trim() : null,
-          draft_content: withSections(initial),
-          published_content: withSections(initial),
-        })
-        .select("id")
-        .maybeSingle();
-      if (err) {
-        const msg = err.message || "";
-        if (msg.includes("site_pages_slug_key")) {
-          const retrySlug = nextUniqueSlug(`${s}-page`, null);
-          const { data: retryInserted, error: retryErr } = await supabase
-            .from("site_pages")
-            .insert({
-              title: t,
-              slug: retrySlug,
-              nav_label: navLabel.trim().length ? navLabel.trim() : null,
-              show_in_header_nav: showHeader,
-              show_in_footer_nav: showFooter,
-              status: "draft",
-              meta_title: metaTitle.trim().length ? metaTitle.trim() : null,
-              meta_description: metaDescription.trim().length ? metaDescription.trim() : null,
-              draft_content: withSections(initial),
-              published_content: withSections(initial),
-            })
-            .select("id")
-            .maybeSingle();
-          if (retryErr) {
-            setError(retryErr.message);
-            return;
-          }
-          setSaved("Page created");
-          await loadPages();
-          if (retryInserted?.id) setSelectedId(retryInserted.id);
-          setSlug(retrySlug);
-          return;
-        }
-
-        setError(err.message);
-        return;
-      }
-      setSaved("Page created");
-      await loadPages();
-      if (inserted?.id) setSelectedId(inserted.id);
-      setSlug(s);
-    } finally {
-      setLoading(false);
-    }
+    await createNewWithValues({ title, slug, navLabel });
   }
 
   async function deleteSelected() {
@@ -346,5 +342,6 @@ export function usePagesManager(supabase: SupabaseClient) {
     sections, selectedSectionId, setSelectedSectionId, selectedSection,
     loadPages, saveDraft, publish, unpublish, revertDraft, createNew, deleteSelected,
     addRichTextSection, updateSection, deleteSection,
+    createNewWithValues,
   };
 }

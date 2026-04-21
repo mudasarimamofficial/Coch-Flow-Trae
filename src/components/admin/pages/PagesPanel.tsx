@@ -2,11 +2,11 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { PagesList } from "@/components/admin/pages/PagesList";
-import { PagePreview } from "@/components/admin/pages/PagePreview";
 import { PageEditor } from "@/components/admin/pages/PageEditor";
 import { SectionsList } from "@/components/admin/pages/SectionsList";
 import { RichTextInspector } from "@/components/admin/pages/RichTextInspector";
 import { usePagesManager } from "@/components/admin/pages/usePagesManager";
+import { NewPageModal } from "@/components/admin/pages/NewPageModal";
 
 type Props = {
   supabase: SupabaseClient;
@@ -14,14 +14,24 @@ type Props = {
 
 export function PagesPanel({ supabase }: Props) {
   const m = usePagesManager(supabase);
-  const [previewMode, setPreviewMode] = useState<"desktop" | "tablet" | "mobile">("desktop");
+  const [newPageOpen, setNewPageOpen] = useState(false);
 
   return (
     <div className="flex h-full min-h-0 w-full flex-col bg-[var(--cf-bg)]">
-      <div className="border-b border-white/10 bg-[var(--cf-secondary)] px-4 py-4 lg:px-6">
-        <div className="text-lg font-bold text-white">Pages</div>
-        <div className="mt-1 text-sm text-white/60">
-          Create and publish Privacy Policy, Terms of Service, Contact, and custom pages.
+      <div className="border-b border-white/10 bg-[var(--cf-surface)] px-4 py-4 lg:px-6">
+        <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+          <div>
+            <div className="text-lg font-semibold text-white">Pages</div>
+            <div className="mt-1 text-sm text-white/60">Create and publish pages with a focused editing flow.</div>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button className="h-10" disabled={m.loading} onClick={() => setNewPageOpen(true)}>
+              New page
+            </Button>
+            <Button variant="secondary" className="h-10" disabled={m.loading} onClick={m.loadPages}>
+              Refresh
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -37,14 +47,12 @@ export function PagesPanel({ supabase }: Props) {
       ) : null}
 
       <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-hidden p-3 lg:flex-row">
-        <div className="flex h-full min-h-0 flex-col rounded-2xl border border-white/10 bg-white/5 p-3 lg:w-[280px] lg:flex-none">
-          <div className="text-xs font-bold uppercase tracking-wide text-white/50">All Pages</div>
-          <PagesList pages={m.pages} selectedId={m.selectedId} onSelect={m.setSelectedId} />
-          <div className="mt-3 border-t border-white/10 pt-3">
-            <Button className="h-10 w-full" disabled={m.loading} onClick={m.loadPages}>
-              Refresh
-            </Button>
+        <div className="flex h-full min-h-0 flex-col rounded-2xl border border-white/10 bg-[var(--cf-surface-container)] p-3 lg:w-[320px] lg:flex-none">
+          <div className="flex items-center justify-between gap-2 px-1">
+            <div className="text-[11px] font-semibold uppercase tracking-[0.08em] text-white/50">All pages</div>
+            <div className="text-xs text-white/40">{m.pages.length}</div>
           </div>
+          <PagesList pages={m.pages} selectedId={m.selectedId} onSelect={m.setSelectedId} />
         </div>
 
         <div className="flex h-full min-h-0 flex-1 flex-col gap-3 overflow-hidden">
@@ -71,7 +79,6 @@ export function PagesPanel({ supabase }: Props) {
             onUnpublish={m.unpublish}
             onRevertDraft={m.revertDraft}
             onDelete={m.deleteSelected}
-            onCreateNew={m.createNew}
           />
 
           <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-hidden lg:flex-row">
@@ -82,10 +89,11 @@ export function PagesPanel({ supabase }: Props) {
               onAdd={m.addRichTextSection}
             />
 
-            <PagePreview slug={m.slug} mode={previewMode} onModeChange={setPreviewMode} sections={m.sections} />
-
-            <div className="flex min-h-0 flex-1 flex-col rounded-2xl border border-white/10 bg-white/5 p-4 lg:w-[420px] lg:flex-none">
-              <div className="text-xs font-bold uppercase tracking-wide text-white/50">Inspector</div>
+            <div className="flex min-h-0 flex-1 flex-col rounded-2xl border border-white/10 bg-[var(--cf-surface-container)] p-4 lg:w-[480px] lg:flex-none">
+              <div className="flex items-center justify-between">
+                <div className="text-[11px] font-semibold uppercase tracking-[0.08em] text-white/50">Inspector</div>
+                {m.selectedSection ? <div className="text-xs text-white/40">{m.selectedSection.type}</div> : null}
+              </div>
               <div className="mt-3 min-h-0 flex-1 overflow-y-auto">
                 <RichTextInspector
                   section={m.selectedSection}
@@ -99,6 +107,15 @@ export function PagesPanel({ supabase }: Props) {
           </div>
         </div>
       </div>
+
+      <NewPageModal
+        open={newPageOpen}
+        pages={m.pages}
+        onClose={() => setNewPageOpen(false)}
+        onCreate={async ({ title, slug }) => {
+          await m.createNewWithValues({ title, slug });
+        }}
+      />
     </div>
   );
 }

@@ -1,4 +1,5 @@
 import type { SitePage } from "@/components/admin/pages/types";
+import { FileText, Mail, Scale, Shield } from "lucide-react";
 
 type Props = {
   pages: SitePage[];
@@ -15,27 +16,41 @@ export function PagesList({ pages, selectedId, onSelect }: Props) {
           type="button"
           className={
             selectedId === p.id
-              ? "w-full rounded-xl border border-[#0fa3a3]/40 bg-[#0fa3a3]/10 px-3 py-3 text-left"
-              : "w-full rounded-xl border border-slate-200 bg-white px-3 py-3 text-left hover:bg-slate-50 dark:border-white/10 dark:bg-[#0b1414] dark:hover:bg-white/5"
+              ? "group w-full rounded-2xl border border-[var(--cf-accent)]/35 bg-[var(--cf-accent)]/10 px-3 py-3 text-left"
+              : "group w-full rounded-2xl border border-white/10 bg-white/0 px-3 py-3 text-left hover:bg-white/5"
           }
           onClick={() => onSelect(p.id)}
         >
-          <div className="flex items-center justify-between gap-2">
-            <div className="text-sm font-bold">{p.title}</div>
-            <div
-              className={
-                p.status === "published"
-                  ? "rounded-full bg-emerald-500/15 px-2 py-0.5 text-[11px] font-bold text-emerald-200"
-                  : "rounded-full bg-slate-500/15 px-2 py-0.5 text-[11px] font-bold text-slate-200"
-              }
-            >
-              {p.status}
+          <div className="flex items-start gap-3">
+            <div className="mt-0.5 inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-white/70 group-hover:text-white">
+              {String(p.slug || "").includes("privacy") ? (
+                <Shield size={18} />
+              ) : String(p.slug || "").includes("terms") ? (
+                <Scale size={18} />
+              ) : String(p.slug || "").includes("contact") ? (
+                <Mail size={18} />
+              ) : (
+                <FileText size={18} />
+              )}
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center justify-between gap-2">
+                <div className="truncate text-sm font-semibold text-white">{p.title}</div>
+                <div
+                  className={
+                    p.status === "published"
+                      ? "inline-flex flex-none items-center rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2 py-0.5 text-[11px] font-semibold text-emerald-200"
+                      : "inline-flex flex-none items-center rounded-full border border-white/10 bg-white/5 px-2 py-0.5 text-[11px] font-semibold text-white/60"
+                  }
+                >
+                  {p.status === "published" ? "Published" : "Draft"}
+                </div>
+              </div>
+              <div className="mt-1 truncate text-xs text-white/50">/{p.slug}</div>
             </div>
           </div>
-          <div className="mt-1 text-xs text-slate-600 dark:text-slate-400">/{p.slug}</div>
         </button>
       ))}
     </div>
   );
 }
-
