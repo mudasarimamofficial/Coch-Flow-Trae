@@ -89,6 +89,9 @@ export async function GET() {
         VERCEL_ENV: env("VERCEL_ENV") ?? null,
         VERCEL_URL: env("VERCEL_URL") ?? null,
         VERCEL_REGION: env("VERCEL_REGION") ?? null,
+        VERCEL_GIT_REPO_SLUG: env("VERCEL_GIT_REPO_SLUG") ?? null,
+        VERCEL_GIT_COMMIT_REF: env("VERCEL_GIT_COMMIT_REF") ?? null,
+        VERCEL_GIT_COMMIT_SHA: env("VERCEL_GIT_COMMIT_SHA") ?? null,
       },
       supabaseKeyRoles: {
         NEXT_PUBLIC_SUPABASE_ANON_KEY: jwtRole(env("NEXT_PUBLIC_SUPABASE_ANON_KEY")),
