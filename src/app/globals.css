@@ -228,7 +228,7 @@ h6 {
   text-decoration: none;
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 5px;
 }
 
 .cf-landing .nav-logo span {
@@ -243,8 +243,8 @@ h6 {
 }
 
 .cf-landing .logo-img {
-  width: 20px;
-  height: 20px;
+  width: 30px;
+  height: 30px;
   border-radius: 6px;
   object-fit: contain;
 }
@@ -905,7 +905,7 @@ h6 {
 .cf-landing .footer-logo {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
+  gap: 4px;
   font-family: "Playfair Display", serif;
   font-size: 16px;
   color: var(--white);
@@ -920,8 +920,8 @@ h6 {
 }
 
 .cf-landing .footer-logo img {
-  width: 20px;
-  height: 20px;
+  width: 25px;
+  height: 25px;
   border-radius: 6px;
   object-fit: contain;
 }
