@@ -264,7 +264,7 @@ export const homepageDefaults: HomepageContent = {
     },
   ],
   whatsapp: {
-    enabled: false,
+    enabled: true,
     phone: "+923191106310",
     message: "Hi, I want to learn more about your services",
     tooltip: "Chat with us!",

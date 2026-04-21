@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { LayoutDashboard, FileJson, Settings, Users, Code2, Files } from "lucide-react";
 import type { Tab } from "@/components/admin/types";
@@ -15,6 +15,7 @@ type Props = {
 
 export function AdminShell({ tab, onTabChange, sessionEmail, onSignOut, topNotice, children }: Props) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [noticeDismissed, setNoticeDismissed] = useState(false);
   const navItems: { tab: Tab; label: string; icon: ReactNode }[] = [
     { tab: "builder", label: "Builder", icon: <LayoutDashboard size={18} /> },
     { tab: "pages", label: "Pages", icon: <Files size={18} /> },
@@ -25,6 +26,21 @@ export function AdminShell({ tab, onTabChange, sessionEmail, onSignOut, topNotic
   ];
 
   const tabLabel = navItems.find((n) => n.tab === tab)?.label || "Admin";
+
+  const shouldShowNotice = useMemo(() => {
+    if (!topNotice) return false;
+    if (noticeDismissed) return false;
+    return true;
+  }, [topNotice, noticeDismissed]);
+
+  useEffect(() => {
+    try {
+      const dismissed = window.localStorage.getItem("cf_admin_notice_dismissed") === "1";
+      setNoticeDismissed(dismissed);
+    } catch {
+      setNoticeDismissed(false);
+    }
+  }, []);
 
   return (
     <div className="flex h-[100dvh] overflow-hidden bg-[var(--cf-bg)] text-[var(--cf-text)]">
@@ -77,9 +93,31 @@ export function AdminShell({ tab, onTabChange, sessionEmail, onSignOut, topNotic
           </div>
         ) : null}
 
-        {topNotice ? (
-          <div className="border-b border-white/10 bg-amber-500/10 px-4 py-3 text-sm text-amber-200 lg:px-6">
-            {topNotice}
+        {shouldShowNotice ? (
+          <div className="border-b border-white/10 bg-white/5 px-4 py-2 text-xs text-white/80 lg:px-6">
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0 flex-1">
+                <span className="mr-2 inline-flex rounded-full bg-amber-500/15 px-2 py-0.5 text-[11px] font-semibold text-amber-200">
+                  Email
+                </span>
+                {topNotice}
+              </div>
+              <button
+                type="button"
+                className="inline-flex h-8 w-8 flex-none items-center justify-center rounded-xl border border-white/10 bg-white/5 text-white/70 hover:bg-white/10 hover:text-white"
+                aria-label="Dismiss"
+                onClick={() => {
+                  setNoticeDismissed(true);
+                  try {
+                    window.localStorage.setItem("cf_admin_notice_dismissed", "1");
+                  } catch {
+                    return;
+                  }
+                }}
+              >
+                ×
+              </button>
+            </div>
           </div>
         ) : null}
 

@@ -1254,7 +1254,7 @@ export function VisualBuilderPanel({ supabase, onNavigateTab, onSignOut }: Props
 
           {selectedSection ? (
             <div className="mb-4 flex flex-col gap-3 rounded-xl border border-slate-200 bg-white p-3 dark:border-white/10 dark:bg-[#0b1414]">
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <Select
                   label="Enabled"
                   value={selectedSection.enabled ? "yes" : "no"}
@@ -1284,7 +1284,7 @@ export function VisualBuilderPanel({ supabase, onNavigateTab, onSignOut }: Props
                   ]}
                 />
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <Input
                   label="Padding top (px)"
                   type="number"
@@ -1363,7 +1363,7 @@ export function VisualBuilderPanel({ supabase, onNavigateTab, onSignOut }: Props
                 />
               ) : null}
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <Input
                   label="Background color"
                   value={String((selectedSection.settings as any)?.backgroundColor ?? (selectedSection.settings as any)?.backgroundColorHex ?? "")}
@@ -1393,7 +1393,7 @@ export function VisualBuilderPanel({ supabase, onNavigateTab, onSignOut }: Props
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <Select
                   label="Container width"
                   value={String((selectedSection.settings as any)?.containerWidth || "lg")}
@@ -1427,7 +1427,7 @@ export function VisualBuilderPanel({ supabase, onNavigateTab, onSignOut }: Props
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <Button
                   variant="secondary"
                   className="mt-6 h-10"
