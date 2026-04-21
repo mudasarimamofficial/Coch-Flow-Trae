@@ -204,11 +204,7 @@ export function AdminShell({ tab, onTabChange, sessionEmail, onSignOut, topNotic
           <div className="mx-auto grid max-w-xl grid-cols-5 px-2 py-2">
             <button
               type="button"
-              className={
-                tab === "builder"
-                  ? "flex h-12 flex-col items-center justify-center rounded-xl bg-white/10 text-white"
-                  : "flex h-12 flex-col items-center justify-center rounded-xl text-white/70 hover:bg-white/5 hover:text-white"
-              }
+              className="flex h-12 flex-col items-center justify-center rounded-xl text-white/70 hover:bg-white/5 hover:text-white"
               onClick={() => onTabChange("builder")}
             >
               <LayoutDashboard size={18} />
