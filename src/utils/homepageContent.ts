@@ -1,5 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import { homepageDefaults, type HomepageContent } from "@/content/homepage";
+import { sanitizeContentStrings } from "@/utils/textSanitize";
 
 export async function getHomepageContent(): Promise<HomepageContent> {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -55,7 +56,7 @@ export async function getHomepageContent(): Promise<HomepageContent> {
       return out;
     };
 
-    return {
+    return sanitizeContentStrings({
       ...homepageDefaults,
       ...c,
       site: { ...homepageDefaults.site, ...(c.site || {}) },
@@ -149,7 +150,7 @@ export async function getHomepageContent(): Promise<HomepageContent> {
         headerColorHex: c.whatsapp?.headerColorHex ?? (homepageDefaults.whatsapp?.headerColorHex || "#25D366"),
         avatar: c.whatsapp?.avatar || homepageDefaults.whatsapp?.avatar,
       },
-    };
+    });
   } catch {
     return homepageDefaults;
   }
