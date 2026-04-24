@@ -256,6 +256,15 @@ h6 {
   list-style: none;
 }
 
+.cf-landing .nav-right {
+  display: flex;
+  align-items: center;
+}
+
+.cf-landing .nav-cta-spacer {
+  display: none;
+}
+
 .cf-landing .nav-mobile {
   display: none;
   position: relative;
@@ -269,13 +278,29 @@ h6 {
   width: 42px;
   height: 42px;
   border-radius: 12px;
-  border: 0.5px solid var(--border2);
-  background: rgba(255, 255, 255, 0.04);
+  border: 0.5px solid rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.03);
   cursor: pointer;
+  transition: background 0.18s ease, border-color 0.18s ease, transform 0.18s ease;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .cf-landing .nav-toggle::-webkit-details-marker {
   display: none;
+}
+
+.cf-landing .nav-toggle:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(201, 152, 42, 0.35);
+}
+
+.cf-landing .nav-toggle:active {
+  transform: scale(0.98);
+}
+
+.cf-landing .nav-toggle:focus-visible {
+  outline: 2px solid rgba(201, 152, 42, 0.55);
+  outline-offset: 2px;
 }
 
 .cf-landing .nav-toggle-bars {
@@ -283,6 +308,8 @@ h6 {
   height: 2px;
   background: rgba(240, 237, 230, 0.9);
   position: relative;
+  border-radius: 999px;
+  transition: background 0.18s ease, transform 0.18s ease;
 }
 
 .cf-landing .nav-toggle-bars::before,
@@ -293,6 +320,8 @@ h6 {
   width: 18px;
   height: 2px;
   background: rgba(240, 237, 230, 0.9);
+  border-radius: 999px;
+  transition: transform 0.18s ease, top 0.18s ease, opacity 0.18s ease;
 }
 
 .cf-landing .nav-toggle-bars::before {
@@ -301,6 +330,164 @@ h6 {
 
 .cf-landing .nav-toggle-bars::after {
   top: 6px;
+}
+
+.cf-landing .nav-toggle.is-open .nav-toggle-bars {
+  background: rgba(240, 237, 230, 0);
+}
+
+.cf-landing .nav-toggle.is-open .nav-toggle-bars::before {
+  top: 0;
+  transform: rotate(45deg);
+}
+
+.cf-landing .nav-toggle.is-open .nav-toggle-bars::after {
+  top: 0;
+  transform: rotate(-45deg);
+}
+
+.cf-landing .nav-sheet {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.18s ease;
+}
+
+.cf-landing .nav-sheet.is-open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.cf-landing .nav-sheet-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(10px);
+}
+
+.cf-landing .nav-sheet-panel {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: min(380px, 90vw);
+  border-right: 0.5px solid rgba(255, 255, 255, 0.14);
+  border-top-right-radius: 22px;
+  border-bottom-right-radius: 22px;
+  background: linear-gradient(180deg, rgba(15, 22, 41, 0.98) 0%, rgba(10, 15, 30, 0.98) 100%);
+  box-shadow: 18px 0 60px rgba(0, 0, 0, 0.55);
+  transform: translateX(-102%);
+  transition: transform 0.26s cubic-bezier(0.22, 1, 0.36, 1);
+  padding: calc(18px + env(safe-area-inset-top)) 16px calc(18px + env(safe-area-inset-bottom));
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+  will-change: transform;
+}
+
+.cf-landing .nav-sheet.is-open .nav-sheet-panel {
+  transform: translateX(0);
+}
+
+.cf-landing .nav-sheet-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.cf-landing .nav-sheet-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.cf-landing .nav-sheet-brand-text {
+  font-family: "Playfair Display", serif;
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--white);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cf-landing .nav-sheet-brand-text span {
+  color: var(--gold2);
+}
+
+.cf-landing .nav-sheet-close {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  border: 0.5px solid rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.03);
+  color: rgba(240, 237, 230, 0.9);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.18s ease, border-color 0.18s ease, transform 0.18s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.cf-landing .nav-sheet-close:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(201, 152, 42, 0.35);
+}
+
+.cf-landing .nav-sheet-close:active {
+  transform: scale(0.98);
+}
+
+.cf-landing .nav-sheet-close:focus-visible {
+  outline: 2px solid rgba(201, 152, 42, 0.55);
+  outline-offset: 2px;
+}
+
+.cf-landing .nav-sheet-links {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+}
+
+.cf-landing .nav-sheet-links a {
+  display: block;
+  padding: 12px 10px;
+  border-radius: 14px;
+  color: rgba(240, 237, 230, 0.88);
+  text-decoration: none;
+  background: rgba(255, 255, 255, 0.02);
+  border: 0.5px solid rgba(255, 255, 255, 0.08);
+  transition: background 0.18s ease, border-color 0.18s ease, transform 0.18s ease;
+}
+
+.cf-landing .nav-sheet-links a:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(201, 152, 42, 0.2);
+  color: var(--white);
+}
+
+.cf-landing .nav-sheet-cta {
+  margin-top: auto;
+  display: inline-flex;
+  justify-content: center;
+  width: 100%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cf-landing .nav-sheet,
+  .cf-landing .nav-sheet-panel {
+    transition: none;
+  }
 }
 
 .cf-landing .nav-mobile-menu {
@@ -981,6 +1168,32 @@ h6 {
     display: block;
   }
 
+  .cf-landing .nav-inner {
+    display: grid;
+    grid-template-columns: 42px 1fr 42px;
+    align-items: center;
+  }
+
+  .cf-landing .nav-logo {
+    justify-self: center;
+  }
+
+  .cf-landing .nav-right {
+    justify-self: end;
+    width: 42px;
+    justify-content: flex-end;
+  }
+
+  .cf-landing .nav-cta {
+    display: none;
+  }
+
+  .cf-landing .nav-cta-spacer {
+    display: block;
+    width: 42px;
+    height: 42px;
+  }
+
   .cf-landing .hero-trust {
     flex-direction: column;
     align-items: flex-start;
@@ -994,6 +1207,32 @@ h6 {
 
   .cf-landing .nav-mobile {
     display: block;
+  }
+
+  .cf-landing .nav-inner {
+    display: grid;
+    grid-template-columns: 42px 1fr 42px;
+    align-items: center;
+  }
+
+  .cf-landing .nav-logo {
+    justify-self: center;
+  }
+
+  .cf-landing .nav-right {
+    justify-self: end;
+    width: 42px;
+    justify-content: flex-end;
+  }
+
+  .cf-landing .nav-cta {
+    display: none;
+  }
+
+  .cf-landing .nav-cta-spacer {
+    display: block;
+    width: 42px;
+    height: 42px;
   }
 }
 
