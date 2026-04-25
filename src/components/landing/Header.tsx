@@ -73,7 +73,7 @@ export function Header({ content }: Props) {
           <div className="nav-right">
             {ctaEnabled ? (
               <>
-                <a href={ctaHref} className="btn-primary nav-cta" style={{ padding: "10px 22px", fontSize: "13px" }}>
+                <a href={ctaHref} className="btn-primary nav-cta">
                   {ctaLabel}
                 </a>
                 <span className="nav-cta-spacer" aria-hidden="true" />

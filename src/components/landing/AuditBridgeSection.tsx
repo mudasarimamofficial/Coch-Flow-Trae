@@ -23,7 +23,7 @@ export function AuditBridgeSection({ section }: Props) {
             {subcopy ? <p>{subcopy}</p> : null}
           </div>
           {ctaText ? (
-            <a href={ctaHref} className="btn-ghost">
+            <a href={ctaHref} className="btn-primary audit-cta">
               {ctaText} <span className="arrow">→</span>
             </a>
           ) : null}

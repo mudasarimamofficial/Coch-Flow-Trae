@@ -6,6 +6,7 @@ import { createBrowserSupabaseClient } from "@/utils/supabase/browserClient";
 import { WhatsAppWidget } from "@/components/landing/WhatsAppWidget";
 import { applyBuilderOverrides } from "@/utils/homepageBuilder";
 import { sanitizeContentStrings } from "@/utils/textSanitize";
+import { normalizeLandingContent } from "@/utils/landingNormalize";
 import { SectionErrorBoundary } from "@/components/landing/SectionErrorBoundary";
 import { SectionWrapper } from "@/components/landing/SectionWrapper";
 import { SECTION_REGISTRY, type PageSection } from "@/components/landing/sectionRegistry";
@@ -65,9 +66,9 @@ export function HomepageClient({ initialContent, isBuilderPreview }: Props) {
     };
   }, [isBuilderPreview]);
 
-  const resolved = applyBuilderOverrides(sanitizeContentStrings(content));
+  const resolved = normalizeLandingContent(applyBuilderOverrides(sanitizeContentStrings(content)));
 
-  const sections: PageSection[] = resolved.page?.sections?.length
+  let sections: PageSection[] = resolved.page?.sections?.length
     ? (resolved.page.sections as PageSection[])
     : ([
         { id: "hero", type: "hero", enabled: true },
@@ -81,6 +82,19 @@ export function HomepageClient({ initialContent, isBuilderPreview }: Props) {
 
   const preset = ((resolved.site as any)?.designPreset as string | undefined) || "landing_html_v1";
   const useLanding = preset !== "classic";
+
+  if (useLanding && !sections.some((s) => s.type === "trust")) {
+    const heroIdx = sections.findIndex((s) => s.type === "hero");
+    const insertAt = heroIdx >= 0 ? heroIdx + 1 : 0;
+    const trustHasContent = Boolean(resolved.trust?.eyebrow) || Boolean(resolved.trust?.icons?.length);
+    if (trustHasContent) {
+      sections = [
+        ...sections.slice(0, insertAt),
+        { id: "trust", type: "trust", enabled: true, settings: { variant: "landing" } } as PageSection,
+        ...sections.slice(insertAt),
+      ];
+    }
+  }
 
   return (
     <div className={`${useLanding ? "cf-landing" : ""} flex flex-1 flex-col`}>
