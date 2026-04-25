@@ -204,7 +204,7 @@ h6 {
 .cf-landing nav {
   position: sticky;
   top: 0;
-  z-index: 100;
+  z-index: 9999;
   background: rgba(10, 15, 30, 0.92);
   backdrop-filter: blur(12px);
   border-bottom: 0.5px solid var(--border2);
@@ -272,7 +272,6 @@ h6 {
 
 .cf-landing .nav-toggle {
   list-style: none;
-  display: inline-flex;
   align-items: center;
   justify-content: center;
   width: 42px;
@@ -349,7 +348,7 @@ h6 {
 .cf-landing .nav-sheet {
   position: fixed;
   inset: 0;
-  z-index: 300;
+  z-index: 10000;
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.18s ease;
@@ -1165,12 +1164,12 @@ h6 {
   }
 
   .cf-landing .nav-mobile {
-    display: block;
+    display: inline-flex;
   }
 
   .cf-landing .nav-inner {
     display: grid;
-    grid-template-columns: 42px 1fr 42px;
+    grid-template-columns: 44px 1fr 44px;
     align-items: center;
   }
 
@@ -1180,7 +1179,7 @@ h6 {
 
   .cf-landing .nav-right {
     justify-self: end;
-    width: 42px;
+    width: 44px;
     justify-content: flex-end;
   }
 
@@ -1190,9 +1189,16 @@ h6 {
 
   .cf-landing .nav-cta-spacer {
     display: block;
-    width: 42px;
-    height: 42px;
+    width: 44px;
+    height: 44px;
   }
+
+  .cf-landing .nav-toggle {
+    width: 44px;
+    height: 44px;
+    border-radius: 14px;
+  }
+
 
   .cf-landing .hero-trust {
     flex-direction: column;
@@ -1206,12 +1212,12 @@ h6 {
   }
 
   .cf-landing .nav-mobile {
-    display: block;
+    display: inline-flex;
   }
 
   .cf-landing .nav-inner {
     display: grid;
-    grid-template-columns: 42px 1fr 42px;
+    grid-template-columns: 44px 1fr 44px;
     align-items: center;
   }
 
@@ -1221,7 +1227,7 @@ h6 {
 
   .cf-landing .nav-right {
     justify-self: end;
-    width: 42px;
+    width: 44px;
     justify-content: flex-end;
   }
 
@@ -1231,8 +1237,28 @@ h6 {
 
   .cf-landing .nav-cta-spacer {
     display: block;
-    width: 42px;
-    height: 42px;
+    width: 44px;
+    height: 44px;
+  }
+
+  .cf-landing .nav-toggle {
+    width: 44px;
+    height: 44px;
+    border-radius: 14px;
+  }
+
+  .cf-landing .nav-toggle-bars,
+  .cf-landing .nav-toggle-bars::before,
+  .cf-landing .nav-toggle-bars::after {
+    width: 20px;
+  }
+
+  .cf-landing .nav-toggle-bars::before {
+    top: -7px;
+  }
+
+  .cf-landing .nav-toggle-bars::after {
+    top: 7px;
   }
 }
 

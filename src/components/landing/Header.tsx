@@ -39,49 +39,51 @@ export function Header({ content }: Props) {
   }, [mobileOpen]);
 
   return (
-    <nav>
-      <div className="nav-inner">
-        <button
-          type="button"
-          className={`nav-mobile nav-toggle ${mobileOpen ? "is-open" : ""}`}
-          aria-label={mobileOpen ? "Close navigation" : "Open navigation"}
-          aria-expanded={mobileOpen}
-          aria-controls="cf-mobile-nav"
-          onClick={() => setMobileOpen((v) => !v)}
-        >
-          <span className="nav-toggle-bars" aria-hidden="true" />
-        </button>
+    <>
+      <nav>
+        <div className="nav-inner">
+          <button
+            type="button"
+            className={`nav-mobile nav-toggle ${mobileOpen ? "is-open" : ""}`}
+            aria-label={mobileOpen ? "Close navigation" : "Open navigation"}
+            aria-expanded={mobileOpen}
+            aria-controls="cf-mobile-nav"
+            onClick={() => setMobileOpen((v) => !v)}
+          >
+            <span className="nav-toggle-bars" aria-hidden="true" />
+          </button>
 
-        <a href="#" className="nav-logo">
-          {iconUrl ? (
-            <img className="logo-img" src={iconUrl} alt="CoachFlow" />
-          ) : (
-            <div className="logo-dot" />
-          )}
-          {renderBrandText(content.header.brandText)}
-        </a>
+          <a href="#" className="nav-logo">
+            {iconUrl ? (
+              <img className="logo-img" src={iconUrl} alt="CoachFlow" />
+            ) : (
+              <div className="logo-dot" />
+            )}
+            {renderBrandText(content.header.brandText)}
+          </a>
 
-        <ul className="nav-links">
-          {enabledNavItems.map((item) => (
-            <li key={item.href}>
-              <a href={item.href}>{item.label}</a>
-            </li>
-          ))}
-        </ul>
+          <ul className="nav-links">
+            {enabledNavItems.map((item) => (
+              <li key={item.href}>
+                <a href={item.href}>{item.label}</a>
+              </li>
+            ))}
+          </ul>
 
-        <div className="nav-right">
-          {ctaEnabled ? (
-            <>
-              <a href={ctaHref} className="btn-primary nav-cta" style={{ padding: "10px 22px", fontSize: "13px" }}>
-                {ctaLabel}
-              </a>
+          <div className="nav-right">
+            {ctaEnabled ? (
+              <>
+                <a href={ctaHref} className="btn-primary nav-cta" style={{ padding: "10px 22px", fontSize: "13px" }}>
+                  {ctaLabel}
+                </a>
+                <span className="nav-cta-spacer" aria-hidden="true" />
+              </>
+            ) : (
               <span className="nav-cta-spacer" aria-hidden="true" />
-            </>
-          ) : (
-            <span className="nav-cta-spacer" aria-hidden="true" />
-          )}
+            )}
+          </div>
         </div>
-      </div>
+      </nav>
 
       <div id="cf-mobile-nav" className={`nav-sheet ${mobileOpen ? "is-open" : ""}`} aria-hidden={!mobileOpen}>
         <div className="nav-sheet-backdrop" onClick={() => setMobileOpen(false)} />
@@ -122,7 +124,7 @@ export function Header({ content }: Props) {
           ) : null}
         </div>
       </div>
-    </nav>
+    </>
   );
 }
 
