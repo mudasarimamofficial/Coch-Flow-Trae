@@ -15,6 +15,26 @@ function asBool(v: unknown) {
   return typeof v === "boolean" ? v : false;
 }
 
+function parseHeroMetrics(value: unknown) {
+  const raw = asString(value);
+  if (!raw.trim()) return null;
+  const metrics = raw
+    .split("\n")
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .map((line) => {
+      const [title = "", metricValue = "", change = "", tone = "gold"] = line.split("|").map((part) => part.trim());
+      return {
+        title,
+        value: metricValue,
+        change: change || undefined,
+        tone: tone === "blue" || tone === "green" ? tone : "gold",
+      };
+    })
+    .filter((metric) => metric.title && metric.value);
+  return metrics.length ? metrics : null;
+}
+
 function blocks(section: PageSection | undefined) {
   return Array.isArray(section?.blocks) ? section!.blocks! : [];
 }
@@ -41,6 +61,11 @@ export function applyBuilderOverrides(input: HomepageContent): HomepageContent {
       const primaryHref = asString(set.primaryHref);
       const secondaryText = asString(set.secondaryText);
       const secondaryHref = asString(set.secondaryHref);
+      const proofTitle = asString(set.proofTitle);
+      const proofEyebrow = asString(set.proofEyebrow);
+      const revenueValue = asString(set.revenueValue);
+      const revenueLabel = asString(set.revenueLabel);
+      const parsedMetrics = parseHeroMetrics(set.metricsText);
       const bgUrl = asString(s<Record<string, unknown>>(set.background)?.url);
 
       out = {
@@ -63,6 +88,23 @@ export function applyBuilderOverrides(input: HomepageContent): HomepageContent {
             text: secondaryText || out.hero.secondaryCta.text,
             href: secondaryHref || out.hero.secondaryCta.href,
           },
+          proof:
+            proofTitle || proofEyebrow
+              ? {
+                  ...((out.hero as any).proof || {}),
+                  title: proofTitle || (out.hero as any).proof?.title || "",
+                  eyebrow: proofEyebrow || (out.hero as any).proof?.eyebrow || "",
+                }
+              : (out.hero as any).proof,
+          metrics: parsedMetrics || (out.hero as any).metrics,
+          revenueVisual:
+            revenueValue || revenueLabel
+              ? {
+                  ...((out.hero as any).revenueVisual || {}),
+                  value: revenueValue || (out.hero as any).revenueVisual?.value || "",
+                  label: revenueLabel || (out.hero as any).revenueVisual?.label || "",
+                }
+              : (out.hero as any).revenueVisual,
           backgroundImage: bgUrl ? { url: bgUrl } : out.hero.backgroundImage,
         },
       };

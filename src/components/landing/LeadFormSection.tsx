@@ -110,7 +110,7 @@ export function LeadFormSection({ content, section }: Props) {
               </div>
 
               {error ? (
-                <div className="form-note" style={{ color: "#fca5a5" }}>
+                <div className="form-alert" role="alert">
                   {error}
                 </div>
               ) : null}
@@ -123,8 +123,14 @@ export function LeadFormSection({ content, section }: Props) {
                     onChange={(e) => setValues((v) => ({ ...v, first_name: e.target.value }))}
                     autoComplete="given-name"
                     placeholder={content.application.fields.firstNamePlaceholder || ""}
+                    aria-invalid={Boolean(fieldErrors.first_name)}
+                    aria-describedby={fieldErrors.first_name ? "cf-first-name-error" : undefined}
                   />
-                  {fieldErrors.first_name ? <div className="form-note">{fieldErrors.first_name}</div> : null}
+                  {fieldErrors.first_name ? (
+                    <div className="form-note form-error" id="cf-first-name-error">
+                      {fieldErrors.first_name}
+                    </div>
+                  ) : null}
                 </div>
 
                 <div className="form-group">
@@ -134,35 +140,58 @@ export function LeadFormSection({ content, section }: Props) {
                     onChange={(e) => setValues((v) => ({ ...v, last_name: e.target.value }))}
                     autoComplete="family-name"
                     placeholder={content.application.fields.lastNamePlaceholder || ""}
+                    aria-invalid={Boolean(fieldErrors.last_name)}
+                    aria-describedby={fieldErrors.last_name ? "cf-last-name-error" : undefined}
                   />
-                  {fieldErrors.last_name ? <div className="form-note">{fieldErrors.last_name}</div> : null}
+                  {fieldErrors.last_name ? (
+                    <div className="form-note form-error" id="cf-last-name-error">
+                      {fieldErrors.last_name}
+                    </div>
+                  ) : null}
                 </div>
               </div>
 
-              <div className="form-group">
-                <label>{content.application.fields.emailLabel}</label>
-                <input
-                  value={values.email}
-                  onChange={(e) => setValues((v) => ({ ...v, email: e.target.value }))}
-                  placeholder={content.application.fields.emailPlaceholder || ""}
-                  autoComplete="email"
-                />
-                {fieldErrors.email ? <div className="form-note">{fieldErrors.email}</div> : null}
-              </div>
+              <div className="form-row">
+                <div className="form-group">
+                  <label>{content.application.fields.emailLabel}</label>
+                  <input
+                    value={values.email}
+                    onChange={(e) => setValues((v) => ({ ...v, email: e.target.value }))}
+                    placeholder={content.application.fields.emailPlaceholder || ""}
+                    autoComplete="email"
+                    aria-invalid={Boolean(fieldErrors.email)}
+                    aria-describedby={fieldErrors.email ? "cf-email-error" : undefined}
+                  />
+                  {fieldErrors.email ? (
+                    <div className="form-note form-error" id="cf-email-error">
+                      {fieldErrors.email}
+                    </div>
+                  ) : null}
+                </div>
 
-              <div className="form-group">
-                <label>{content.application.fields.revenueLabel}</label>
-                <select value={values.revenue || ""} onChange={(e) => setValues((v) => ({ ...v, revenue: e.target.value }))}>
-                  <option value="" disabled>
-                    {content.application.fields.revenuePlaceholder || "Select..."}
-                  </option>
-                  {content.application.fields.revenueOptions.map((o) => (
-                    <option key={o.value} value={o.value}>
-                      {o.label}
+                <div className="form-group">
+                  <label>{content.application.fields.revenueLabel}</label>
+                  <select
+                    value={values.revenue || ""}
+                    onChange={(e) => setValues((v) => ({ ...v, revenue: e.target.value }))}
+                    aria-invalid={Boolean(fieldErrors.revenue)}
+                    aria-describedby={fieldErrors.revenue ? "cf-revenue-error" : undefined}
+                  >
+                    <option value="" disabled>
+                      {content.application.fields.revenuePlaceholder || "Select..."}
                     </option>
-                  ))}
-                </select>
-                {fieldErrors.revenue ? <div className="form-note">{fieldErrors.revenue}</div> : null}
+                    {content.application.fields.revenueOptions.map((o) => (
+                      <option key={o.value} value={o.value}>
+                        {o.label}
+                      </option>
+                    ))}
+                  </select>
+                  {fieldErrors.revenue ? (
+                    <div className="form-note form-error" id="cf-revenue-error">
+                      {fieldErrors.revenue}
+                    </div>
+                  ) : null}
+                </div>
               </div>
 
               <div className="form-group">

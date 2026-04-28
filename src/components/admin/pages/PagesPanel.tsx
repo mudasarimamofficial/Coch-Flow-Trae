@@ -188,7 +188,6 @@ export function PagesPanel({ supabase }: Props) {
             <div className="min-h-0 flex-1 overflow-y-auto pb-6">
               <div className="flex flex-col gap-3">
                 <PageEditor
-                  loading={m.loading}
                   slug={m.slug}
                   navLabel={m.navLabel}
                   metaTitle={m.metaTitle}
@@ -292,7 +291,6 @@ export function PagesPanel({ supabase }: Props) {
                 </div>
 
                 <PageEditor
-                  loading={m.loading}
                   slug={m.slug}
                   navLabel={m.navLabel}
                   metaTitle={m.metaTitle}

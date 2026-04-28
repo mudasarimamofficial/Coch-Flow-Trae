@@ -26,6 +26,7 @@ import { MaterialIcon } from "@/components/ui/MaterialIcon";
 import { IconPicker, type IconRef } from "@/components/admin/builder/IconPicker";
 import { MediaPickerModal } from "@/components/admin/builder/MediaPickerModal";
 import { applyBuilderOverrides } from "@/utils/homepageBuilder";
+import { mergePageSectionsWithDefaults } from "@/utils/homepageSections";
 import type { Tab } from "@/components/admin/types";
 import {
   Monitor,
@@ -79,6 +80,16 @@ function mergeContent(c: Partial<HomepageContent> | null): HomepageContent {
       heading: { ...homepageDefaults.hero.heading, ...(c.hero?.heading || {}) },
       primaryCta: { ...homepageDefaults.hero.primaryCta, ...(c.hero?.primaryCta || {}) },
       secondaryCta: { ...homepageDefaults.hero.secondaryCta, ...(c.hero?.secondaryCta || {}) },
+      proof: {
+        ...(homepageDefaults.hero.proof || { title: "", eyebrow: "", avatars: [] }),
+        ...(c.hero?.proof || {}),
+        avatars: c.hero?.proof?.avatars || homepageDefaults.hero.proof?.avatars || [],
+      },
+      metrics: c.hero?.metrics || homepageDefaults.hero.metrics,
+      revenueVisual: {
+        ...(homepageDefaults.hero.revenueVisual || { value: "", label: "" }),
+        ...(c.hero?.revenueVisual || {}),
+      },
       backgroundImage: c.hero?.backgroundImage || homepageDefaults.hero.backgroundImage,
     },
     trust: { ...homepageDefaults.trust, ...(c.trust || {}), icons: c.trust?.icons || homepageDefaults.trust.icons },
@@ -141,7 +152,7 @@ function mergeContent(c: Partial<HomepageContent> | null): HomepageContent {
       headerColorHex: c.whatsapp?.headerColorHex ?? (homepageDefaults.whatsapp?.headerColorHex || "#25D366"),
       avatar: c.whatsapp?.avatar || homepageDefaults.whatsapp?.avatar,
     },
-    page: { sections: c.page?.sections || homepageDefaults.page?.sections || [] },
+    page: { sections: mergePageSectionsWithDefaults(c.page?.sections) },
     customSections: c.customSections || homepageDefaults.customSections,
   };
 }
@@ -733,6 +744,17 @@ export function VisualBuilderPanel({ supabase, onNavigateTab, onSignOut }: Props
           primaryHref: content.hero.primaryCta.href,
           secondaryText: content.hero.secondaryCta.text,
           secondaryHref: content.hero.secondaryCta.href,
+          proofTitle: (content.hero as any).proof?.title || "",
+          proofEyebrow: (content.hero as any).proof?.eyebrow || "",
+          metricsText: Array.isArray((content.hero as any).metrics)
+            ? (content.hero as any).metrics
+                .map((metric: any) =>
+                  [metric.title || "", metric.value || "", metric.change || "", metric.tone || "gold"].join(" | "),
+                )
+                .join("\n")
+            : "",
+          revenueValue: (content.hero as any).revenueVisual?.value || "",
+          revenueLabel: (content.hero as any).revenueVisual?.label || "",
           background: content.hero.backgroundImage?.url ? { url: content.hero.backgroundImage.url } : undefined,
         },
       }));
@@ -1548,6 +1570,78 @@ export function VisualBuilderPanel({ supabase, onNavigateTab, onSignOut }: Props
                     updateSection("hero", (s) => ({ ...s, settings: { ...(s.settings || {}), note: e.target.value } }));
                   }}
                   rows={3}
+                />
+              </InspectorGroup>
+
+              <InspectorGroup title="Hero Metrics Panel">
+                <Input
+                  label={labelRow("Proof title")}
+                  value={(content.hero as any).proof?.title || ""}
+                  onChange={(e) => {
+                    const proof = { ...((content.hero as any).proof || {}), title: e.target.value };
+                    setContent({ ...content, hero: { ...(content.hero as any), proof } });
+                    updateSection("hero", (s) => ({ ...s, settings: { ...(s.settings || {}), proofTitle: e.target.value } }));
+                  }}
+                />
+                <Input
+                  label={labelRow("Proof eyebrow")}
+                  value={(content.hero as any).proof?.eyebrow || ""}
+                  onChange={(e) => {
+                    const proof = { ...((content.hero as any).proof || {}), eyebrow: e.target.value };
+                    setContent({ ...content, hero: { ...(content.hero as any), proof } });
+                    updateSection("hero", (s) => ({ ...s, settings: { ...(s.settings || {}), proofEyebrow: e.target.value } }));
+                  }}
+                />
+                <Textarea
+                  label={labelRow("Metrics", "title | value | change | tone")}
+                  value={
+                    Array.isArray((content.hero as any).metrics)
+                      ? (content.hero as any).metrics
+                          .map((metric: any) =>
+                            [metric.title || "", metric.value || "", metric.change || "", metric.tone || "gold"].join(" | "),
+                          )
+                          .join("\n")
+                      : ""
+                  }
+                  onChange={(e) => {
+                    const metrics = e.target.value
+                      .split("\n")
+                      .map((line) => line.trim())
+                      .filter(Boolean)
+                      .map((line) => {
+                        const [title = "", value = "", change = "", tone = "gold"] = line
+                          .split("|")
+                          .map((part) => part.trim());
+                        return {
+                          title,
+                          value,
+                          change,
+                          tone: tone === "blue" || tone === "green" ? tone : "gold",
+                        };
+                      })
+                      .filter((metric) => metric.title && metric.value);
+                    setContent({ ...content, hero: { ...(content.hero as any), metrics } });
+                    updateSection("hero", (s) => ({ ...s, settings: { ...(s.settings || {}), metricsText: e.target.value } }));
+                  }}
+                  rows={4}
+                />
+                <Input
+                  label={labelRow("Revenue visual value")}
+                  value={(content.hero as any).revenueVisual?.value || ""}
+                  onChange={(e) => {
+                    const revenueVisual = { ...((content.hero as any).revenueVisual || {}), value: e.target.value };
+                    setContent({ ...content, hero: { ...(content.hero as any), revenueVisual } });
+                    updateSection("hero", (s) => ({ ...s, settings: { ...(s.settings || {}), revenueValue: e.target.value } }));
+                  }}
+                />
+                <Input
+                  label={labelRow("Revenue visual label")}
+                  value={(content.hero as any).revenueVisual?.label || ""}
+                  onChange={(e) => {
+                    const revenueVisual = { ...((content.hero as any).revenueVisual || {}), label: e.target.value };
+                    setContent({ ...content, hero: { ...(content.hero as any), revenueVisual } });
+                    updateSection("hero", (s) => ({ ...s, settings: { ...(s.settings || {}), revenueLabel: e.target.value } }));
+                  }}
                 />
               </InspectorGroup>
 
@@ -2647,7 +2741,7 @@ export function VisualBuilderPanel({ supabase, onNavigateTab, onSignOut }: Props
               <div className="text-sm font-bold text-white">Menu</div>
               <button
                 type="button"
-                className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-white/90"
+                className="admin-mobile-menu-close inline-flex h-9 w-9 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-white/90"
                 onClick={() => setMobileMenuOpen(false)}
                 aria-label="Close menu"
               >
@@ -2661,8 +2755,8 @@ export function VisualBuilderPanel({ supabase, onNavigateTab, onSignOut }: Props
                   type="button"
                   className={
                     i.tab === "builder"
-                      ? "flex items-center gap-3 rounded-xl bg-white/10 px-3 py-3 text-sm font-bold text-white"
-                      : "flex items-center gap-3 rounded-xl px-3 py-3 text-sm text-white/80 hover:bg-white/5"
+                      ? "admin-mobile-menu-item flex items-center gap-3 rounded-xl bg-white/10 px-3 py-3 text-sm font-bold text-white"
+                      : "admin-mobile-menu-item flex items-center gap-3 rounded-xl px-3 py-3 text-sm text-white/80 hover:bg-white/5"
                   }
                   onClick={() => {
                     if (onNavigateTab) onNavigateTab(i.tab);

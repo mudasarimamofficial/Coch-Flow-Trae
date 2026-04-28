@@ -6,34 +6,42 @@ type Props = {
   section?: PageSection;
 };
 
+type HeroMetric = {
+  title: string;
+  value: string;
+  change?: string;
+  icon?: string;
+  tone?: "gold" | "blue" | "green";
+};
+
 export function Hero({ content, section }: Props) {
-  const hero: any = content.hero as any;
+  const hero = content.hero as HomepageContent["hero"] & {
+    proof?: { title?: string; eyebrow?: string; avatars?: { url: string; alt?: string }[] };
+    metrics?: HeroMetric[];
+    revenueVisual?: { value?: string; label?: string };
+  };
   const trustText = hero.trust?.text || content.trust?.eyebrow || "";
-  const trustPills: string[] =
-    hero.trust?.pills ||
-    (Array.isArray(content.trust?.icons)
-      ? content.trust.icons
-          .map((x) => String((x as any).label || (x as any).text || ""))
-          .filter((x) => x.trim())
-          .slice(0, 3)
-      : []);
+  const trustPills = Array.isArray(hero.trust?.pills) ? hero.trust.pills.filter(Boolean) : [];
   const showBackground = (section?.settings as any)?.heroBackground !== false;
   const primaryHref = hero.primaryCta?.href || "#lead-form";
   const secondaryHref = hero.secondaryCta?.href || "#workflow";
-  const primaryText = (hero.primaryCta?.label || hero.primaryCta?.text || "").toString();
-  const secondaryText = (hero.secondaryCta?.label || hero.secondaryCta?.text || "").toString();
+  const primaryText = (hero.primaryCta?.text || "").toString();
+  const secondaryText = (hero.secondaryCta?.text || "").toString();
+  const metrics = Array.isArray(hero.metrics) && hero.metrics.length ? hero.metrics.slice(0, 3) : [];
+  const proof = hero.proof;
 
   return (
-    <section id="hero">
-      {showBackground ? (
-        <>
-          <div className="hero-bg" />
-          <div className="hero-grid-lines" />
-        </>
-      ) : null}
-      <div className="container">
-        <div className="hero-content">
-          {hero.badge?.text ? <div className="hero-tagline">{hero.badge.text}</div> : null}
+    <section id="hero" className="hero-section">
+      {showBackground ? <HeroBackground /> : null}
+
+      <div className="container hero-shell">
+        <div className="hero-content" data-reveal="left">
+          {hero.badge?.text ? (
+            <div className="hero-tagline">
+              <span aria-hidden="true" />
+              {hero.badge.text}
+            </div>
+          ) : null}
 
           <h1 className="hero-h1">
             {renderMultilineText(hero.heading?.prefix || "")}
@@ -41,50 +49,162 @@ export function Hero({ content, section }: Props) {
           </h1>
 
           {hero.subcopy ? <p className="hero-sub">{hero.subcopy}</p> : null}
-          {hero.note && hero.note.trim().length ? <p className="hero-human">{hero.note}</p> : null}
 
           <div className="hero-ctas">
-            {hero.primaryCta?.enabled !== false && primaryText ? (
-              <a className="btn-primary" href={primaryHref}>
+            {(hero.primaryCta as any)?.enabled !== false && primaryText ? (
+              <a className="btn-primary hero-primary" href={primaryHref}>
                 {primaryText}
-                <span className="arrow">→</span>
+                <ArrowIcon />
               </a>
             ) : null}
-            {hero.secondaryCta?.enabled !== false && secondaryText ? (
-              <a className="btn-ghost" href={secondaryHref}>
+            {(hero.secondaryCta as any)?.enabled !== false && secondaryText ? (
+              <a className="btn-ghost hero-secondary" href={secondaryHref}>
                 {secondaryText}
-                <span className="arrow">↓</span>
+                <ChevronDownIcon />
               </a>
             ) : null}
           </div>
 
-          {trustText || trustPills.length ? (
-            <div className="hero-trust">
-              {trustText ? <div className="hero-trust-text">{trustText}</div> : null}
-              {trustPills.map((p) => (
-                <div key={p} className="hero-trust-pill">
-                  {p}
+          {proof?.title || trustText || trustPills.length ? (
+            <div className="hero-proof">
+              {proof?.avatars?.length ? (
+                <div className="hero-avatars" aria-hidden="true">
+                  {proof.avatars.slice(0, 4).map((avatar, idx) => (
+                    <img key={`${avatar.url}-${idx}`} src={avatar.url} alt={avatar.alt || ""} />
+                  ))}
+                </div>
+              ) : null}
+              <div>
+                <div className="hero-proof-title">{proof?.title || trustText}</div>
+                <div className="hero-proof-sub">{proof?.eyebrow || trustPills.join(" / ")}</div>
+              </div>
+            </div>
+          ) : null}
+        </div>
+
+        <div className="hero-visual" data-reveal="right" aria-label="CoachFlow pipeline metrics">
+          <div className="hero-panel">
+            <div className="hero-panel-glow" aria-hidden="true" />
+            <div className="hero-metrics">
+              {metrics.map((metric, idx) => (
+                <div className="hero-metric-card" key={`${metric.title}-${idx}`}>
+                  <div className="hero-metric-main">
+                    <div className={`hero-metric-icon tone-${metric.tone || "gold"}`}>
+                      {renderMetricIcon(metric.icon || metric.title)}
+                    </div>
+                    <div>
+                      <div className="hero-metric-title">{metric.title}</div>
+                      <div className="hero-metric-value">{metric.value}</div>
+                    </div>
+                  </div>
+                  {metric.change ? <div className="hero-metric-change">{metric.change}</div> : null}
                 </div>
               ))}
             </div>
-          ) : null}
+
+            <div className="hero-revenue-orbit">
+              <div className="hero-ring ring-one" />
+              <div className="hero-ring ring-two" />
+              <div className="hero-revenue-copy">
+                <div>{hero.revenueVisual?.value || "$42k"}</div>
+                <span>{hero.revenueVisual?.label || "New Revenue"}</span>
+              </div>
+            </div>
+          </div>
+          <div className="hero-float float-one" aria-hidden="true" />
+          <div className="hero-float float-two" aria-hidden="true" />
         </div>
       </div>
     </section>
   );
 }
 
-function renderMultilineText(text: string) {
-  const parts = text.split("\n");
-  if (parts.length <= 1) return <>{text} </>;
+function HeroBackground() {
   return (
-    <>
-      {parts.map((p, idx) => (
-        <span key={`${idx}-${p}`}>
-          {p}
-          {idx !== parts.length - 1 ? <br /> : " "}
-        </span>
-      ))}
-    </>
+    <div className="hero-bg" aria-hidden="true">
+      <div className="hero-bg-grid" />
+      <svg className="hero-flow-line" viewBox="0 0 1600 520" preserveAspectRatio="none">
+        <defs>
+          <linearGradient id="heroFlowGold" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="transparent" />
+            <stop offset="50%" stopColor="#EAB308" />
+            <stop offset="100%" stopColor="transparent" />
+          </linearGradient>
+        </defs>
+        <path d="M -100 200 Q 400 100 800 400 T 1700 200" fill="none" stroke="url(#heroFlowGold)" strokeWidth="1" />
+      </svg>
+    </div>
+  );
+}
+
+function renderMultilineText(text: string) {
+  const normalized = text.replace(/\s+$/, "");
+  const parts = normalized.split("\n").filter((part) => part.length);
+  if (parts.length > 1) {
+    return (
+      <>
+        {parts.map((part) => (
+          <span key={part}>
+            {part}
+            <br />
+          </span>
+        ))}
+      </>
+    );
+  }
+
+  if (/booked calls/i.test(normalized)) {
+    return (
+      <>
+        Predictable <br />
+        Booked Calls For <br />
+      </>
+    );
+  }
+
+  return <>{normalized} </>;
+}
+
+function renderMetricIcon(key: string) {
+  const k = key.toLowerCase();
+  if (k.includes("lead") || k.includes("target")) {
+    return (
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <circle cx="12" cy="12" r="8" />
+        <circle cx="12" cy="12" r="3" />
+        <path d="M12 2v4M12 18v4M2 12h4M18 12h4" />
+      </svg>
+    );
+  }
+  if (k.includes("call") || k.includes("calendar")) {
+    return (
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M8 2v4M16 2v4M4 9h16" />
+        <rect x="4" y="4" width="16" height="18" rx="2" />
+      </svg>
+    );
+  }
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+      <circle cx="9" cy="7" r="4" />
+      <path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
+    </svg>
+  );
+}
+
+function ArrowIcon() {
+  return (
+    <svg className="arrow" width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M5 12h14M13 5l7 7-7 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function ChevronDownIcon() {
+  return (
+    <svg className="arrow" width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="m6 9 6 6 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
   );
 }

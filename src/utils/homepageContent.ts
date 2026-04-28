@@ -1,6 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 import { homepageDefaults, type HomepageContent } from "@/content/homepage";
 import { sanitizeContentStrings } from "@/utils/textSanitize";
+import { mergePageSectionsWithDefaults } from "@/utils/homepageSections";
 
 export async function getHomepageContent(): Promise<HomepageContent> {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -77,6 +78,16 @@ export async function getHomepageContent(): Promise<HomepageContent> {
         heading: { ...homepageDefaults.hero.heading, ...(c.hero?.heading || {}) },
         primaryCta: { ...homepageDefaults.hero.primaryCta, ...(c.hero?.primaryCta || {}) },
         secondaryCta: { ...homepageDefaults.hero.secondaryCta, ...(c.hero?.secondaryCta || {}) },
+        proof: {
+          ...(homepageDefaults.hero.proof || { title: "", eyebrow: "", avatars: [] }),
+          ...(c.hero?.proof || {}),
+          avatars: c.hero?.proof?.avatars || homepageDefaults.hero.proof?.avatars || [],
+        },
+        metrics: c.hero?.metrics || homepageDefaults.hero.metrics,
+        revenueVisual: {
+          ...(homepageDefaults.hero.revenueVisual || { value: "", label: "" }),
+          ...(c.hero?.revenueVisual || {}),
+        },
         backgroundImage: c.hero?.backgroundImage || homepageDefaults.hero.backgroundImage,
       },
       trust: {
@@ -122,7 +133,7 @@ export async function getHomepageContent(): Promise<HomepageContent> {
         ),
       },
       page: {
-        sections: c.page?.sections || homepageDefaults.page?.sections || [],
+        sections: mergePageSectionsWithDefaults(c.page?.sections),
       },
       customSections: c.customSections || homepageDefaults.customSections,
       socialLinks: c.socialLinks || homepageDefaults.socialLinks,

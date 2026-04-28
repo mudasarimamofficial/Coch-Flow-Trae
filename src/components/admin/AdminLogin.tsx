@@ -52,7 +52,7 @@ export function AdminLogin({
             label="Password"
             value={password}
             onChange={(e) => onPasswordChange(e.target.value)}
-            placeholder="••••••••"
+            placeholder="********"
             type="password"
             autoComplete="current-password"
           />
@@ -64,4 +64,3 @@ export function AdminLogin({
     </div>
   );
 }
-

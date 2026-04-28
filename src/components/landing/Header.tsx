@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { HomepageContent } from "@/content/homepage";
 
 type NavItem = { label: string; href: string; enabled?: boolean };
@@ -10,8 +10,24 @@ type Props = {
 };
 
 export function Header({ content }: Props) {
-  const navItems: NavItem[] = ((content.header as any).navLinks as NavItem[]) || (content.header as any).nav || [];
-  const primaryCta = (content.header as any).primaryCta || null;
+  const rawNavLinks = (content.header as any).navLinks;
+  const rawNav = Array.isArray(rawNavLinks)
+    ? rawNavLinks
+    : Array.isArray((content.header as any).nav)
+      ? (content.header as any).nav
+      : [];
+  const navItems: NavItem[] = rawNav
+    .map((item: unknown) => {
+      if (!item || typeof item !== "object") return null;
+      const nav = item as Partial<NavItem>;
+      const label = typeof nav.label === "string" ? nav.label : "";
+      const href = typeof nav.href === "string" ? nav.href : "";
+      if (!label.trim() || !href.trim()) return null;
+      return { label, href, enabled: nav.enabled };
+    })
+    .filter(Boolean) as NavItem[];
+  const rawPrimaryCta = (content.header as any).primaryCta;
+  const primaryCta = rawPrimaryCta && typeof rawPrimaryCta === "object" ? rawPrimaryCta : null;
   const ctaEnabled = primaryCta ? (primaryCta.enabled ?? true) : false;
   const ctaHref = primaryCta ? (primaryCta.href as string) : "#";
   const ctaLabel = primaryCta ? ((primaryCta.label as string) || (primaryCta.text as string) || "") : "";
@@ -19,13 +35,27 @@ export function Header({ content }: Props) {
   const icon = content.header.brandIcon;
   const iconUrl = icon?.type === "image" ? (icon.url || "") : "";
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
+  const sheetRef = useRef<HTMLDivElement | null>(null);
+  const closeButtonRef = useRef<HTMLButtonElement | null>(null);
+
+  useEffect(() => {
+    const onScroll = () => setIsScrolled(window.scrollY > 20);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   useEffect(() => {
     if (!mobileOpen) return;
     const prevOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
+    const prevActive = document.activeElement as HTMLElement | null;
+    const t = window.setTimeout(() => closeButtonRef.current?.focus(), 0);
     return () => {
       document.body.style.overflow = prevOverflow;
+      window.clearTimeout(t);
+      prevActive?.focus?.();
     };
   }, [mobileOpen]);
 
@@ -33,6 +63,32 @@ export function Header({ content }: Props) {
     if (!mobileOpen) return;
     function onKeyDown(e: KeyboardEvent) {
       if (e.key === "Escape") setMobileOpen(false);
+      if (e.key !== "Tab") return;
+
+      const root = sheetRef.current;
+      if (!root) return;
+      const focusables = Array.from(
+        root.querySelectorAll<HTMLElement>(
+          'a[href], button:not([disabled]), textarea, input, select, [tabindex]:not([tabindex="-1"])',
+        ),
+      ).filter((el) => el.offsetParent !== null);
+      if (!focusables.length) return;
+
+      const first = focusables[0];
+      const last = focusables[focusables.length - 1];
+      const active = document.activeElement as HTMLElement | null;
+
+      if (e.shiftKey) {
+        if (!active || active === first) {
+          e.preventDefault();
+          last.focus();
+        }
+        return;
+      }
+      if (active === last) {
+        e.preventDefault();
+        first.focus();
+      }
     }
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
@@ -40,19 +96,8 @@ export function Header({ content }: Props) {
 
   return (
     <>
-      <nav>
+      <nav className={isScrolled ? "is-scrolled" : ""}>
         <div className="nav-inner">
-          <button
-            type="button"
-            className={`nav-mobile nav-toggle ${mobileOpen ? "is-open" : ""}`}
-            aria-label={mobileOpen ? "Close navigation" : "Open navigation"}
-            aria-expanded={mobileOpen}
-            aria-controls="cf-mobile-nav"
-            onClick={() => setMobileOpen((v) => !v)}
-          >
-            <span className="nav-toggle-bars" aria-hidden="true" />
-          </button>
-
           <a href="#" className="nav-logo">
             {iconUrl ? (
               <img className="logo-img" src={iconUrl} alt="CoachFlow" />
@@ -72,28 +117,40 @@ export function Header({ content }: Props) {
 
           <div className="nav-right">
             {ctaEnabled ? (
-              <>
-                <a href={ctaHref} className="btn-primary nav-cta">
-                  {ctaLabel}
-                </a>
-                <span className="nav-cta-spacer" aria-hidden="true" />
-              </>
-            ) : (
-              <span className="nav-cta-spacer" aria-hidden="true" />
-            )}
+              <a href={ctaHref} className="btn-primary nav-cta">
+                {ctaLabel}
+              </a>
+            ) : null}
+
+            <button
+              type="button"
+              className={`nav-mobile nav-toggle ${mobileOpen ? "is-open" : ""}`}
+              aria-label={mobileOpen ? "Close navigation" : "Open navigation"}
+              aria-expanded={mobileOpen}
+              aria-controls="cf-mobile-nav"
+              onClick={() => setMobileOpen((v) => !v)}
+            >
+              <span className="nav-toggle-bars" aria-hidden="true" />
+            </button>
           </div>
         </div>
       </nav>
 
       <div id="cf-mobile-nav" className={`nav-sheet ${mobileOpen ? "is-open" : ""}`} aria-hidden={!mobileOpen}>
         <div className="nav-sheet-backdrop" onClick={() => setMobileOpen(false)} />
-        <div className="nav-sheet-panel" role="dialog" aria-modal="true" aria-label="Navigation">
+        <div ref={sheetRef} className="nav-sheet-panel" role="dialog" aria-modal="true" aria-label="Navigation">
           <div className="nav-sheet-top">
             <div className="nav-sheet-brand">
               {iconUrl ? <img className="logo-img" src={iconUrl} alt="CoachFlow" /> : <div className="logo-dot" />}
               <div className="nav-sheet-brand-text">{renderBrandText(content.header.brandText)}</div>
             </div>
-            <button type="button" className="nav-sheet-close" aria-label="Close navigation" onClick={() => setMobileOpen(false)}>
+            <button
+              ref={closeButtonRef}
+              type="button"
+              className="nav-sheet-close"
+              aria-label="Close navigation"
+              onClick={() => setMobileOpen(false)}
+            >
               <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
                 <path
                   d="M18 6L6 18M6 6l12 12"

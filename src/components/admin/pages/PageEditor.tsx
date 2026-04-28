@@ -2,7 +2,6 @@ import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 
 type Props = {
-  loading: boolean;
   slug: string;
   navLabel: string;
   metaTitle: string;
@@ -20,7 +19,6 @@ type Props = {
 };
 
 export function PageEditor({
-  loading,
   slug,
   navLabel,
   metaTitle,

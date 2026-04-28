@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { DM_Sans, Inter, Playfair_Display } from "next/font/google";
 import "./globals.css";
 import { ThemeScript } from "@/components/theme/ThemeScript";
@@ -26,6 +27,47 @@ const adminFont = Inter({
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
+
+function compactText(value: unknown) {
+  return typeof value === "string" ? value.replace(/\s+/g, " ").trim() : "";
+}
+
+export async function generateMetadata(): Promise<Metadata> {
+  const content = await getHomepageContent();
+  const brand = compactText(content.header?.brandText) || "CoachFlow AI";
+  const promise = compactText(`${content.hero?.heading?.prefix || ""} ${content.hero?.heading?.highlight || ""}`);
+  const title = promise ? `${brand} | ${promise}` : brand;
+  const description =
+    compactText(content.hero?.subcopy) ||
+    compactText(content.application?.subcopy) ||
+    "CoachFlow AI helps premium coaches build predictable client acquisition systems.";
+  const faviconHref =
+    content.site?.favicon?.url ||
+    "https://ekwydksbprxebgmhbmtj.supabase.co/storage/v1/object/public/assets/coch%20flow%20favicon.png";
+
+  return {
+    metadataBase: new URL("https://coachflow-a1.vercel.app"),
+    title,
+    description,
+    icons: {
+      icon: [{ url: faviconHref }],
+      shortcut: [{ url: faviconHref }],
+      apple: [{ url: faviconHref }],
+    },
+    openGraph: {
+      title,
+      description,
+      url: "https://coachflow-a1.vercel.app",
+      siteName: brand,
+      type: "website",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+    },
+  };
+}
 
 export default async function RootLayout({
   children,

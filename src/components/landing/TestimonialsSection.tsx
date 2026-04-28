@@ -1,5 +1,8 @@
+"use client";
+
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Star, ChevronLeft, ChevronRight } from "lucide-react";
 import type { HomepageContent } from "@/content/homepage";
-import { DynamicIcon } from "@/components/ui/DynamicIcon";
 
 type PageSection = NonNullable<HomepageContent["page"]>["sections"][number];
 
@@ -7,79 +10,207 @@ type Props = {
   section: PageSection;
 };
 
-function s<T extends Record<string, unknown>>(v: unknown) {
-  if (!v || typeof v !== "object") return null;
-  return v as T;
+type ProofItem = {
+  id: string;
+  name: string;
+  role: string;
+  quote: string;
+  rating: number;
+  avatarUrl: string;
+  metric: string;
+};
+
+function objectValue<T extends Record<string, unknown>>(value: unknown) {
+  if (!value || typeof value !== "object") return null;
+  return value as T;
 }
 
-function asString(v: unknown) {
-  return typeof v === "string" ? v : "";
+function asString(value: unknown) {
+  return typeof value === "string" ? value : "";
 }
 
-function asNumber(v: unknown) {
-  return typeof v === "number" && Number.isFinite(v) ? v : null;
+function asNumber(value: unknown) {
+  return typeof value === "number" && Number.isFinite(value) ? value : null;
+}
+
+function getAvatarUrl(value: unknown) {
+  const avatar = objectValue<{ url?: unknown }>(value);
+  return asString(avatar?.url);
 }
 
 export function TestimonialsSection({ section }: Props) {
-  const settings = s<Record<string, unknown>>(section.settings) || {};
-  const heading = asString(settings.heading) || "Testimonials";
-  const subcopy = asString(settings.subcopy);
-  const icon = s<{ type: "library" | "upload"; value: string }>(settings.icon);
+  const settings = objectValue<Record<string, unknown>>(section.settings) || {};
+  const eyebrow = asString(settings.eyebrow) || "Proof of pipeline";
+  const heading = asString(settings.heading) || "Built for coaches who need booked calls, not vanity metrics";
+  const subcopy =
+    asString(settings.subcopy) ||
+    "Concrete pipeline indicators and client-style proof before asking a serious buyer to choose a partnership tier.";
+  const stats = Array.isArray(settings.stats)
+    ? settings.stats
+        .map((stat) => objectValue<{ value?: unknown; label?: unknown }>(stat))
+        .filter(Boolean)
+        .map((stat) => ({ value: asString(stat?.value), label: asString(stat?.label) }))
+        .filter((stat) => stat.value && stat.label)
+    : [];
 
   const blocks = Array.isArray(section.blocks) ? section.blocks : [];
-  const items = blocks
-    .filter((b) => b.type === "testimonial")
-    .map((b) => {
-      const c = b.content || {};
+  const items: ProofItem[] = blocks
+    .filter((block) => block.type === "testimonial")
+    .map((block) => {
+      const content = block.content || {};
       return {
-        id: b.id,
-        name: asString(c.name),
-        role: asString(c.role || c.title),
-        quote: asString(c.quote),
-        rating: asNumber(c.rating) || 5,
-        avatarUrl: asString((c as any).avatar?.url),
+        id: block.id,
+        name: asString(content.name) || "CoachFlow client",
+        role: asString(content.role || content.title) || "High-ticket coaching business",
+        quote: asString(content.quote),
+        rating: asNumber(content.rating) || 5,
+        avatarUrl: getAvatarUrl((content as any).avatar),
+        metric: asString((content as any).metric) || "Qualified pipeline",
       };
     })
-    .filter((x) => x.quote.trim().length);
+    .filter((item) => item.quote.trim().length);
+
+  const limited = useMemo(() => items.slice(0, 10), [items]);
+
+  const trackRef = useRef<HTMLDivElement | null>(null);
+  const [perView, setPerView] = useState(3);
+  const [pageIndex, setPageIndex] = useState(0);
+
+  useEffect(() => {
+    function update() {
+      const w = window.innerWidth;
+      setPerView(w < 640 ? 1 : w < 1024 ? 2 : 3);
+    }
+    update();
+    window.addEventListener("resize", update);
+    return () => window.removeEventListener("resize", update);
+  }, []);
+
+  const pageCount = Math.max(1, Math.ceil(limited.length / perView));
+
+  useEffect(() => {
+    const el = trackRef.current;
+    if (!el) return;
+    function onScroll() {
+      const step = el.clientWidth;
+      const idx = step ? Math.round(el.scrollLeft / step) : 0;
+      setPageIndex(Math.max(0, Math.min(pageCount - 1, idx)));
+    }
+    onScroll();
+    el.addEventListener("scroll", onScroll, { passive: true });
+    return () => el.removeEventListener("scroll", onScroll);
+  }, [pageCount]);
+
+  function scrollToPage(nextIndex: number) {
+    const el = trackRef.current;
+    if (!el) return;
+    const idx = Math.max(0, Math.min(pageCount - 1, nextIndex));
+    el.scrollTo({ left: idx * el.clientWidth, behavior: "smooth" });
+  }
+
+  if (!limited.length) return null;
 
   return (
-    <section className="mx-auto max-w-7xl px-6 py-24" id={section.id}>
-      <div className="mx-auto mb-12 max-w-3xl text-center">
-        <div className="mb-3 flex items-center justify-center gap-2 text-[#b58a2f]">
-          <DynamicIcon icon={icon || { type: "library", value: "website" }} className="h-5 w-5" />
-          <span className="text-xs font-bold uppercase tracking-wider">Social Proof</span>
-        </div>
-        <h2 className="mb-4 text-3xl font-bold tracking-tight md:text-4xl">{heading}</h2>
-        {subcopy ? <p className="text-slate-600 dark:text-slate-400">{subcopy}</p> : null}
-      </div>
-
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-        {items.map((t) => (
-          <div
-            key={t.id}
-            className="rounded-2xl border border-slate-200 bg-white p-8 shadow-sm backdrop-blur-sm dark:border-white/10 dark:bg-white/5"
-          >
-            <div className="mb-4 flex items-center gap-1 text-[#b58a2f]">
-              {Array.from({ length: Math.max(1, Math.min(5, t.rating)) }).map((_, i) => (
-                <span key={i} className="text-sm">★</span>
-              ))}
-            </div>
-            <p className="text-sm leading-relaxed text-slate-700 dark:text-slate-200">“{t.quote}”</p>
-            <div className="mt-6">
-              <div className="flex items-center gap-3">
-                {t.avatarUrl ? (
-                  <img src={t.avatarUrl} alt={t.name} className="h-10 w-10 rounded-full object-cover" />
-                ) : (
-                  <div className="h-10 w-10 rounded-full bg-slate-200 dark:bg-white/10" />
-                )}
-                <div>
-                  <div className="text-sm font-bold">{t.name || "Anonymous"}</div>
-                  {t.role ? <div className="text-xs text-slate-500 dark:text-slate-400">{t.role}</div> : null}
-                </div>
-              </div>
-            </div>
+    <section className="proof-section" id={section.id} data-reveal>
+      <div className="proof-shell">
+        <div className="proof-copy">
+          <div className="proof-eyebrow">
+            <span />
+            {eyebrow}
           </div>
-        ))}
+          <h2>{heading}</h2>
+          <p>{subcopy}</p>
+        </div>
+
+        {stats.length ? (
+          <div className="proof-stats" aria-label="CoachFlow AI proof metrics">
+            {stats.map((stat) => (
+              <div key={`${stat.value}-${stat.label}`} className="proof-stat">
+                <strong>{stat.value}</strong>
+                <span>{stat.label}</span>
+              </div>
+            ))}
+          </div>
+        ) : null}
+
+        <div className="proof-carousel" aria-label="Client reviews">
+          <div className="proof-carousel-controls">
+            <button
+              type="button"
+              className="proof-carousel-btn"
+              onClick={() => scrollToPage(pageIndex - 1)}
+              disabled={pageIndex <= 0}
+              aria-label="Previous reviews"
+            >
+              <ChevronLeft size={18} />
+            </button>
+            <button
+              type="button"
+              className="proof-carousel-btn"
+              onClick={() => scrollToPage(pageIndex + 1)}
+              disabled={pageIndex >= pageCount - 1}
+              aria-label="Next reviews"
+            >
+              <ChevronRight size={18} />
+            </button>
+          </div>
+
+          <div
+            ref={trackRef}
+            className="proof-carousel-track"
+            style={{
+              ...(perView ? ({ ["--perView" as any]: String(perView) } as any) : null),
+            }}
+          >
+            {limited.map((item) => (
+              <article key={item.id} className="proof-card" aria-label={`Review from ${item.name}`}>
+                <div className="proof-card-top">
+                  <div className="proof-avatar-wrap">
+                    {item.avatarUrl ? (
+                      <img src={item.avatarUrl} alt={item.name} className="proof-avatar" loading="lazy" />
+                    ) : (
+                      <div className="proof-avatar proof-avatar-fallback" aria-hidden="true" />
+                    )}
+                  </div>
+                  <div>
+                    <div className="proof-name">{item.name}</div>
+                    <div className="proof-role">{item.role}</div>
+                  </div>
+                </div>
+                <p className="proof-quote">&quot;{item.quote}&quot;</p>
+                <div className="proof-card-bottom">
+                  <div className="proof-stars" aria-label={`${Math.max(1, Math.min(5, item.rating))} out of 5 stars`}>
+                    {Array.from({ length: 5 }).map((_, index) => {
+                      const filled = index < Math.max(1, Math.min(5, item.rating));
+                      return (
+                        <Star
+                          key={index}
+                          size={14}
+                          className={filled ? "proof-star is-filled" : "proof-star"}
+                          aria-hidden="true"
+                        />
+                      );
+                    })}
+                  </div>
+                  <span>{item.metric}</span>
+                </div>
+              </article>
+            ))}
+          </div>
+
+          <div className="proof-carousel-dots" aria-label="Review pages">
+            {Array.from({ length: pageCount }).map((_, i) => (
+              <button
+                key={i}
+                type="button"
+                className={`proof-dot ${i === pageIndex ? "is-active" : ""}`}
+                aria-label={`Go to reviews page ${i + 1}`}
+                aria-current={i === pageIndex}
+                onClick={() => scrollToPage(i)}
+              />
+            ))}
+          </div>
+        </div>
       </div>
     </section>
   );
