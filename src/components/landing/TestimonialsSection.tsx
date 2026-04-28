@@ -91,14 +91,15 @@ export function TestimonialsSection({ section }: Props) {
   useEffect(() => {
     const el = trackRef.current;
     if (!el) return;
+    const target = el;
     function onScroll() {
-      const step = el.clientWidth;
-      const idx = step ? Math.round(el.scrollLeft / step) : 0;
+      const step = target.clientWidth;
+      const idx = step ? Math.round(target.scrollLeft / step) : 0;
       setPageIndex(Math.max(0, Math.min(pageCount - 1, idx)));
     }
     onScroll();
-    el.addEventListener("scroll", onScroll, { passive: true });
-    return () => el.removeEventListener("scroll", onScroll);
+    target.addEventListener("scroll", onScroll, { passive: true });
+    return () => target.removeEventListener("scroll", onScroll);
   }, [pageCount]);
 
   function scrollToPage(nextIndex: number) {
