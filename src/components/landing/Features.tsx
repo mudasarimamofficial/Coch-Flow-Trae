@@ -7,7 +7,8 @@ type Props = {
 };
 
 export function Features({ content, section }: Props) {
-  const blocks = content.page?.sections?.find((s) => s.type === "features")?.blocks;
+  const sectionBlocks = Array.isArray(section?.blocks) ? section.blocks : undefined;
+  const blocks = sectionBlocks || content.page?.sections?.find((s) => s.type === "features")?.blocks;
   const label = (section?.settings as any)?.label || (content.features as any).label || "";
   const cards: {
     title: string;

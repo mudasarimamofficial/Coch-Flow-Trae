@@ -1,9 +1,10 @@
 "use client";
 
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
+import Image from "next/image";
 
 type MediaAsset = {
   name: string;
@@ -35,7 +36,7 @@ export function MediaPickerModal({ supabase, open, title, accept, onClose, onPic
   const [query, setQuery] = useState("");
   const [assets, setAssets] = useState<MediaAsset[]>([]);
 
-  async function load() {
+  const load = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
@@ -58,9 +59,9 @@ export function MediaPickerModal({ supabase, open, title, accept, onClose, onPic
     } finally {
       setLoading(false);
     }
-  }
+  }, [prefix, supabase]);
 
-  async function upload(file: File) {
+  const upload = useCallback(async (file: File) => {
     setLoading(true);
     setError(null);
     try {
@@ -79,12 +80,12 @@ export function MediaPickerModal({ supabase, open, title, accept, onClose, onPic
     } finally {
       setLoading(false);
     }
-  }
+  }, [onClose, onPick, prefix, supabase]);
 
   useEffect(() => {
     if (!open) return;
     load();
-  }, [open, prefix]);
+  }, [open, load]);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -143,7 +144,14 @@ export function MediaPickerModal({ supabase, open, title, accept, onClose, onPic
                   }}
                 >
                   <div className="aspect-video w-full overflow-hidden bg-slate-100 dark:bg-black/30">
-                    <img src={a.url} alt={a.name} className="h-full w-full object-cover transition-transform group-hover:scale-[1.03]" />
+                    <Image
+                      src={a.url}
+                      alt={a.name}
+                      width={320}
+                      height={180}
+                      unoptimized
+                      className="h-full w-full object-cover transition-transform group-hover:scale-[1.03]"
+                    />
                   </div>
                   <div className="px-3 py-2">
                     <div className="truncate text-xs font-semibold">{a.name}</div>
@@ -157,4 +165,3 @@ export function MediaPickerModal({ supabase, open, title, accept, onClose, onPic
     </div>
   );
 }
-

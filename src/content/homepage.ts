@@ -577,160 +577,70 @@ export const homepageDefaults: HomepageContent = {
           subcopy:
             "A credibility layer before pricing: concrete pipeline indicators, client-style proof, and reassurance that the system is built around qualified conversations.",
           stats: [
-            { value: "50+", label: "coaches served" },
-            { value: "15+", label: "avg. booked calls / month" },
-            { value: "48h", label: "campaign response window" },
+            { value: "Fit-first", label: "no-pressure" },
+            { value: "Structured", label: "weekly iteration" },
+            { value: "Brand-safe", label: "human outreach" },
           ],
         },
         blocks: [
           {
             id: "proof_1",
-            type: "testimonial",
+            type: "proof_card",
             content: {
-              name: "High-ticket coach",
-              title: "Masculinity & leadership offer",
-              quote:
-                "The system gave us a cleaner pipeline and more qualified conversations without turning our brand into cold outreach noise.",
-              rating: 5,
-              metric: "18 booked calls",
-              avatar: {
-                url: "https://coresg-normal.trae.ai/api/ide/v1/text_to_image?prompt=professional%20headshot%20photo%2C%20studio%20lighting%2C%20confident%20male%20coach%2C%20dark%20neutral%20background%2C%20photorealistic%2C%20high%20detail&image_size=square",
-              },
+              name: "Qualified conversations",
+              role: "System proof point",
+              body: "Campaign activity is measured around qualified conversations, booked calls, and follow-up discipline instead of vanity reach.",
+              metric: "Intent",
             },
           },
           {
             id: "proof_2",
-            type: "testimonial",
+            type: "proof_card",
             content: {
-              name: "Transformation mentor",
-              title: "$2k+ coaching programme",
-              quote:
-                "What changed was control. We could see where prospects were, which conversations mattered, and what needed to be optimized next.",
-              rating: 5,
-              metric: "312 qualified leads",
-              avatar: {
-                url: "https://coresg-normal.trae.ai/api/ide/v1/text_to_image?prompt=professional%20headshot%20photo%2C%20soft%20studio%20lighting%2C%20business%20casual%2C%20friendly%20smile%2C%20dark%20neutral%20background%2C%20photorealistic%2C%20high%20detail&image_size=square",
-              },
+              name: "Audience fit",
+              role: "System proof point",
+              body: "Prospects are segmented before outreach, so the system can prioritize fit, intent, and high-ticket readiness.",
+              metric: "Fit",
             },
           },
           {
             id: "proof_3",
-            type: "testimonial",
+            type: "proof_card",
             content: {
-              name: "Men's performance coach",
-              title: "Calendar-first growth system",
-              quote:
-                "It felt less like hiring a generic agency and more like installing a serious acquisition infrastructure behind the coaching business.",
-              rating: 5,
-              metric: "$42k pipeline",
-              avatar: {
-                url: "https://coresg-normal.trae.ai/api/ide/v1/text_to_image?prompt=professional%20headshot%20photo%2C%20studio%20lighting%2C%20serious%20expression%2C%20modern%20portrait%2C%20dark%20neutral%20background%2C%20photorealistic%2C%20high%20detail&image_size=square",
-              },
+              name: "Pipeline visibility",
+              role: "System proof point",
+              body: "Pipeline visibility keeps the coach focused on the highest-leverage conversations and the next optimization lever.",
+              metric: "Clarity",
             },
           },
           {
             id: "proof_4",
-            type: "testimonial",
+            type: "proof_card",
             content: {
-              name: "Leadership coach",
-              title: "Premium group program",
-              quote:
-                "The conversations feel human. We’re not pushing spam — prospects come into calls already warmed up and ready to talk numbers.",
-              rating: 5,
-              metric: "14 calls booked",
-              avatar: {
-                url: "https://coresg-normal.trae.ai/api/ide/v1/text_to_image?prompt=professional%20headshot%20photo%2C%20warm%20studio%20lighting%2C%20confident%20smile%2C%20clean%20portrait%2C%20dark%20neutral%20background%2C%20photorealistic&image_size=square",
-              },
+              name: "Follow-up discipline",
+              role: "System proof point",
+              body: "Follow-up windows are tracked tightly so warm leads do not disappear during busy delivery weeks.",
+              metric: "Speed",
             },
           },
           {
             id: "proof_5",
-            type: "testimonial",
+            type: "proof_card",
             content: {
-              name: "High-performance mentor",
-              title: "High-ticket 1:1 offer",
-              quote:
-                "We finally had consistency. Every week we can see the pipeline moving and we know exactly what the next lever is.",
-              rating: 5,
-              metric: "22 qualified chats",
-              avatar: {
-                url: "https://coresg-normal.trae.ai/api/ide/v1/text_to_image?prompt=professional%20headshot%20photo%2C%20studio%20lighting%2C%20confident%20pose%2C%20modern%20portrait%2C%20dark%20neutral%20background%2C%20photorealistic&image_size=square",
-              },
+              name: "Weekly optimization",
+              role: "System proof point",
+              body: "The operating rhythm is built for weekly optimization, not one-off campaign guessing.",
+              metric: "Iteration",
             },
           },
           {
             id: "proof_6",
-            type: "testimonial",
+            type: "proof_card",
             content: {
-              name: "Relationship coach",
-              title: "Transformation package",
-              quote:
-                "The system is disciplined. Follow-up happens on time and we’re not losing warm leads because of busy weeks.",
-              rating: 5,
-              metric: "8 booked calls",
-              avatar: {
-                url: "https://coresg-normal.trae.ai/api/ide/v1/text_to_image?prompt=professional%20headshot%20photo%2C%20soft%20studio%20light%2C%20business%20casual%2C%20authentic%20smile%2C%20dark%20neutral%20background%2C%20photorealistic&image_size=square",
-              },
-            },
-          },
-          {
-            id: "proof_7",
-            type: "testimonial",
-            content: {
-              name: "Mindset coach",
-              title: "$3k+ coaching program",
-              quote:
-                "The lead quality improved immediately. It’s fewer conversations, but the right people — the ones who actually convert.",
-              rating: 5,
-              metric: "31 leads qualified",
-              avatar: {
-                url: "https://coresg-normal.trae.ai/api/ide/v1/text_to_image?prompt=professional%20headshot%20photo%2C%20studio%20lighting%2C%20calm%20expression%2C%20sharp%20portrait%2C%20dark%20neutral%20background%2C%20photorealistic&image_size=square",
-              },
-            },
-          },
-          {
-            id: "proof_8",
-            type: "testimonial",
-            content: {
-              name: "Business coach",
-              title: "Offer repositioning",
-              quote:
-                "We stopped guessing. The dashboard-level clarity made it obvious what to tweak and what to double down on.",
-              rating: 5,
-              metric: "$18k pipeline",
-              avatar: {
-                url: "https://coresg-normal.trae.ai/api/ide/v1/text_to_image?prompt=professional%20headshot%20photo%2C%20studio%20lighting%2C%20clean%20modern%20portrait%2C%20subtle%20smile%2C%20dark%20neutral%20background%2C%20photorealistic&image_size=square",
-              },
-            },
-          },
-          {
-            id: "proof_9",
-            type: "testimonial",
-            content: {
-              name: "Men's coach",
-              title: "Community-first growth",
-              quote:
-                "The outreach doesn’t feel automated. People respond like it’s a real conversation, which makes our brand feel premium.",
-              rating: 5,
-              metric: "48h response time",
-              avatar: {
-                url: "https://coresg-normal.trae.ai/api/ide/v1/text_to_image?prompt=professional%20headshot%20photo%2C%20studio%20lighting%2C%20confident%20expression%2C%20high%20detail%20portrait%2C%20dark%20neutral%20background%2C%20photorealistic&image_size=square",
-              },
-            },
-          },
-          {
-            id: "proof_10",
-            type: "testimonial",
-            content: {
-              name: "Performance coach",
-              title: "Done-for-you acquisition",
-              quote:
-                "We were skeptical, but it’s been the most reliable lever in our business. Calls show up consistently — and we can scale.",
-              rating: 5,
-              metric: "40+ calls",
-              avatar: {
-                url: "https://coresg-normal.trae.ai/api/ide/v1/text_to_image?prompt=professional%20headshot%20photo%2C%20studio%20lighting%2C%20friendly%20smile%2C%20sharp%20modern%20portrait%2C%20dark%20neutral%20background%2C%20photorealistic&image_size=square",
-              },
+              name: "Brand-safe outreach",
+              role: "System proof point",
+              body: "Every stage is designed to protect brand authority while increasing sales-call consistency.",
+              metric: "Authority",
             },
           },
         ],
@@ -780,24 +690,20 @@ export const homepageDefaults: HomepageContent = {
       pills: ["Masculinity coaches", "$1k–$5k programmes", "High-ticket scale"],
     },
     proof: {
-      title: "Trusted by 50+ Coaches",
-      eyebrow: "Averaging 15+ booked calls / month",
-      avatars: [
-        { url: "https://picsum.photos/seed/coach1/100/100", alt: "Coach avatar 1" },
-        { url: "https://picsum.photos/seed/coach2/100/100", alt: "Coach avatar 2" },
-        { url: "https://picsum.photos/seed/coach3/100/100", alt: "Coach avatar 3" },
-        { url: "https://picsum.photos/seed/coach4/100/100", alt: "Coach avatar 4" },
-      ],
+      title: "Built for premium coaching businesses",
+      eyebrow: "A fit-first partnership process",
+      avatars: [],
     },
     metrics: [
-      { title: "Prospects Reached", value: "2,840", change: "+12%", icon: "users", tone: "gold" },
-      { title: "Qualified Leads", value: "312", change: "+8%", icon: "target", tone: "blue" },
-      { title: "Calls Booked", value: "48", change: "+15%", icon: "calendar", tone: "green" },
+      { title: "Prospects Reached", value: "Consistent", icon: "users", tone: "gold" },
+      { title: "Qualified Leads", value: "Qualified", icon: "target", tone: "blue" },
+      { title: "Calls Booked", value: "Booked", icon: "calendar", tone: "green" },
     ],
     revenueVisual: {
-      value: "$42k",
-      label: "New Revenue",
+      value: "",
+      label: "Pipeline visibility",
     },
+    primaryCta: { text: "Apply for Partnership", href: "#lead-form", icon: "arrow_forward" },
     primaryCta: { text: "Apply for Partnership", href: "#lead-form", icon: "arrow_forward" },
     secondaryCta: { text: "See How It Works", href: "#workflow" },
   },

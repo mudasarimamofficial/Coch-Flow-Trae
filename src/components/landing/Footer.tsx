@@ -2,6 +2,7 @@ import type { HomepageContent } from "@/content/homepage";
 import type { PageSection } from "@/components/landing/sectionRegistry";
 import { DynamicIcon } from "@/components/ui/DynamicIcon";
 import { MaterialIcon } from "@/components/ui/MaterialIcon";
+import Image from "next/image";
 
 type Props = {
   content: HomepageContent;
@@ -19,7 +20,7 @@ export function Footer({ content, section }: Props) {
       <div className="container">
         <div className="footer-inner">
           <div className="footer-logo">
-            {iconUrl ? <img className="logo-img" src={iconUrl} alt="CoachFlow" /> : null}
+            {iconUrl ? <Image className="logo-img" src={iconUrl} alt="CoachFlow" width={32} height={32} unoptimized /> : null}
             {renderBrandText(content.footer.brandText)}
           </div>
 
@@ -45,7 +46,7 @@ export function Footer({ content, section }: Props) {
               {socialLegacy.map((s, idx) => (
                 <a key={`${s.href}-${idx}`} className="footer-social" href={s.href} target="_blank" rel="noreferrer" aria-label={s.label}>
                   {s.icon?.type === "image" && s.icon.url ? (
-                    <img className="footer-social-icon" src={s.icon.url} alt="" />
+                    <Image className="footer-social-icon" src={s.icon.url} alt="" width={20} height={20} unoptimized />
                   ) : s.icon?.type === "material" && s.icon.name ? (
                     <MaterialIcon name={s.icon.name} className="footer-social-icon" aria-hidden="true" />
                   ) : (

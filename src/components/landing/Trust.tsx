@@ -1,5 +1,6 @@
 import type { HomepageContent } from "@/content/homepage";
 import { MaterialIcon } from "@/components/ui/MaterialIcon";
+import Image from "next/image";
 
 type Props = {
   content: HomepageContent;
@@ -17,11 +18,14 @@ export function Trust({ content }: Props) {
         <div className="flex flex-wrap items-center justify-center gap-12 opacity-60 grayscale md:gap-24">
           {content.trust.icons.map((icon, idx) =>
             icon.type === "image" && icon.url ? (
-              <img
+              <Image
                 key={icon.path || `${idx}`}
                 src={icon.url}
                 alt=""
                 className="h-10 w-10 object-contain"
+                width={40}
+                height={40}
+                unoptimized
               />
             ) : (
               <MaterialIcon

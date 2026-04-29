@@ -184,6 +184,9 @@ export function HomepagePanel({ supabase }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState<string | null>(null);
   const [content, setContent] = useState<HomepageContent>(homepageDefaults);
+  const [jsonEditorOpen, setJsonEditorOpen] = useState(false);
+  const [jsonDraft, setJsonDraft] = useState("");
+  const [jsonError, setJsonError] = useState<string | null>(null);
 
   async function load() {
     setError(null);
@@ -232,9 +235,36 @@ export function HomepagePanel({ supabase }: Props) {
     [content.application.fields.revenueOptions],
   );
 
+  function resetJsonDraft(nextContent = content) {
+    setJsonDraft(JSON.stringify(nextContent, null, 2));
+    setJsonError(null);
+  }
+
+  function applyJsonDraft() {
+    setJsonError(null);
+    setSaved(null);
+    try {
+      const parsed = JSON.parse(jsonDraft) as unknown;
+      if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+        setJsonError("Homepage JSON must be an object.");
+        return;
+      }
+      const merged = mergeContent(parsed as Partial<HomepageContent>);
+      setContent(merged);
+      setJsonDraft(JSON.stringify(merged, null, 2));
+      setSaved("JSON applied to the editor. Review it, then Save when ready.");
+    } catch (err) {
+      setJsonError(err instanceof Error ? err.message : "Invalid JSON");
+    }
+  }
+
   useEffect(() => {
     load();
   }, []);
+
+  useEffect(() => {
+    if (!jsonEditorOpen) resetJsonDraft(content);
+  }, [content, jsonEditorOpen]);
 
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-4 px-4 pb-10 lg:px-6">
@@ -256,6 +286,56 @@ export function HomepagePanel({ supabase }: Props) {
           {saved}
         </div>
       ) : null}
+
+      <div className="rounded-2xl border border-white/10 bg-white/5 p-4 sm:p-5">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <div className="text-sm font-bold text-white">Advanced JSON editor</div>
+            <p className="mt-1 text-xs leading-5 text-white/55">
+              Edit the complete homepage object with defaults merged safely before saving.
+            </p>
+          </div>
+          <Button
+            type="button"
+            variant="secondary"
+            className="h-10 w-full sm:w-auto"
+            onClick={() => {
+              const next = !jsonEditorOpen;
+              setJsonEditorOpen(next);
+              if (next) resetJsonDraft(content);
+            }}
+          >
+            {jsonEditorOpen ? "Close" : "Open JSON"}
+          </Button>
+        </div>
+        {jsonEditorOpen ? (
+          <div className="mt-4 flex flex-col gap-3">
+            <Textarea
+              label="Full homepage JSON"
+              value={jsonDraft}
+              onChange={(e) => {
+                setJsonDraft(e.target.value);
+                setJsonError(null);
+              }}
+              rows={18}
+              className="font-mono text-xs leading-5"
+              error={jsonError || undefined}
+              spellCheck={false}
+            />
+            <div className="flex flex-col gap-2 sm:flex-row">
+              <Button type="button" className="h-10" onClick={applyJsonDraft}>
+                Apply JSON to editor
+              </Button>
+              <Button type="button" variant="secondary" className="h-10" onClick={() => resetJsonDraft(content)}>
+                Reset from current
+              </Button>
+            </div>
+            <p className="text-xs leading-5 text-white/50">
+              Applying JSON updates this editor state only. Use Save below to persist and revalidate the public homepage.
+            </p>
+          </div>
+        ) : null}
+      </div>
 
       <div className="rounded-2xl border border-white/10 bg-white/5 p-6">
         <div className="flex flex-col gap-6">

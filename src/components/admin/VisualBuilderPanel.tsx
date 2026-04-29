@@ -17,6 +17,7 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
@@ -2421,10 +2422,13 @@ export function VisualBuilderPanel({ supabase, onNavigateTab, onSignOut }: Props
                       {typeof (active.content as any)?.image?.url === "string" &&
                       String((active.content as any).image.url).trim().length ? (
                         <div className="flex items-center gap-3">
-                          <img
+                          <Image
                             src={String((active.content as any).image.url)}
                             alt=""
                             className="h-12 w-12 rounded-lg border border-slate-200 object-cover dark:border-white/10"
+                            width={48}
+                            height={48}
+                            unoptimized
                           />
                           <Button
                             variant="secondary"
@@ -2641,10 +2645,13 @@ export function VisualBuilderPanel({ supabase, onNavigateTab, onSignOut }: Props
                       {typeof (active.content as any)?.avatar?.url === "string" &&
                       String((active.content as any).avatar.url).trim().length ? (
                         <div className="flex items-center gap-3">
-                          <img
+                          <Image
                             src={String((active.content as any).avatar.url)}
                             alt=""
                             className="h-12 w-12 rounded-full border border-slate-200 object-cover dark:border-white/10"
+                            width={48}
+                            height={48}
+                            unoptimized
                           />
                           <Button
                             variant="secondary"

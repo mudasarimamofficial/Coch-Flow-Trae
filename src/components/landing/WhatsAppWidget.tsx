@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import type { HomepageContent } from "@/content/homepage";
+import Image from "next/image";
 
 type Props = {
   content: HomepageContent;
@@ -15,6 +16,7 @@ export function WhatsAppWidget({ content }: Props) {
   const cfg = content.whatsapp;
   const [open, setOpen] = useState(false);
   const [visible, setVisible] = useState(false);
+  const [suppressedOnTinyTop, setSuppressedOnTinyTop] = useState(false);
 
   const data = useMemo(() => {
     if (!cfg || !cfg.enabled) return null;
@@ -53,6 +55,33 @@ export function WhatsAppWidget({ content }: Props) {
     return () => window.clearTimeout(t);
   }, [data]);
 
+  useEffect(() => {
+    if (!data) return;
+    const mq = window.matchMedia("(max-width: 360px)");
+    const update = () => {
+      const shouldSuppress = mq.matches && window.scrollY < 520;
+      setSuppressedOnTinyTop(shouldSuppress);
+      if (shouldSuppress) setOpen(false);
+    };
+    update();
+    window.addEventListener("scroll", update, { passive: true });
+    window.addEventListener("resize", update);
+    const anyMq = mq as unknown as {
+      addEventListener?: (type: "change", listener: () => void) => void;
+      removeEventListener?: (type: "change", listener: () => void) => void;
+      addListener?: (listener: () => void) => void;
+      removeListener?: (listener: () => void) => void;
+    };
+    if (anyMq.addEventListener) anyMq.addEventListener("change", update);
+    else if (anyMq.addListener) anyMq.addListener(update);
+    return () => {
+      window.removeEventListener("scroll", update);
+      window.removeEventListener("resize", update);
+      if (anyMq.removeEventListener) anyMq.removeEventListener("change", update);
+      else if (anyMq.removeListener) anyMq.removeListener(update);
+    };
+  }, [data]);
+
   if (!data) return null;
 
   return (
@@ -79,11 +108,11 @@ export function WhatsAppWidget({ content }: Props) {
           .whatsapp-widget__modal-button{width:100%;background:${data.headerColor};color:white;border:none;padding:14px;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px}
           .whatsapp-widget__modal-button:hover{filter:brightness(.95);transform:translateY(-2px);box-shadow:0 4px 12px rgba(37,211,102,.3)}
           @keyframes slideInUp{from{opacity:0;transform:translateY(30px) scale(.9)}to{opacity:1;transform:translateY(0) scale(1)}}
-          @media (max-width:479px){.whatsapp-widget{bottom:20px;${data.position === "left" ? "left:20px" : "right:20px"}}.whatsapp-widget__modal{bottom:90px;${data.position === "left" ? "left:20px" : "right:20px"};width:calc(100vw - 40px)}}
+          @media (max-width:479px){.whatsapp-widget{bottom:max(16px,env(safe-area-inset-bottom));${data.position === "left" ? "left:14px" : "right:14px"}}.whatsapp-widget__button{width:52px;height:52px}.whatsapp-widget__button svg{width:28px;height:28px}.whatsapp-widget__tooltip{display:none}.whatsapp-widget__modal{bottom:82px;${data.position === "left" ? "left:14px" : "right:14px"};width:calc(100vw - 28px);border-radius:16px}}
         `,
         }}
       />
-      <div className="whatsapp-widget" style={{ display: visible ? "block" : "none" }}>
+      <div className="whatsapp-widget" style={{ display: visible && !suppressedOnTinyTop ? "block" : "none" }}>
         <button
           type="button"
           className="whatsapp-widget__button"
@@ -98,7 +127,14 @@ export function WhatsAppWidget({ content }: Props) {
 
         <div className={`whatsapp-widget__modal${open ? " active" : ""}`} role="dialog" aria-modal="false">
           <div className="whatsapp-widget__modal-header">
-            <img src={data.avatarUrl || "data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs="} alt={data.modalTitle} className="whatsapp-widget__modal-avatar" />
+            <Image
+              src={data.avatarUrl || "data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs="}
+              alt={data.modalTitle}
+              className="whatsapp-widget__modal-avatar"
+              width={50}
+              height={50}
+              unoptimized
+            />
             <div className="whatsapp-widget__modal-info">
               <h3>{data.modalTitle}</h3>
               <p>{data.modalSubtitle}</p>

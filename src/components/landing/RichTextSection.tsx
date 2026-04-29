@@ -15,14 +15,11 @@ export function RichTextSection({ title, html, containerClassName }: Props) {
   const h = safeString(html).trim();
   if (!t && !h) return null;
   return (
-    <section className={containerClassName || "mx-auto w-full max-w-3xl px-6 py-16"}>
-      {t ? <h1 className="text-3xl font-semibold tracking-tight">{t}</h1> : null}
-      {h ? (
-        <div
-          className="mt-6 space-y-4 text-[15px] leading-7 text-white/80"
-          dangerouslySetInnerHTML={{ __html: h }}
-        />
-      ) : null}
+    <section className={containerClassName || "cf-rich-text-section"}>
+      <article className="cf-rich-text-document">
+        {t ? <h1>{t}</h1> : null}
+        {h ? <div className="cf-rich-text-body" dangerouslySetInnerHTML={{ __html: h }} /> : null}
+      </article>
     </section>
   );
 }
@@ -31,4 +28,3 @@ export function renderRichTextFromSectionSettings(settings: Record<string, unkno
   const s = (settings || {}) as any;
   return <RichTextSection title={s.title} html={s.content} />;
 }
-

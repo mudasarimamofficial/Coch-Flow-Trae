@@ -344,7 +344,7 @@ small {
 }
 
 .cf-landing .nav-logo {
-  font-family: "Playfair Display", serif;
+  font-family: var(--cf-font-heading, var(--font-heading)), Georgia, serif;
   font-size: 18px;
   font-weight: 500;
   color: var(--white);
@@ -535,7 +535,7 @@ small {
 }
 
 .cf-landing .nav-sheet-brand-text {
-  font-family: "Playfair Display", serif;
+  font-family: var(--cf-font-heading, var(--font-heading)), Georgia, serif;
   font-size: 16px;
   font-weight: 500;
   color: var(--white);
@@ -872,7 +872,7 @@ small {
 }
 
 .cf-landing .feature-card h3 {
-  font-family: "DM Sans", sans-serif;
+  font-family: var(--cf-font-body, var(--font-body)), system-ui, sans-serif;
   font-weight: 500;
   margin-bottom: 10px;
   font-size: 16px;
@@ -914,14 +914,14 @@ small {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: "Playfair Display", serif;
+  font-family: var(--cf-font-heading, var(--font-heading)), Georgia, serif;
   font-size: 15px;
   color: var(--gold2);
   margin-top: 4px;
 }
 
 .cf-landing .step-body h3 {
-  font-family: "DM Sans", sans-serif;
+  font-family: var(--cf-font-body, var(--font-body)), system-ui, sans-serif;
   font-size: 17px;
   font-weight: 500;
   margin-bottom: 8px;
@@ -976,7 +976,7 @@ small {
 }
 
 .cf-landing .tier-name {
-  font-family: "DM Sans", sans-serif;
+  font-family: var(--cf-font-body, var(--font-body)), system-ui, sans-serif;
   font-size: 13px;
   font-weight: 500;
   letter-spacing: 0.1em;
@@ -992,7 +992,7 @@ small {
 }
 
 .cf-landing .tier-price {
-  font-family: "Playfair Display", serif;
+  font-family: var(--cf-font-heading, var(--font-heading)), Georgia, serif;
   font-size: 3rem;
   font-weight: 500;
   color: var(--white);
@@ -1003,7 +1003,7 @@ small {
 .cf-landing .tier-price span {
   font-size: 1rem;
   color: var(--muted);
-  font-family: "DM Sans", sans-serif;
+  font-family: var(--cf-font-body, var(--font-body)), system-ui, sans-serif;
 }
 
 .cf-landing .tier-outcome {
@@ -1090,7 +1090,7 @@ small {
 }
 
 .cf-landing .audit-text h3 {
-  font-family: "DM Sans", sans-serif;
+  font-family: var(--cf-font-body, var(--font-body)), system-ui, sans-serif;
   font-size: 20px;
   font-weight: 500;
   margin-bottom: 8px;
@@ -1487,6 +1487,96 @@ small {
 .cf-landing h2,
 .cf-landing h3 {
   letter-spacing: 0;
+}
+
+.cf-landing .cf-rich-text-section {
+  width: 100%;
+  padding: 120px 24px;
+  background:
+    radial-gradient(circle at top left, rgba(201, 152, 42, 0.08), transparent 32rem),
+    var(--navy);
+}
+
+.cf-landing .cf-rich-text-document {
+  width: min(100%, 820px);
+  margin: 0 auto;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.035);
+  padding: clamp(32px, 6vw, 64px);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.18);
+}
+
+.cf-landing .cf-rich-text-document h1 {
+  margin: 0;
+  color: var(--white);
+  font-family: var(--cf-font-heading, var(--font-heading)), Georgia, serif;
+  font-size: clamp(34px, 5vw, 58px);
+  font-weight: 600;
+  line-height: 1.05;
+}
+
+.cf-landing .cf-rich-text-body {
+  margin-top: 28px;
+  color: rgba(255, 255, 255, 0.76);
+  font-size: 16px;
+  line-height: 1.8;
+}
+
+.cf-landing .cf-rich-text-body > * + * {
+  margin-top: 1rem;
+}
+
+.cf-landing .cf-rich-text-body h2,
+.cf-landing .cf-rich-text-body h3 {
+  margin-top: 2.2rem;
+  color: var(--white);
+  font-family: var(--cf-font-heading, var(--font-heading)), Georgia, serif;
+  line-height: 1.2;
+}
+
+.cf-landing .cf-rich-text-body h2 {
+  font-size: 28px;
+}
+
+.cf-landing .cf-rich-text-body h3 {
+  font-size: 22px;
+}
+
+.cf-landing .cf-rich-text-body a {
+  color: var(--gold2);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.cf-landing .cf-rich-text-body ul,
+.cf-landing .cf-rich-text-body ol {
+  padding-left: 1.25rem;
+}
+
+.cf-landing .cf-rich-text-body li + li {
+  margin-top: 0.5rem;
+}
+
+.cf-landing .cf-rich-text-body strong {
+  color: var(--white);
+  font-weight: 700;
+}
+
+@media (max-width: 640px) {
+  .cf-landing .cf-rich-text-section {
+    padding: 88px 16px;
+  }
+
+  .cf-landing .cf-rich-text-document {
+    border-radius: 14px;
+    padding: 28px 20px;
+  }
+
+  .cf-landing .cf-rich-text-body {
+    font-size: 15px;
+    line-height: 1.75;
+  }
 }
 
 .cf-landing .label-tag {

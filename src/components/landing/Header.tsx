@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import type { HomepageContent } from "@/content/homepage";
+import Image from "next/image";
 
 type NavItem = { label: string; href: string; enabled?: boolean };
 
@@ -101,7 +102,7 @@ export function Header({ content }: Props) {
           <div className="nav-inner">
             <a href="#" className="nav-logo">
               {iconUrl ? (
-                <img className="logo-img" src={iconUrl} alt="CoachFlow" />
+                <Image className="logo-img" src={iconUrl} alt="CoachFlow" width={32} height={32} unoptimized />
               ) : (
                 <div className="logo-dot" />
               )}
@@ -143,7 +144,11 @@ export function Header({ content }: Props) {
         <div ref={sheetRef} className="nav-sheet-panel" role="dialog" aria-modal="true" aria-label="Navigation">
           <div className="nav-sheet-top">
             <div className="nav-sheet-brand">
-              {iconUrl ? <img className="logo-img" src={iconUrl} alt="CoachFlow" /> : <div className="logo-dot" />}
+              {iconUrl ? (
+                <Image className="logo-img" src={iconUrl} alt="CoachFlow" width={32} height={32} unoptimized />
+              ) : (
+                <div className="logo-dot" />
+              )}
               <div className="nav-sheet-brand-text">{renderBrandText(content.header.brandText)}</div>
             </div>
             <button

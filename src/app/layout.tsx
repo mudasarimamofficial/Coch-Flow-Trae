@@ -43,6 +43,10 @@ function pickCssFont(value: unknown, fallback: string) {
   return v.length ? v : fallback;
 }
 
+function escapeInlineRawText(value: string) {
+  return value.replace(/<\/(script|style)/gi, "<\\/$1");
+}
+
 export async function generateMetadata(): Promise<Metadata> {
   const content = await getHomepageContent();
   const brand = compactText(content.header?.brandText) || "CoachFlow AI";
@@ -251,6 +255,9 @@ export default async function RootLayout({
     content.site?.favicon?.url ||
     "https://ekwydksbprxebgmhbmtj.supabase.co/storage/v1/object/public/assets/coch%20flow%20favicon.png";
   const appleTouchHref = faviconHref;
+  const customCss = content.site?.customCss?.trim() || "";
+  const customJs = content.site?.customJs?.trim() || "";
+  const customCssId = "cf-public-custom-css";
   const lower = faviconHref.toLowerCase();
   const type =
     lower.endsWith(".png")
@@ -271,8 +278,21 @@ export default async function RootLayout({
         <link rel="shortcut icon" href={faviconHref} type={type} />
         <link rel="apple-touch-icon" href={appleTouchHref} />
         <style dangerouslySetInnerHTML={{ __html: cssVars }} />
-        {content.site?.customCss && content.site.customCss.trim().length ? (
-          <style dangerouslySetInnerHTML={{ __html: content.site.customCss }} />
+        {customCss.length ? (
+          <>
+            <style
+              id={customCssId}
+              media="not all"
+              dangerouslySetInnerHTML={{ __html: escapeInlineRawText(customCss) }}
+            />
+            <script
+              dangerouslySetInnerHTML={{
+                __html:
+                  `;(() => { const el = document.getElementById(${JSON.stringify(customCssId)});` +
+                  ` if (!el) return; if (location.pathname.startsWith("/admin")) { el.remove(); return; } el.media = "all"; })();`,
+              }}
+            />
+          </>
         ) : null}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
@@ -284,8 +304,12 @@ export default async function RootLayout({
       </head>
       <body className="min-h-full flex flex-col bg-[var(--cf-bg)] text-[var(--cf-text)]">
         {children}
-        {content.site?.customJs && content.site.customJs.trim().length ? (
-          <script dangerouslySetInnerHTML={{ __html: content.site.customJs }} />
+        {customJs.length ? (
+          <script
+            dangerouslySetInnerHTML={{
+              __html: `;(() => { if (location.pathname.startsWith("/admin")) return;\n${escapeInlineRawText(customJs)}\n})();`,
+            }}
+          />
         ) : null}
       </body>
     </html>

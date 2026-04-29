@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Star, ChevronLeft, ChevronRight } from "lucide-react";
 import type { HomepageContent } from "@/content/homepage";
+import Image from "next/image";
 
 type PageSection = NonNullable<HomepageContent["page"]>["sections"][number];
 
@@ -76,6 +77,10 @@ function fallbackProofMetric(index: number) {
   return metrics[index % metrics.length];
 }
 
+function hasClaimyNumbers(value: string) {
+  return /\d|\$|%|\+/.test(value);
+}
+
 export function TestimonialsSection({ section }: Props) {
   const settings = objectValue<Record<string, unknown>>(section.settings) || {};
   const eyebrow = asString(settings.eyebrow) || "Proof of pipeline";
@@ -91,6 +96,13 @@ export function TestimonialsSection({ section }: Props) {
         .filter((stat) => stat.value && stat.label)
     : [];
 
+  const showStats = useMemo(() => {
+    if (!stats.length) return false;
+    const explicit = typeof (settings as any).statsVerified === "boolean" ? Boolean((settings as any).statsVerified) : false;
+    if (explicit) return true;
+    return !stats.some((s) => hasClaimyNumbers(`${s.value} ${s.label}`));
+  }, [settings, stats]);
+
   const blocks = Array.isArray(section.blocks) ? section.blocks : [];
   const items: ProofItem[] = blocks
     .filter((block) => block.type === "testimonial" || block.type === "proof_card")
@@ -104,18 +116,24 @@ export function TestimonialsSection({ section }: Props) {
       const bodyText = isProofCard
         ? asString((content as any).body || (content as any).description || (content as any).quote)
         : quote;
+      const safeBody = !isRealTestimonial && hasClaimyNumbers(bodyText) ? "" : bodyText;
+      const metricRaw = asString((content as any).metric);
+      const safeMetric = !isRealTestimonial && hasClaimyNumbers(metricRaw) ? "" : metricRaw;
       return {
         id: block.id,
-        name:
-          asString((content as any).name) || (isRealTestimonial ? "CoachFlow client" : fallbackProofTitle(index)),
+        name: isRealTestimonial ? asString((content as any).name) || "CoachFlow client" : fallbackProofTitle(index),
         role:
-          asString((content as any).role || (content as any).title) || (isRealTestimonial ? "High-ticket coaching business" : "System proof point"),
-        body:
-          bodyText || fallbackProofBody(index),
+          isRealTestimonial
+            ? asString((content as any).role || (content as any).title) || "High-ticket coaching business"
+            : "System proof point",
+        body: (safeBody || "").trim().length ? safeBody : fallbackProofBody(index),
         rating: asNumber(content.rating) || 5,
         avatarUrl,
-        metric:
-          asString((content as any).metric) || (isRealTestimonial ? "Qualified pipeline" : fallbackProofMetric(index)),
+        metric: (safeMetric || "").trim().length
+          ? safeMetric
+          : isRealTestimonial
+            ? "Qualified pipeline"
+            : fallbackProofMetric(index),
         isRealTestimonial,
       };
     })
@@ -177,7 +195,7 @@ export function TestimonialsSection({ section }: Props) {
           <p>{subcopy}</p>
         </div>
 
-        {stats.length ? (
+        {showStats ? (
           <div className="proof-stats" aria-label="CoachFlow AI proof metrics">
             {stats.map((stat) => (
               <div key={`${stat.value}-${stat.label}`} className="proof-stat">
@@ -227,7 +245,7 @@ export function TestimonialsSection({ section }: Props) {
                   {item.isRealTestimonial ? (
                     <div className="proof-avatar-wrap">
                       {item.avatarUrl ? (
-                      <img src={item.avatarUrl} alt={item.name} className="proof-avatar" loading="lazy" />
+                      <Image src={item.avatarUrl} alt={item.name} className="proof-avatar" width={44} height={44} unoptimized />
                       ) : (
                         <div className="proof-avatar proof-avatar-fallback" aria-hidden="true" />
                       )}

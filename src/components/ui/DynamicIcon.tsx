@@ -10,6 +10,7 @@ import {
   Twitter,
   Youtube,
 } from "lucide-react";
+import Image from "next/image";
 
 type IconRef = { type: "library" | "upload"; value: string };
 
@@ -45,7 +46,7 @@ export function DynamicIcon({ icon, fallback, className }: Props) {
   const v = pick(icon) || pick(fallback);
   if (!v) return null;
   if (v.kind === "img") {
-    return <img src={v.src} alt="" className={className || "h-5 w-5"} />;
+    return <Image src={v.src} alt="" className={className || "h-5 w-5"} width={20} height={20} unoptimized />;
   }
   const C = v.Comp;
   return <C className={className || "h-5 w-5"} />;

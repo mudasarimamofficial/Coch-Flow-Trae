@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Code2, FileJson, Files, LayoutDashboard, MoreHorizontal, PanelLeft, Settings, Users, X } from "lucide-react";
 import type { Tab } from "@/components/admin/types";
+import Image from "next/image";
 
 type Props = {
   tab: Tab;
@@ -102,10 +103,13 @@ export function AdminShell({ tab, onTabChange, sessionEmail, onSignOut, topNotic
           }
         >
           <div className={sidebarCollapsed ? "mb-4 flex items-center justify-center" : "mb-5 flex items-center gap-2 px-2"}>
-            <img
+            <Image
               src="https://ekwydksbprxebgmhbmtj.supabase.co/storage/v1/object/public/assets/header%20icon.png"
               alt="CoachFlow"
               className={sidebarCollapsed ? "h-8 w-8 rounded-xl" : "h-7 w-7 rounded-xl"}
+              width={32}
+              height={32}
+              unoptimized
             />
             {!sidebarCollapsed ? (
               <div className="text-sm font-bold">

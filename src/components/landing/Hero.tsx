@@ -1,5 +1,6 @@
 import type { HomepageContent } from "@/content/homepage";
 import type { PageSection } from "@/components/landing/sectionRegistry";
+import Image from "next/image";
 
 type Props = {
   content: HomepageContent;
@@ -28,7 +29,14 @@ export function Hero({ content, section }: Props) {
   const secondaryHref = hero.secondaryCta?.href || "#workflow";
   const primaryText = (hero.primaryCta?.text || "").toString();
   const secondaryText = (hero.secondaryCta?.text || "").toString();
-  const metrics = Array.isArray(hero.metrics) && hero.metrics.length ? hero.metrics.slice(0, 3) : [];
+  const allowProofNumbers = Boolean((hero as any).proofVerified || (hero as any).metricsVerified);
+  const metricsRaw = Array.isArray(hero.metrics) && hero.metrics.length ? hero.metrics.slice(0, 3) : [];
+  const metrics = metricsRaw.map((metric) => {
+    if (allowProofNumbers) return metric;
+    const unsafe = hasClaimyNumbers(metric.value) || hasClaimyNumbers(metric.change);
+    if (!unsafe) return { ...metric, change: undefined };
+    return { ...metric, value: fallbackMetricValue(metric.title), change: undefined };
+  });
   const proof = hero.proof;
   const safeAvatars = Array.isArray(proof?.avatars)
     ? proof.avatars.filter((avatar) => avatar?.url && !isGeneratedAvatar(avatar.url))
@@ -84,7 +92,14 @@ export function Hero({ content, section }: Props) {
               {safeAvatars.length ? (
                 <div className="hero-avatars" aria-hidden="true">
                   {safeAvatars.slice(0, 4).map((avatar, idx) => (
-                    <img key={`${avatar.url}-${idx}`} src={avatar.url} alt={avatar.alt || ""} />
+                    <Image
+                      key={`${avatar.url}-${idx}`}
+                      src={avatar.url}
+                      alt={avatar.alt || ""}
+                      width={34}
+                      height={34}
+                      unoptimized
+                    />
                   ))}
                 </div>
               ) : null}
@@ -121,8 +136,12 @@ export function Hero({ content, section }: Props) {
                 <div className="hero-ring ring-one" />
                 <div className="hero-ring ring-two" />
                 <div className="hero-revenue-copy">
-                  <div>{hero.revenueVisual?.value || "$42k"}</div>
-                  <span>{hero.revenueVisual?.label || "New Revenue"}</span>
+                  <div>
+                    {allowProofNumbers || !hasClaimyNumbers(hero.revenueVisual?.value)
+                      ? hero.revenueVisual?.value || ""
+                      : ""}
+                  </div>
+                  <span>{hero.revenueVisual?.label || "Pipeline visibility"}</span>
                 </div>
               </div>
             </div>
@@ -133,6 +152,19 @@ export function Hero({ content, section }: Props) {
       </div>
     </section>
   );
+}
+
+function hasClaimyNumbers(value: unknown) {
+  if (typeof value !== "string") return false;
+  return /\d|\$|%|\+/.test(value);
+}
+
+function fallbackMetricValue(title: string) {
+  const t = title.toLowerCase();
+  if (t.includes("prospect")) return "Consistent";
+  if (t.includes("lead") || t.includes("qualified")) return "Qualified";
+  if (t.includes("call") || t.includes("book")) return "Booked";
+  return "Pipeline";
 }
 
 function HeroBackground() {

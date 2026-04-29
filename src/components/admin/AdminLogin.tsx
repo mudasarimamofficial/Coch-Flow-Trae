@@ -43,10 +43,12 @@ export function AdminLogin({
         >
           <Input
             label="Email"
+            type="email"
             value={email}
             onChange={(e) => onEmailChange(e.target.value)}
             placeholder="admin@yourdomain.com"
             autoComplete="email"
+            required
           />
           <Input
             label="Password"
@@ -55,6 +57,7 @@ export function AdminLogin({
             placeholder="********"
             type="password"
             autoComplete="current-password"
+            required
           />
           <Button type="submit" className="h-12">
             Sign in
