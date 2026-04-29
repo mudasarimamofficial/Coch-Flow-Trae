@@ -449,6 +449,7 @@ export function VisualBuilderPanel({ supabase, onNavigateTab, onSignOut }: Props
   const [backups, setBackups] = useState<{ id: number; createdAt: string; content: HomepageContent }[]>([]);
   const [backupsOpen, setBackupsOpen] = useState(false);
   const backupsRef = useRef<HTMLDivElement | null>(null);
+  const [publishConflict, setPublishConflict] = useState<{ latestUpdatedAt: string; latestContent: HomepageContent } | null>(null);
 
   const historyRef = useRef<HomepageContent[]>([]);
   const futureRef = useRef<HomepageContent[]>([]);
@@ -471,6 +472,13 @@ export function VisualBuilderPanel({ supabase, onNavigateTab, onSignOut }: Props
     } catch {
       return value;
     }
+  }, []);
+
+  const toMs = useCallback((value: string | null | undefined) => {
+    if (!value) return null;
+    const ms = new Date(value).getTime();
+    if (Number.isNaN(ms)) return null;
+    return ms;
   }, []);
 
   const cloneContent = useCallback((v: HomepageContent): HomepageContent => {
@@ -551,6 +559,7 @@ export function VisualBuilderPanel({ supabase, onNavigateTab, onSignOut }: Props
   async function loadAll() {
     setError(null);
     setNotice(null);
+    setPublishConflict(null);
     setLoading(true);
     try {
       const pub = await supabase
@@ -562,7 +571,8 @@ export function VisualBuilderPanel({ supabase, onNavigateTab, onSignOut }: Props
         setError(pub.error.message);
         return;
       }
-      setPublishedUpdatedAt(pub.data.updated_at);
+      const latestPublishedUpdatedAt = pub.data.updated_at;
+      setPublishedUpdatedAt(latestPublishedUpdatedAt);
       setPublished(mergeContent(pub.data.content as Partial<HomepageContent>));
 
       const dr = await supabase
@@ -577,7 +587,14 @@ export function VisualBuilderPanel({ supabase, onNavigateTab, onSignOut }: Props
       const c = (dr.data?.content as Partial<HomepageContent> | null) || null;
       const has = c && Object.keys(c).length;
       setDraft(has ? mergeContent(c) : null);
-      if (dr.data?.published_updated_at) setPublishedUpdatedAt(dr.data.published_updated_at);
+      if (dr.data?.published_updated_at && latestPublishedUpdatedAt) {
+        const baseMs = toMs(dr.data.published_updated_at);
+        const latestMs = toMs(latestPublishedUpdatedAt);
+        const sameInstant = baseMs !== null && latestMs !== null && Math.abs(baseMs - latestMs) <= 1000;
+        setPublishedUpdatedAt(sameInstant ? latestPublishedUpdatedAt : dr.data.published_updated_at);
+      } else if (dr.data?.published_updated_at) {
+        setPublishedUpdatedAt(dr.data.published_updated_at);
+      }
       resetHistory();
       await loadBackups();
     } finally {
@@ -615,9 +632,26 @@ export function VisualBuilderPanel({ supabase, onNavigateTab, onSignOut }: Props
     setPublishing(true);
     setError(null);
     setNotice(null);
+    setPublishConflict(null);
     try {
+      const latest = await supabase
+        .from("homepage_content")
+        .select("updated_at, content")
+        .eq("id", 1)
+        .single();
+      if (latest.error) {
+        setError(latest.error.message);
+        return;
+      }
+
+      const baseUpdatedAt = publishedUpdatedAt || latest.data.updated_at;
+      const baseMs = toMs(baseUpdatedAt);
+      const latestMs = toMs(latest.data.updated_at);
+      const sameInstant = baseMs !== null && latestMs !== null && Math.abs(baseMs - latestMs) <= 1000;
+      const expectedUpdatedAt = sameInstant ? latest.data.updated_at : baseUpdatedAt;
+
       let updateQuery = supabase.from("homepage_content").update({ content: draft }).eq("id", 1);
-      if (publishedUpdatedAt) updateQuery = updateQuery.eq("updated_at", publishedUpdatedAt);
+      if (expectedUpdatedAt) updateQuery = updateQuery.eq("updated_at", expectedUpdatedAt);
 
       const upd = await updateQuery.select("updated_at").maybeSingle();
       if (upd.error) {
@@ -626,7 +660,11 @@ export function VisualBuilderPanel({ supabase, onNavigateTab, onSignOut }: Props
       }
 
       if (!upd.data?.updated_at) {
-        setError("Publish conflict: the published homepage changed since you started editing. Reload and try again.");
+        setPublishConflict({
+          latestUpdatedAt: latest.data.updated_at,
+          latestContent: mergeContent(latest.data.content as Partial<HomepageContent>),
+        });
+        setError("Publish conflict: the published homepage changed since you started editing.");
         return;
       }
 
@@ -645,6 +683,54 @@ export function VisualBuilderPanel({ supabase, onNavigateTab, onSignOut }: Props
       setNotice("Published");
     } finally {
       setPublishing(false);
+    }
+  }
+
+  async function forcePublishNow() {
+    if (!draft) return;
+    setPublishing(true);
+    setError(null);
+    setNotice(null);
+    try {
+      const latest = await supabase
+        .from("homepage_content")
+        .select("updated_at, content")
+        .eq("id", 1)
+        .single();
+      if (latest.error) {
+        setError(latest.error.message);
+        return;
+      }
+
+      await supabase.from("homepage_content_versions").insert({ homepage_id: 1, content: latest.data.content as any, created_by: null });
+
+      const upd = await supabase
+        .from("homepage_content")
+        .update({ content: draft })
+        .eq("id", 1)
+        .select("updated_at")
+        .single();
+      if (upd.error) {
+        setError(upd.error.message);
+        return;
+      }
+
+      await supabase.from("homepage_content_versions").insert({ homepage_id: 1, content: draft, created_by: null });
+      await loadBackups();
+
+      await supabase
+        .from("homepage_content_drafts")
+        .upsert({ id: 1, content: {}, published_updated_at: upd.data.updated_at }, { onConflict: "id" });
+
+      setPublishedUpdatedAt(upd.data.updated_at);
+      setPublished(draft);
+      setDraft(null);
+      resetHistory();
+      await requestAdminRevalidate(supabase, ["/"]);
+      setNotice("Published (overwrote latest)");
+    } finally {
+      setPublishing(false);
+      setPublishConflict(null);
     }
   }
 
@@ -1234,7 +1320,29 @@ export function VisualBuilderPanel({ supabase, onNavigateTab, onSignOut }: Props
 
       {error ? (
         <div className="mx-4 mt-4 rounded-2xl border border-rose-500/20 bg-rose-500/10 px-4 py-3 text-sm text-rose-200 lg:mx-6">
-          {error}
+          <div>{error}</div>
+          {publishConflict && error.startsWith("Publish conflict") ? (
+            <div className="mt-3 flex flex-wrap items-center gap-2">
+              <div className="mr-auto text-xs text-rose-100/70">
+                Latest publish: {formatTimestamp(publishConflict.latestUpdatedAt)}
+              </div>
+              <button
+                type="button"
+                className="inline-flex h-9 items-center justify-center rounded-xl border border-white/10 bg-white/5 px-3 text-xs font-semibold text-white/80 hover:bg-white/10"
+                onClick={loadAll}
+              >
+                Reload
+              </button>
+              <button
+                type="button"
+                className="inline-flex h-9 items-center justify-center rounded-xl bg-[var(--cf-accent)] px-3 text-xs font-bold text-[#0A0F1E] hover:brightness-95 disabled:opacity-50"
+                disabled={publishing || !draft}
+                onClick={forcePublishNow}
+              >
+                Publish anyway
+              </button>
+            </div>
+          ) : null}
         </div>
       ) : null}
       {notice ? (
