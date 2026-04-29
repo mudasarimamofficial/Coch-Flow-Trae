@@ -341,7 +341,7 @@ small {
 }
 
 .cf-landing .nav-logo {
-  font-family: "Playfair Display", serif;
+  font-family: var(--cf-font-heading, var(--font-heading));
   font-size: 18px;
   font-weight: 500;
   color: var(--white);
@@ -532,8 +532,8 @@ small {
 }
 
 .cf-landing .nav-sheet-brand-text {
-  font-family: "Playfair Display", serif;
-  font-size: 16px;
+  font-family: var(--cf-font-heading, var(--font-heading));
+  font-size: var(--font-size-body);
   font-weight: 500;
   color: var(--white);
   white-space: nowrap;
@@ -802,7 +802,7 @@ small {
 .cf-landing .section-intro p {
   color: var(--muted);
   margin-top: 16px;
-  font-size: 16px;
+  font-size: var(--font-size-body);
 }
 
 .cf-landing #features {
@@ -869,14 +869,13 @@ small {
 }
 
 .cf-landing .feature-card h3 {
-  font-family: "DM Sans", sans-serif;
   font-weight: 500;
   margin-bottom: 10px;
-  font-size: 16px;
+  font-size: var(--font-size-h3);
 }
 
 .cf-landing .feature-card p {
-  font-size: 14px;
+  font-size: var(--font-size-small);
   color: var(--muted);
   line-height: 1.7;
 }
@@ -911,22 +910,21 @@ small {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: "Playfair Display", serif;
-  font-size: 15px;
+  font-family: var(--cf-font-heading, var(--font-heading));
+  font-size: var(--font-size-small);
   color: var(--gold2);
   margin-top: 4px;
 }
 
 .cf-landing .step-body h3 {
-  font-family: "DM Sans", sans-serif;
-  font-size: 17px;
+  font-size: var(--font-size-h3);
   font-weight: 500;
   margin-bottom: 8px;
   color: var(--white);
 }
 
 .cf-landing .step-body p {
-  font-size: 14px;
+  font-size: var(--font-size-small);
   color: var(--muted);
   line-height: 1.75;
 }
@@ -973,8 +971,8 @@ small {
 }
 
 .cf-landing .tier-name {
-  font-family: "DM Sans", sans-serif;
-  font-size: 13px;
+  font-family: var(--cf-font-body, var(--font-body));
+  font-size: var(--font-size-small);
   font-weight: 500;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -983,14 +981,14 @@ small {
 }
 
 .cf-landing .tier-desc {
-  font-size: 13px;
+  font-size: var(--font-size-small);
   color: var(--muted);
   margin-bottom: 24px;
 }
 
 .cf-landing .tier-price {
-  font-family: "Playfair Display", serif;
-  font-size: 3rem;
+  font-family: var(--cf-font-heading, var(--font-heading));
+  font-size: var(--font-size-h1);
   font-weight: 500;
   color: var(--white);
   line-height: 1;
@@ -998,13 +996,13 @@ small {
 }
 
 .cf-landing .tier-price span {
-  font-size: 1rem;
+  font-size: var(--font-size-small);
   color: var(--muted);
-  font-family: "DM Sans", sans-serif;
+  font-family: var(--cf-font-body, var(--font-body));
 }
 
 .cf-landing .tier-outcome {
-  font-size: 12px;
+  font-size: var(--font-size-small);
   color: var(--gold2);
   background: rgba(201, 152, 42, 0.08);
   border: 0.5px solid var(--border);
@@ -1032,7 +1030,7 @@ small {
 }
 
 .cf-landing .tier-features li {
-  font-size: 14px;
+  font-size: var(--font-size-small);
   color: rgba(240, 237, 230, 0.8);
   padding: 8px 0;
   border-bottom: 0.5px solid var(--border2);
@@ -1054,7 +1052,7 @@ small {
 
 .cf-landing .pricing-note {
   text-align: center;
-  font-size: 13px;
+  font-size: var(--font-size-small);
   color: var(--muted);
   display: flex;
   align-items: center;
@@ -1087,14 +1085,14 @@ small {
 }
 
 .cf-landing .audit-text h3 {
-  font-family: "DM Sans", sans-serif;
-  font-size: 20px;
+  font-family: var(--cf-font-body, var(--font-body));
+  font-size: var(--font-size-h3);
   font-weight: 500;
   margin-bottom: 8px;
 }
 
 .cf-landing .audit-text p {
-  font-size: 14px;
+  font-size: var(--font-size-small);
   color: var(--muted);
   max-width: 440px;
 }
@@ -1104,36 +1102,27 @@ small {
 }
 
 .cf-landing .form-wrap {
-  max-width: 980px;
+  max-width: 620px;
   margin: 0 auto;
   background: var(--navy3);
   border: 0.5px solid var(--border);
   border-radius: 16px;
-  padding: 56px;
+  padding: 48px;
 }
 
-.cf-landing .form-shell {
-  display: grid;
-  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
-  gap: 36px;
-  align-items: start;
+.cf-landing .form-header {
+  text-align: center;
+  margin-bottom: 36px;
 }
 
-.cf-landing .form-copy {
-  padding-right: 10px;
+.cf-landing .form-header h2 {
+  margin-bottom: 12px;
 }
 
-.cf-landing .form-title {
-  margin: 14px 0 10px;
-}
-
-.cf-landing .form-subcopy {
-  margin: 0;
+.cf-landing .form-header p {
+  font-size: var(--font-size-small);
   color: var(--muted);
-}
-
-.cf-landing .form-fields {
-  min-width: 0;
+  margin: 0;
 }
 
 .cf-landing .form-section {
@@ -1182,7 +1171,7 @@ small {
   border-radius: 8px;
   padding: 13px 16px;
   font-family: inherit;
-  font-size: var(--font-size-body);
+  font-size: var(--font-size-small);
   color: var(--white);
   outline: none;
   transition: border-color 0.2s;
@@ -1212,15 +1201,8 @@ small {
 .cf-landing .form-submit {
   width: 100%;
   padding: 16px;
-  font-size: var(--font-size-body);
+  font-size: 15px;
   justify-content: center;
-}
-
-.cf-landing .form-actions {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  margin-top: 8px;
 }
 
 .cf-landing .form-trust {
@@ -1228,6 +1210,7 @@ small {
   border: 0.5px solid var(--border2);
   background: rgba(255, 255, 255, 0.03);
   padding: 14px 16px;
+  text-align: center;
 }
 
 .cf-landing .form-trust-title {
@@ -3161,4 +3144,308 @@ small {
     align-items: flex-start;
     flex-direction: column;
   }
+}
+
+/* Canonical landing design system (coachflow-landing.html) */
+.cf-landing {
+  --navy: var(--cf-navy, var(--cf-bg, #0a0f1e));
+  --navy2: var(--cf-navy2, var(--cf-secondary, #0f1629));
+  --navy3: var(--cf-navy3, var(--cf-surface, #141d35));
+  --navy4: var(--cf-navy4, #1a2444);
+  --gold: var(--cf-gold, var(--cf-primary, #c9982a));
+  --gold2: var(--cf-gold2, var(--cf-accent, #e8b84b));
+  --gold3: var(--cf-gold3, #f5cc6e);
+  --white: var(--cf-white, var(--cf-text, #ffffff));
+  --off: var(--cf-off, #f0ede6);
+  --muted: var(--cf-muted, #8a8f9e);
+  --border: var(--cf-border-gold, rgba(201, 152, 42, 0.18));
+  --border2: var(--cf-border2, var(--cf-border, rgba(255, 255, 255, 0.07)));
+  background: var(--navy);
+  color: var(--white);
+}
+
+.cf-landing .container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.cf-landing section {
+  padding: 100px 0;
+}
+
+.cf-landing h1,
+.cf-landing h2,
+.cf-landing h3,
+.cf-landing h4 {
+  font-family: var(--cf-font-heading, var(--font-heading));
+  font-weight: 500;
+}
+
+.cf-landing p,
+.cf-landing li,
+.cf-landing a,
+.cf-landing button,
+.cf-landing input,
+.cf-landing select,
+.cf-landing textarea {
+  font-family: var(--cf-font-body, var(--font-body));
+}
+
+.cf-landing .label-tag {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--gold2);
+  border: 0.5px solid var(--border);
+  background: rgba(201, 152, 42, 0.06);
+  padding: 6px 14px;
+  border-radius: 999px;
+  margin-bottom: 24px;
+}
+
+.cf-landing .btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 28px;
+  border-radius: 6px;
+  background: var(--gold);
+  color: var(--navy);
+  font-size: 14px;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.2s;
+  text-decoration: none;
+}
+
+.cf-landing .btn-primary:hover {
+  transform: translateY(-1px);
+}
+
+.cf-landing .btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 28px;
+  border-radius: 6px;
+  background: transparent;
+  border: 0.5px solid rgba(255, 255, 255, 0.25);
+  color: var(--white);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+  text-decoration: none;
+}
+
+.cf-landing .btn-ghost:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.cf-landing nav {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: rgba(10, 15, 30, 0.92);
+  backdrop-filter: blur(14px);
+  border-bottom: 0.5px solid rgba(255, 255, 255, 0.07);
+}
+
+.cf-landing .nav-sheet {
+  background: rgba(10, 15, 30, 0.98);
+  border-left: 0.5px solid rgba(255, 255, 255, 0.07);
+}
+
+.cf-landing .nav-sheet-nav a {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.cf-landing .nav-sheet-nav a:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.cf-landing .hero-bg {
+  background:
+    radial-gradient(circle at 10% 10%, rgba(201, 152, 42, 0.14), transparent 42%),
+    radial-gradient(circle at 90% 30%, rgba(20, 29, 53, 0.9), transparent 55%),
+    radial-gradient(circle at 50% 90%, rgba(201, 152, 42, 0.08), transparent 45%),
+    linear-gradient(180deg, rgba(10, 15, 30, 0.98) 0%, rgba(10, 15, 30, 0.85) 100%);
+}
+
+.cf-landing .hero-panel {
+  border: 0.5px solid rgba(255, 255, 255, 0.08);
+  background: linear-gradient(135deg, rgba(15, 22, 41, 0.88) 0%, rgba(20, 29, 53, 0.94) 100%);
+}
+
+.cf-landing .hero-section {
+  padding: 130px 0 110px;
+  position: relative;
+  overflow: hidden;
+}
+
+.cf-landing .hero-tagline {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--gold2);
+  border: 0.5px solid var(--border);
+  background: rgba(201, 152, 42, 0.06);
+  padding: 6px 14px;
+  border-radius: 999px;
+  margin-bottom: 24px;
+}
+
+.cf-landing .hero-h1 {
+  font-size: var(--font-size-h1);
+  font-weight: 500;
+  line-height: 1.1;
+}
+
+.cf-landing .hero-h1 em {
+  color: var(--gold2);
+  font-style: italic;
+}
+
+.cf-landing .hero-sub {
+  font-size: var(--font-size-body);
+  color: var(--muted);
+  max-width: 680px;
+}
+
+.cf-landing .nav-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.cf-landing .nav-links a {
+  font-size: 13px;
+  font-weight: 400;
+  color: rgba(240, 237, 230, 0.8);
+}
+
+.cf-landing .nav-links a:hover {
+  color: var(--white);
+}
+
+.cf-landing .nav-cta {
+  font-weight: 500;
+}
+
+.cf-landing .section-intro {
+  max-width: 750px;
+  margin-bottom: 60px;
+}
+
+.cf-landing .section-intro h2 {
+  font-size: var(--font-size-h2);
+  margin-bottom: 16px;
+}
+
+.cf-landing .section-intro p {
+  font-size: var(--font-size-body);
+  color: var(--muted);
+}
+
+.cf-landing .feature-card h3 {
+  font-size: var(--font-size-h3);
+}
+
+.cf-landing .step-body h3 {
+  font-size: var(--font-size-h3);
+}
+
+.cf-landing #lead-form {
+  background: var(--navy);
+}
+
+.cf-landing .form-wrap {
+  max-width: 620px;
+  background: var(--navy3);
+  border: 0.5px solid var(--border);
+  border-radius: 14px;
+  padding: 48px;
+}
+
+.cf-landing .form-group input,
+.cf-landing .form-group select,
+.cf-landing .form-group textarea {
+  background: var(--navy2);
+  border: 0.5px solid rgba(255, 255, 255, 0.12);
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.cf-landing .form-header p {
+  font-size: var(--font-size-small);
+}
+
+.cf-landing .form-trust {
+  border-radius: 10px;
+  border: 0.5px solid var(--border2);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.cf-landing .proof-section {
+  background: var(--navy2);
+  padding: 100px 0;
+}
+
+.cf-landing .proof-shell {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.cf-landing .proof-eyebrow {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--gold2);
+  border: 0.5px solid var(--border);
+  background: rgba(201, 152, 42, 0.06);
+  padding: 6px 14px;
+  border-radius: 999px;
+}
+
+.cf-landing .proof-copy h2 {
+  font-size: var(--font-size-h2);
+  font-weight: 500;
+}
+
+.cf-landing .proof-copy p {
+  font-size: var(--font-size-body);
+  color: var(--muted);
+}
+
+.cf-landing .proof-stat {
+  background: var(--navy3);
+  border: 0.5px solid var(--border2);
+}
+
+.cf-landing .proof-stat strong {
+  font-family: var(--cf-font-heading, var(--font-heading));
+  font-weight: 500;
+  color: var(--white);
+}
+
+.cf-landing .proof-stat span {
+  color: var(--muted);
+}
+
+.cf-landing .proof-card {
+  background: var(--navy3);
+  border: 0.5px solid var(--border2);
+}
+
+.cf-landing .proof-dot.is-active {
+  background: rgba(201, 152, 42, 0.7);
+  border-color: rgba(201, 152, 42, 0.9);
 }

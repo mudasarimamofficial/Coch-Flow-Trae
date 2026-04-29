@@ -46,7 +46,7 @@ export function Workflow({ content, section }: Props) {
   }
 
   return (
-    <section id="workflow">
+    <section id={content.workflow.id || "workflow"}>
       <div className="container">
         <div className="section-intro">
           {label ? <div className="label-tag">{label}</div> : null}
@@ -54,15 +54,14 @@ export function Workflow({ content, section }: Props) {
           {content.workflow.subcopy ? <p>{content.workflow.subcopy}</p> : null}
         </div>
 
-        <div className="timeline-list">
+        <div className="steps-list">
           {content.workflow.steps.map((s, idx) => (
-            <div key={`${s.title}-${idx}`} className={`timeline-item ${idx % 2 === 0 ? "is-left" : "is-right"}`}>
-              <div className="timeline-card">
+            <div key={`${s.title}-${idx}`} className="step-item">
+              <div className="step-num">{idx + 1}</div>
+              <div className="step-body">
                 <h3>{s.title}</h3>
                 <p>{s.copy}</p>
               </div>
-              <div className="timeline-point">{idx + 1}</div>
-              <div className="timeline-spacer" aria-hidden="true" />
             </div>
           ))}
         </div>
