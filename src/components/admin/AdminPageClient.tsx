@@ -43,7 +43,7 @@ export function AdminPageClient() {
   }
 
   function isBootstrapAdmin(v: string | null | undefined) {
-    // TODO: Switch back to profiles.is_admin gating once profiles/RLS is verified in production.
+    // Bootstrap gating is intentionally explicit until profiles/RLS admin roles are provisioned.
     return normEmail(v) === bootstrapAdminEmail;
   }
 
@@ -159,7 +159,7 @@ export function AdminPageClient() {
       if (String(json.status || "") !== "verified") {
         const from = (json.effectiveFrom || "").trim();
         const msg = (json.message || "Resend sender is not verified").trim();
-        setResendNotice(from ? `Email sender: ${from}. ${msg}` : msg);
+        setResendNotice(from ? `Sender: ${from}. ${msg}` : msg);
       } else {
         setResendNotice(null);
       }

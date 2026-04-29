@@ -1390,19 +1390,22 @@ small {
   }
 
   .cf-landing .nav-inner {
-    display: flex;
+    display: grid;
     align-items: center;
-    justify-content: space-between;
+    grid-template-columns: 42px 1fr 42px;
   }
 
   .cf-landing .nav-logo {
-    justify-self: auto;
+    grid-column: 2;
+    justify-self: center;
   }
 
   .cf-landing .nav-right {
-    justify-self: auto;
-    width: auto;
-    justify-content: flex-end;
+    grid-column: 1;
+    grid-row: 1;
+    justify-self: start;
+    width: 42px;
+    justify-content: flex-start;
     gap: 12px;
   }
 
@@ -1438,13 +1441,16 @@ small {
   }
 
   .cf-landing .nav-logo {
+    grid-column: 2;
     justify-self: center;
   }
 
   .cf-landing .nav-right {
-    justify-self: end;
+    grid-column: 1;
+    grid-row: 1;
+    justify-self: start;
     width: 42px;
-    justify-content: flex-end;
+    justify-content: flex-start;
   }
 
   .cf-landing .nav-cta {
@@ -1543,7 +1549,7 @@ small {
 }
 
 .cf-landing nav.is-scrolled,
-.cf-landing nav:has(+ .nav-sheet.is-open),
+.cf-landing .site-header:has(+ .nav-sheet.is-open) nav,
 .cf-landing nav:hover {
   background: rgba(5, 6, 11, 0.82);
   border-bottom-color: rgba(255, 255, 255, 0.05);
@@ -2960,6 +2966,13 @@ small {
   scroll-snap-align: start;
 }
 
+.cf-landing .proof-card--signal {
+  min-height: 300px;
+  background:
+    radial-gradient(circle at 15% 0%, rgba(201, 152, 42, 0.14), transparent 30%),
+    linear-gradient(145deg, rgba(20, 29, 53, 0.96), rgba(8, 9, 13, 0.98));
+}
+
 .cf-landing .proof-card::after {
   content: "";
   position: absolute;
@@ -2992,6 +3005,28 @@ small {
 
 .cf-landing .proof-avatar-fallback {
   background: radial-gradient(circle at 30% 20%, rgba(234, 179, 8, 0.65), rgba(255, 255, 255, 0.08));
+}
+
+.cf-landing .proof-signal-mark {
+  width: 54px;
+  height: 54px;
+  border-radius: 18px;
+  border: 1px solid rgba(201, 152, 42, 0.25);
+  background:
+    linear-gradient(135deg, rgba(201, 152, 42, 0.18), rgba(255, 255, 255, 0.04)),
+    rgba(255, 255, 255, 0.03);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+}
+
+.cf-landing .proof-signal-mark span {
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  border: 2px solid var(--gold);
+  box-shadow: 0 0 0 8px rgba(201, 152, 42, 0.1);
 }
 
 .cf-landing .proof-name {
@@ -3038,6 +3073,10 @@ small {
   gap: 3px;
   color: var(--gold);
   letter-spacing: 0;
+}
+
+.cf-landing .proof-signal-label {
+  color: rgba(240, 237, 230, 0.7);
 }
 
 .cf-landing .proof-star {

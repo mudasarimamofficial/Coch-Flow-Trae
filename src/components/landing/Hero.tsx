@@ -30,6 +30,19 @@ export function Hero({ content, section }: Props) {
   const secondaryText = (hero.secondaryCta?.text || "").toString();
   const metrics = Array.isArray(hero.metrics) && hero.metrics.length ? hero.metrics.slice(0, 3) : [];
   const proof = hero.proof;
+  const safeAvatars = Array.isArray(proof?.avatars)
+    ? proof.avatars.filter((avatar) => avatar?.url && !isGeneratedAvatar(avatar.url))
+    : [];
+  const proofTitle =
+    proof?.title && !/trusted by\s+\d+\+?\s+coaches/i.test(proof.title)
+      ? proof.title
+      : trustText || "Built for high-ticket coaching teams";
+  const proofEyebrow =
+    proof?.eyebrow && !/averaging\s+\d+\+?\s+booked calls/i.test(proof.eyebrow)
+      ? proof.eyebrow
+      : trustPills.length
+        ? trustPills.join(" / ")
+        : "Pipeline signals over vanity metrics";
 
   return (
     <section id="hero" className="hero-section">
@@ -66,18 +79,18 @@ export function Hero({ content, section }: Props) {
             ) : null}
           </div>
 
-          {proof?.title || trustText || trustPills.length ? (
+          {proofTitle || proofEyebrow ? (
             <div className="hero-proof">
-              {proof?.avatars?.length ? (
+              {safeAvatars.length ? (
                 <div className="hero-avatars" aria-hidden="true">
-                  {proof.avatars.slice(0, 4).map((avatar, idx) => (
+                  {safeAvatars.slice(0, 4).map((avatar, idx) => (
                     <img key={`${avatar.url}-${idx}`} src={avatar.url} alt={avatar.alt || ""} />
                   ))}
                 </div>
               ) : null}
               <div>
-                <div className="hero-proof-title">{proof?.title || trustText}</div>
-                <div className="hero-proof-sub">{proof?.eyebrow || trustPills.join(" / ")}</div>
+                <div className="hero-proof-title">{proofTitle}</div>
+                <div className="hero-proof-sub">{proofEyebrow}</div>
               </div>
             </div>
           ) : null}
@@ -156,7 +169,7 @@ function renderMultilineText(text: string) {
     );
   }
 
-  if (/booked calls/i.test(normalized)) {
+  if (normalized.toLowerCase() === "predictable booked calls for") {
     return (
       <>
         Predictable <br />
@@ -166,6 +179,10 @@ function renderMultilineText(text: string) {
   }
 
   return <>{normalized} </>;
+}
+
+function isGeneratedAvatar(url: string) {
+  return /text_to_image|picsum\.photos|coresg-normal/i.test(url);
 }
 
 function renderMetricIcon(key: string) {

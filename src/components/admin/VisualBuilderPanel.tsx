@@ -27,6 +27,7 @@ import { IconPicker, type IconRef } from "@/components/admin/builder/IconPicker"
 import { MediaPickerModal } from "@/components/admin/builder/MediaPickerModal";
 import { applyBuilderOverrides } from "@/utils/homepageBuilder";
 import { mergePageSectionsWithDefaults } from "@/utils/homepageSections";
+import { requestAdminRevalidate } from "@/utils/adminRevalidate";
 import type { Tab } from "@/components/admin/types";
 import {
   Monitor,
@@ -406,6 +407,10 @@ function labelRow(left: string, right?: string) {
   );
 }
 
+function isProofBlock(block: { type?: string }) {
+  return block.type === "testimonial" || block.type === "proof_card";
+}
+
 function InspectorGroup({ title, children }: { title: string; children: ReactNode }) {
   return (
     <div className="rounded-2xl border border-white/10 bg-white/5 p-3">
@@ -597,6 +602,7 @@ export function VisualBuilderPanel({ supabase, onNavigateTab, onSignOut }: Props
       setPublished(draft);
       setDraft(null);
       resetHistory();
+      await requestAdminRevalidate(supabase, ["/"]);
       setNotice("Published");
     } finally {
       setPublishing(false);
@@ -974,7 +980,7 @@ export function VisualBuilderPanel({ supabase, onNavigateTab, onSignOut }: Props
       return { subtitle: "HTML/CSS/JS", children: [] as string[] };
     }
     if (t === "testimonials") {
-      return { subtitle: "Testimonials", children: [] as string[] };
+      return { subtitle: "Proof signals", children: [] as string[] };
     }
     if (t === "custom") {
       return { subtitle: "Custom section", children: [] as string[] };
@@ -1227,7 +1233,7 @@ export function VisualBuilderPanel({ supabase, onNavigateTab, onSignOut }: Props
                   { value: "audit_bridge", label: "Audit Bridge" },
                   { value: "application", label: "Lead Form" },
                   { value: "footer", label: "Footer" },
-                  { value: "testimonials", label: "Testimonials" },
+                  { value: "testimonials", label: "Proof / Testimonials" },
                   { value: "custom_html", label: "Custom HTML" },
                 ]}
               />
@@ -1259,7 +1265,13 @@ export function VisualBuilderPanel({ supabase, onNavigateTab, onSignOut }: Props
                       : addType === "pricing"
                         ? [{ id: `tier_${Date.now()}`, type: "tier", content: { name: "", tagline: "", price: "", bullets: [], ctaText: "Select", ctaHref: "#lead-form" } }]
                         : addType === "testimonials"
-                          ? [{ id: `testimonial_${Date.now()}`, type: "testimonial", content: { name: "", title: "", quote: "" } }]
+                          ? [
+                              {
+                                id: `proof_${Date.now()}`,
+                                type: "proof_card",
+                                content: { name: "Pipeline signal", title: "System proof point", body: "" },
+                              },
+                            ]
                           : addType === "footer"
                             ? [{ id: `social_${Date.now()}`, type: "social_link", content: { platform: "instagram", url: "", enabled: true, icon: { type: "library", value: "instagram" } } }]
                             : [],
@@ -2395,15 +2407,15 @@ export function VisualBuilderPanel({ supabase, onNavigateTab, onSignOut }: Props
                     blocks: [
                       ...(s.blocks || []),
                       {
-                        id: `testimonial_${Date.now()}`,
-                        type: "testimonial",
-                        content: { name: "", role: "", quote: "", rating: 5, avatar: undefined },
+                        id: `proof_${Date.now()}`,
+                        type: "proof_card",
+                        content: { name: "Pipeline signal", role: "System proof point", body: "" },
                       },
                     ],
                   }))
                 }
               >
-                Add testimonial
+                Add proof card
               </Button>
               <DndContext
                 sensors={sensors}
@@ -2412,21 +2424,21 @@ export function VisualBuilderPanel({ supabase, onNavigateTab, onSignOut }: Props
                   const { active, over } = e;
                   if (!over || active.id === over.id) return;
                   updateSection(selectedSection.id, (s) => {
-                    const list = (s.blocks || []).filter((b) => b.type === "testimonial");
+                    const list = (s.blocks || []).filter(isProofBlock);
                     const oldIndex = list.findIndex((b) => b.id === active.id);
                     const newIndex = list.findIndex((b) => b.id === over.id);
                     const next = arrayMove(list, oldIndex, newIndex);
-                    const rest = (s.blocks || []).filter((b) => b.type !== "testimonial");
+                    const rest = (s.blocks || []).filter((b) => !isProofBlock(b));
                     return { ...s, blocks: [...next, ...rest] };
                   });
                 }}
               >
                 <SortableContext
-                  items={(selectedSection.blocks || []).filter((b) => b.type === "testimonial").map((b) => b.id)}
+                  items={(selectedSection.blocks || []).filter(isProofBlock).map((b) => b.id)}
                   strategy={verticalListSortingStrategy}
                 >
                   <div className="flex flex-col gap-2">
-                    {(selectedSection.blocks || []).filter((b) => b.type === "testimonial").map((b) => (
+                    {(selectedSection.blocks || []).filter(isProofBlock).map((b) => (
                       <BlockRow
                         key={b.id}
                         id={b.id}
@@ -2447,13 +2459,13 @@ export function VisualBuilderPanel({ supabase, onNavigateTab, onSignOut }: Props
               </DndContext>
 
               {(() => {
-                const list = (selectedSection.blocks || []).filter((b) => b.type === "testimonial");
+                const list = (selectedSection.blocks || []).filter(isProofBlock);
                 const active = list.find((b) => b.id === selectedBlockId) || list[0];
                 if (!active) return null;
                 return (
                   <div className="rounded-xl border border-slate-200 p-3 dark:border-white/10">
                     <Input
-                      label="Name"
+                      label={active.type === "proof_card" ? "Signal title" : "Name"}
                       value={String(active.content?.name || "")}
                       onChange={(e) =>
                         updateSection(selectedSection.id, (s) => ({
@@ -2465,7 +2477,7 @@ export function VisualBuilderPanel({ supabase, onNavigateTab, onSignOut }: Props
                       }
                     />
                     <Input
-                      label="Role"
+                      label={active.type === "proof_card" ? "Signal label" : "Role"}
                       value={String(active.content?.role || "")}
                       onChange={(e) =>
                         updateSection(selectedSection.id, (s) => ({
@@ -2478,6 +2490,7 @@ export function VisualBuilderPanel({ supabase, onNavigateTab, onSignOut }: Props
                     />
                     <Select
                       label="Rating"
+                      disabled={active.type === "proof_card"}
                       value={String(active.content?.rating ?? 5)}
                       onChange={(e) =>
                         updateSection(selectedSection.id, (s) => ({
@@ -2496,13 +2509,21 @@ export function VisualBuilderPanel({ supabase, onNavigateTab, onSignOut }: Props
                       ]}
                     />
                     <Textarea
-                      label="Quote"
-                      value={String(active.content?.quote || "")}
+                      label={active.type === "proof_card" ? "Proof detail" : "Quote"}
+                      value={String(active.content?.quote || active.content?.body || "")}
                       onChange={(e) =>
                         updateSection(selectedSection.id, (s) => ({
                           ...s,
                           blocks: (s.blocks || []).map((x) =>
-                            x.id === active.id ? { ...x, content: { ...x.content, quote: e.target.value } } : x,
+                            x.id === active.id
+                              ? {
+                                  ...x,
+                                  content:
+                                    active.type === "proof_card"
+                                      ? { ...x.content, body: e.target.value }
+                                      : { ...x.content, quote: e.target.value },
+                                }
+                              : x,
                           ),
                         }))
                       }

@@ -155,6 +155,8 @@ export function LeadFormSection({ content, section }: Props) {
                     <div className="form-group">
                       <label>{content.application.fields.emailLabel}</label>
                       <input
+                        type="email"
+                        inputMode="email"
                         value={values.email}
                         onChange={(e) => setValues((v) => ({ ...v, email: e.target.value }))}
                         placeholder={content.application.fields.emailPlaceholder || ""}

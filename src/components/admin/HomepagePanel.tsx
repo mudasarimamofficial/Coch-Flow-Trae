@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/Input";
 import { Textarea } from "@/components/ui/Textarea";
 import { Select } from "@/components/ui/Select";
 import { homepageDefaults, type HomepageContent } from "@/content/homepage";
+import { requestAdminRevalidate } from "@/utils/adminRevalidate";
 
 type Props = {
   supabase: SupabaseClient;
@@ -97,7 +98,7 @@ function mergeContent(c: Partial<HomepageContent> | null): HomepageContent {
       ...(c.header || {}),
       brandIcon: { ...homepageDefaults.header.brandIcon, ...(c.header?.brandIcon || {}) },
       primaryCta: { ...homepageDefaults.header.primaryCta, ...(c.header?.primaryCta || {}) },
-      nav: { ...homepageDefaults.header.nav, ...(c.header?.nav || {}) },
+      nav: Array.isArray(c.header?.nav) ? c.header.nav : homepageDefaults.header.nav,
     },
     hero: {
       ...homepageDefaults.hero,
@@ -1448,6 +1449,7 @@ export function HomepagePanel({ supabase }: Props) {
                     setError(error.message);
                     return;
                   }
+                  await requestAdminRevalidate(supabase, ["/"]);
                   setSaved("Saved");
                 } finally {
                   setSaving(false);

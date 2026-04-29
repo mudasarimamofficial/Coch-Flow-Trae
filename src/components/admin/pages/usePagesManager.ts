@@ -1,6 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { useEffect, useMemo, useState } from "react";
 import { nowId, normalizeSlug, toSections, withSections, type PageSection, type SitePage } from "@/components/admin/pages/types";
+import { requestAdminRevalidate } from "@/utils/adminRevalidate";
 
 export function usePagesManager(supabase: SupabaseClient) {
   const [loading, setLoading] = useState(true);
@@ -238,6 +239,7 @@ export function usePagesManager(supabase: SupabaseClient) {
         return;
       }
       setStatus("published");
+      await requestAdminRevalidate(supabase, ["/", `/p/${s}`]);
       setSaved("Published");
       await loadPages();
     } finally {
@@ -260,6 +262,7 @@ export function usePagesManager(supabase: SupabaseClient) {
         return;
       }
       setStatus("draft");
+      await requestAdminRevalidate(supabase, ["/", `/p/${selected.slug}`]);
       setSaved("Unpublished");
       await loadPages();
     } finally {
@@ -284,6 +287,7 @@ export function usePagesManager(supabase: SupabaseClient) {
         setError(err.message);
         return;
       }
+      await requestAdminRevalidate(supabase, ["/p/" + selected.slug]);
       setSaved("Reverted to published");
       await loadPages();
     } finally {

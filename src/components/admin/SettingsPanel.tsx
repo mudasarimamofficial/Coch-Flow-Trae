@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { homepageDefaults, type HomepageContent } from "@/content/homepage";
 import { validateSenderEmailBasic } from "@/utils/resendSender";
+import { requestAdminRevalidate } from "@/utils/adminRevalidate";
 
 type Props = {
   supabase: SupabaseClient;
@@ -506,6 +507,7 @@ export function SettingsPanel({ supabase }: Props) {
                     setSettingsError(updateHomeErr.message);
                     return;
                   }
+                  await requestAdminRevalidate(supabase, ["/"]);
                   setSettingsSaved("Saved");
                 } finally {
                   setSettingsLoading(false);

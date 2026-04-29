@@ -24,7 +24,7 @@ export function PagesPanel({ supabase }: Props) {
   const [moreOpen, setMoreOpen] = useState(false);
 
   useEffect(() => {
-    const mq = window.matchMedia("(max-width: 768px)");
+    const mq = window.matchMedia("(max-width: 1024px)");
     const update = () => setIsMobile(Boolean(mq.matches));
     update();
     const anyMq = mq as unknown as {

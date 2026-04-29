@@ -55,21 +55,7 @@ export function mergePageSectionsWithDefaults(sections?: PageSection[] | null): 
 
     proof.settings = mergedSettings;
 
-    const proofBlocks = Array.isArray(proof.blocks) ? proof.blocks : [];
-    const incomingTestimonials = proofBlocks.filter((b) => b && b.type === "testimonial");
-    const defaultTestimonials = (Array.isArray(defaultProof.blocks) ? defaultProof.blocks : []).filter((b) => b && b.type === "testimonial");
-
-    if (incomingTestimonials.length < 10 && defaultTestimonials.length) {
-      const existingIds = new Set(proofBlocks.map((b) => b.id));
-      const nextBlocks = [...proofBlocks];
-      for (const b of defaultTestimonials) {
-        if (nextBlocks.filter((x) => x.type === "testimonial").length >= 10) break;
-        if (existingIds.has(b.id)) continue;
-        nextBlocks.push({ ...b, content: { ...(b.content || {}) } });
-        existingIds.add(b.id);
-      }
-      proof.blocks = nextBlocks;
-    }
+    proof.blocks = Array.isArray(proof.blocks) ? proof.blocks : cloneSection(defaultProof).blocks;
   }
 
   return output;

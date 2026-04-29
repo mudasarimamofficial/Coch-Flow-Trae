@@ -96,45 +96,47 @@ export function Header({ content }: Props) {
 
   return (
     <>
-      <nav className={isScrolled ? "is-scrolled" : ""}>
-        <div className="nav-inner">
-          <a href="#" className="nav-logo">
-            {iconUrl ? (
-              <img className="logo-img" src={iconUrl} alt="CoachFlow" />
-            ) : (
-              <div className="logo-dot" />
-            )}
-            {renderBrandText(content.header.brandText)}
-          </a>
+      <header className="site-header">
+        <nav className={isScrolled ? "is-scrolled" : ""} aria-label="Primary navigation">
+          <div className="nav-inner">
+            <a href="#" className="nav-logo">
+              {iconUrl ? (
+                <img className="logo-img" src={iconUrl} alt="CoachFlow" />
+              ) : (
+                <div className="logo-dot" />
+              )}
+              {renderBrandText(content.header.brandText)}
+            </a>
 
-          <ul className="nav-links">
-            {enabledNavItems.map((item) => (
-              <li key={item.href}>
-                <a href={item.href}>{item.label}</a>
-              </li>
-            ))}
-          </ul>
+            <ul className="nav-links">
+              {enabledNavItems.map((item) => (
+                <li key={item.href}>
+                  <a href={item.href}>{item.label}</a>
+                </li>
+              ))}
+            </ul>
 
-          <div className="nav-right">
-            {ctaEnabled ? (
-              <a href={ctaHref} className="btn-primary nav-cta">
-                {ctaLabel}
-              </a>
-            ) : null}
+            <div className="nav-right">
+              {ctaEnabled ? (
+                <a href={ctaHref} className="btn-primary nav-cta">
+                  {ctaLabel}
+                </a>
+              ) : null}
 
-            <button
-              type="button"
-              className={`nav-mobile nav-toggle ${mobileOpen ? "is-open" : ""}`}
-              aria-label={mobileOpen ? "Close navigation" : "Open navigation"}
-              aria-expanded={mobileOpen}
-              aria-controls="cf-mobile-nav"
-              onClick={() => setMobileOpen((v) => !v)}
-            >
-              <span className="nav-toggle-bars" aria-hidden="true" />
-            </button>
+              <button
+                type="button"
+                className={`nav-mobile nav-toggle ${mobileOpen ? "is-open" : ""}`}
+                aria-label={mobileOpen ? "Close navigation" : "Open navigation"}
+                aria-expanded={mobileOpen}
+                aria-controls="cf-mobile-nav"
+                onClick={() => setMobileOpen((v) => !v)}
+              >
+                <span className="nav-toggle-bars" aria-hidden="true" />
+              </button>
+            </div>
           </div>
-        </div>
-      </nav>
+        </nav>
+      </header>
 
       <div id="cf-mobile-nav" className={`nav-sheet ${mobileOpen ? "is-open" : ""}`} aria-hidden={!mobileOpen}>
         <div className="nav-sheet-backdrop" onClick={() => setMobileOpen(false)} />

@@ -3,6 +3,8 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Textarea } from "@/components/ui/Textarea";
 import { homepageDefaults, type HomepageContent } from "@/content/homepage";
+import { mergeHomepageContent } from "@/utils/homepageMerge";
+import { requestAdminRevalidate } from "@/utils/adminRevalidate";
 
 type Props = {
   supabase: SupabaseClient;
@@ -30,8 +32,8 @@ export function CustomCodePanel({ supabase }: Props) {
         setContent(homepageDefaults);
         return;
       }
-      const c = (data?.content as HomepageContent | null) || null;
-      setContent(c && c.header?.brandText ? c : homepageDefaults);
+      const c = (data?.content as Partial<HomepageContent> | null) || null;
+      setContent(mergeHomepageContent(c));
     } finally {
       setLoading(false);
     }
@@ -102,6 +104,7 @@ export function CustomCodePanel({ supabase }: Props) {
                     setError(error.message);
                     return;
                   }
+                  await requestAdminRevalidate(supabase, ["/"]);
                   setSaved("Saved");
                 } finally {
                   setSaving(false);

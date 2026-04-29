@@ -47,7 +47,7 @@ export function AdminShell({ tab, onTabChange, sessionEmail, onSignOut, topNotic
 
   useEffect(() => {
     const mqNarrow = window.matchMedia("(max-width: 1024px)");
-    const mqMobile = window.matchMedia("(max-width: 768px)");
+    const mqMobile = window.matchMedia("(max-width: 1024px)");
     const update = () => {
       setIsNarrow(Boolean(mqNarrow.matches));
       setIsMobile(Boolean(mqMobile.matches));
@@ -187,6 +187,7 @@ export function AdminShell({ tab, onTabChange, sessionEmail, onSignOut, topNotic
                 <span className="mr-2 inline-flex rounded-full bg-amber-500/15 px-2 py-0.5 text-[11px] font-semibold text-amber-200">
                   Email
                 </span>
+                {" "}
                 {topNotice}
               </div>
               <button
