@@ -43,16 +43,6 @@ function pickCssFont(value: unknown, fallback: string) {
   return v.length ? v : fallback;
 }
 
-function isLegacyLandingScale(scale: any) {
-  return (
-    scale?.mobile?.h1 === "22px" &&
-    scale?.tablet?.h1 === "28px" &&
-    scale?.laptop?.h1 === "36px" &&
-    scale?.desktopLarge?.h1 === "42px" &&
-    scale?.desktopLarge?.body === "18px"
-  );
-}
-
 export async function generateMetadata(): Promise<Metadata> {
   const content = await getHomepageContent();
   const brand = compactText(content.header?.brandText) || "CoachFlow AI";
@@ -124,44 +114,44 @@ export default async function RootLayout({
       bodyFont: "var(--font-body)",
       scale: {
         mobile: {
-          h1: "38px",
-          h2: "29px",
-          h3: "20px",
+          h1: "22px",
+          h2: "20px",
+          h3: "18px",
           h4: "16px",
           h5: "15px",
           h6: "14px",
           body: "16px",
-          small: "12px",
+          small: "14px",
         },
         tablet: {
-          h1: "44px",
-          h2: "34px",
-          h3: "20px",
-          h4: "18px",
-          h5: "16px",
-          h6: "14px",
+          h1: "28px",
+          h2: "24px",
+          h3: "22px",
+          h4: "20px",
+          h5: "18px",
+          h6: "16px",
           body: "16px",
-          small: "12px",
+          small: "14px",
         },
         laptop: {
-          h1: "54px",
-          h2: "40px",
-          h3: "20px",
-          h4: "18px",
-          h5: "16px",
-          h6: "14px",
+          h1: "36px",
+          h2: "30px",
+          h3: "26px",
+          h4: "22px",
+          h5: "20px",
+          h6: "18px",
           body: "16px",
-          small: "12px",
+          small: "14px",
         },
         desktopLarge: {
-          h1: "61px",
-          h2: "42px",
-          h3: "20px",
-          h4: "18px",
-          h5: "16px",
-          h6: "14px",
-          body: "16px",
-          small: "12px",
+          h1: "42px",
+          h2: "36px",
+          h3: "30px",
+          h4: "26px",
+          h5: "22px",
+          h6: "18px",
+          body: "18px",
+          small: "14px",
         },
       },
     },
@@ -200,60 +190,56 @@ export default async function RootLayout({
     border2: (colors as any).border2 || colors.border,
   };
 
-  const rawScale =
+  const scale =
     ((content.site as any)?.theme?.typography?.scale as any) ||
     ((content.branding as any)?.typography?.scale as any) ||
     (defaults.typography as any)?.scale;
-  const scale =
-    (content.site?.designPreset === "landing_html_v1" || !content.site?.designPreset) && isLegacyLandingScale(rawScale)
-      ? (defaults.typography as any)?.scale
-      : rawScale;
   const mobile = scale?.mobile || {};
   const tablet = scale?.tablet || {};
   const laptop = scale?.laptop || {};
   const desktopLarge = scale?.desktopLarge || {};
 
   const baseVars = {
-    h1: sanitizePx(mobile.h1, "38px"),
-    h2: sanitizePx(mobile.h2, "29px"),
-    h3: sanitizePx(mobile.h3, "20px"),
+    h1: sanitizePx(mobile.h1, "22px"),
+    h2: sanitizePx(mobile.h2, "20px"),
+    h3: sanitizePx(mobile.h3, "18px"),
     h4: sanitizePx(mobile.h4, "16px"),
     h5: sanitizePx(mobile.h5, "15px"),
     h6: sanitizePx(mobile.h6, "14px"),
     body: sanitizePx(mobile.body, "16px"),
-    small: sanitizePx(mobile.small, "12px"),
+    small: sanitizePx(mobile.small, "14px"),
   };
 
   const tabletVars = {
-    h1: sanitizePx(tablet.h1, "44px"),
-    h2: sanitizePx(tablet.h2, "34px"),
-    h3: sanitizePx(tablet.h3, "20px"),
-    h4: sanitizePx(tablet.h4, "18px"),
-    h5: sanitizePx(tablet.h5, "16px"),
-    h6: sanitizePx(tablet.h6, "14px"),
+    h1: sanitizePx(tablet.h1, "28px"),
+    h2: sanitizePx(tablet.h2, "24px"),
+    h3: sanitizePx(tablet.h3, "22px"),
+    h4: sanitizePx(tablet.h4, "20px"),
+    h5: sanitizePx(tablet.h5, "18px"),
+    h6: sanitizePx(tablet.h6, "16px"),
     body: sanitizePx(tablet.body, baseVars.body),
     small: sanitizePx(tablet.small, baseVars.small),
   };
 
   const laptopVars = {
-    h1: sanitizePx(laptop.h1, "54px"),
-    h2: sanitizePx(laptop.h2, "40px"),
-    h3: sanitizePx(laptop.h3, "20px"),
-    h4: sanitizePx(laptop.h4, "18px"),
-    h5: sanitizePx(laptop.h5, "16px"),
-    h6: sanitizePx(laptop.h6, "14px"),
+    h1: sanitizePx(laptop.h1, "36px"),
+    h2: sanitizePx(laptop.h2, "30px"),
+    h3: sanitizePx(laptop.h3, "26px"),
+    h4: sanitizePx(laptop.h4, "22px"),
+    h5: sanitizePx(laptop.h5, "20px"),
+    h6: sanitizePx(laptop.h6, "18px"),
     body: sanitizePx(laptop.body, baseVars.body),
     small: sanitizePx(laptop.small, baseVars.small),
   };
 
   const desktopLargeVars = {
-    h1: sanitizePx(desktopLarge.h1, "61px"),
-    h2: sanitizePx(desktopLarge.h2, "42px"),
-    h3: sanitizePx(desktopLarge.h3, "20px"),
-    h4: sanitizePx(desktopLarge.h4, "18px"),
-    h5: sanitizePx(desktopLarge.h5, "16px"),
-    h6: sanitizePx(desktopLarge.h6, "14px"),
-    body: sanitizePx(desktopLarge.body, "16px"),
+    h1: sanitizePx(desktopLarge.h1, "42px"),
+    h2: sanitizePx(desktopLarge.h2, "36px"),
+    h3: sanitizePx(desktopLarge.h3, "30px"),
+    h4: sanitizePx(desktopLarge.h4, "26px"),
+    h5: sanitizePx(desktopLarge.h5, "22px"),
+    h6: sanitizePx(desktopLarge.h6, "18px"),
+    body: sanitizePx(desktopLarge.body, "18px"),
     small: sanitizePx(desktopLarge.small, baseVars.small),
   };
 

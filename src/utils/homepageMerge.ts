@@ -5,23 +5,13 @@ type Link = { label: string; href: string };
 
 function mergeScale(base: any, extra: any) {
   const b = base || homepageDefaults.site.theme?.typography?.scale;
-  const e = isLegacyScale(extra) ? {} : extra || {};
+  const e = extra || {};
   return {
     mobile: { ...(b?.mobile || {}), ...(e.mobile || {}) },
     tablet: { ...(b?.tablet || {}), ...(e.tablet || {}) },
     laptop: { ...(b?.laptop || {}), ...(e.laptop || {}) },
     desktopLarge: { ...(b?.desktopLarge || {}), ...(e.desktopLarge || {}) },
   };
-}
-
-function isLegacyScale(scale: any) {
-  return (
-    scale?.mobile?.h1 === "22px" &&
-    scale?.tablet?.h1 === "28px" &&
-    scale?.laptop?.h1 === "36px" &&
-    scale?.desktopLarge?.h1 === "42px" &&
-    scale?.desktopLarge?.body === "18px"
-  );
 }
 
 function mergeTheme(base: any, extra: any) {
