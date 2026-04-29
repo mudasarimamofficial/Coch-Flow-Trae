@@ -1,5 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { nowId, normalizeSlug, toSections, withSections, type PageSection, type SitePage } from "@/components/admin/pages/types";
 import { requestAdminRevalidate } from "@/utils/adminRevalidate";
 
@@ -43,6 +43,29 @@ export function usePagesManager(supabase: SupabaseClient) {
     }
     return `${base}-${Date.now()}`;
   }
+
+  const loadPages = useCallback(async () => {
+    setError(null);
+    setSaved(null);
+    setLoading(true);
+    try {
+      const { data, error: err } = await supabase
+        .from("site_pages")
+        .select(
+          "id, slug, title, nav_label, show_in_header_nav, show_in_footer_nav, status, meta_title, meta_description, draft_content, published_content, updated_at",
+        )
+        .order("updated_at", { ascending: false });
+      if (err) {
+        setError(err.message);
+        return;
+      }
+      const rows = (data || []) as SitePage[];
+      setPages(rows);
+      setSelectedId((current) => current || rows[0]?.id || null);
+    } finally {
+      setLoading(false);
+    }
+  }, [supabase]);
 
   async function createNewWithValues(params: { title: string; slug?: string; navLabel?: string }) {
     setError(null);
@@ -114,32 +137,9 @@ export function usePagesManager(supabase: SupabaseClient) {
     }
   }
 
-  async function loadPages() {
-    setError(null);
-    setSaved(null);
-    setLoading(true);
-    try {
-      const { data, error: err } = await supabase
-        .from("site_pages")
-        .select(
-          "id, slug, title, nav_label, show_in_header_nav, show_in_footer_nav, status, meta_title, meta_description, draft_content, published_content, updated_at",
-        )
-        .order("updated_at", { ascending: false });
-      if (err) {
-        setError(err.message);
-        return;
-      }
-      const rows = (data || []) as SitePage[];
-      setPages(rows);
-      if (!selectedId && rows.length) setSelectedId(rows[0].id);
-    } finally {
-      setLoading(false);
-    }
-  }
-
   useEffect(() => {
     loadPages();
-  }, []);
+  }, [loadPages]);
 
   useEffect(() => {
     if (!selected) return;
@@ -154,7 +154,7 @@ export function usePagesManager(supabase: SupabaseClient) {
     const nextSections = toSections(selected.draft_content);
     setSections(nextSections);
     setSelectedSectionId(nextSections[0]?.id || null);
-  }, [selectedId]);
+  }, [selected]);
 
   async function saveDraft() {
     if (!selected) return;

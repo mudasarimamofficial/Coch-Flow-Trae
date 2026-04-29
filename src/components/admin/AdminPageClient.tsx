@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { createBrowserSupabaseClient } from "@/utils/supabase/browserClient";
@@ -14,9 +14,19 @@ import { VisualBuilderPanel } from "@/components/admin/VisualBuilderPanel";
 import { SettingsPanel } from "@/components/admin/SettingsPanel";
 import { PagesPanel } from "@/components/admin/pages/PagesPanel";
 
+const BOOTSTRAP_ADMIN_EMAIL = "mudasarimamofficial@gmail.com";
+
+function normEmail(v: string | null | undefined) {
+  return (v || "").trim().toLowerCase();
+}
+
+function isBootstrapAdmin(v: string | null | undefined) {
+  // Bootstrap gating is intentionally explicit until profiles/RLS admin roles are provisioned.
+  return normEmail(v) === BOOTSTRAP_ADMIN_EMAIL;
+}
+
 export function AdminPageClient() {
   const router = useRouter();
-  const bootstrapAdminEmail = "mudasarimamofficial@gmail.com";
   const [supabase, setSupabase] = useState<SupabaseClient | null>(null);
   const [configError, setConfigError] = useState<string | null>(null);
   const [tab, setTab] = useState<Tab>("builder");
@@ -37,16 +47,6 @@ export function AdminPageClient() {
   const [query, setQuery] = useState("");
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [datePreset, setDatePreset] = useState<"all" | "today" | "last7">("all");
-
-  function normEmail(v: string | null | undefined) {
-    return (v || "").trim().toLowerCase();
-  }
-
-  function isBootstrapAdmin(v: string | null | undefined) {
-    // Bootstrap gating is intentionally explicit until profiles/RLS admin roles are provisioned.
-    return normEmail(v) === bootstrapAdminEmail;
-  }
-
 
   async function resolveSessionEmail(client: SupabaseClient, maybeEmail: string | null) {
     if (maybeEmail && maybeEmail.trim().length) return maybeEmail;
@@ -105,7 +105,7 @@ export function AdminPageClient() {
     };
   }, []);
 
-  async function loadLeads() {
+  const loadLeads = useCallback(async () => {
     if (!supabase) return;
     setLeadsError(null);
     setLeadsLoading(true);
@@ -127,13 +127,13 @@ export function AdminPageClient() {
     } finally {
       setLeadsLoading(false);
     }
-  }
+  }, [supabase]);
 
   useEffect(() => {
     if (authStatus !== "signedInAdmin") return;
     if (!sessionEmail || !sessionUserId) return;
     loadLeads();
-  }, [sessionEmail, sessionUserId, authStatus, supabase]);
+  }, [sessionEmail, sessionUserId, authStatus, loadLeads]);
 
   useEffect(() => {
     if (authStatus !== "signedInAdmin") {
@@ -222,7 +222,7 @@ export function AdminPageClient() {
           </div>
           <div className="mt-4 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-xs text-slate-700 dark:border-white/10 dark:bg-white/5 dark:text-slate-200">
             <div>Signed in as: {sessionEmail || "Unknown"}</div>
-            <div>Allowed admin email: {bootstrapAdminEmail}</div>
+            <div>Allowed admin email: {BOOTSTRAP_ADMIN_EMAIL}</div>
           </div>
           <div className="mt-4 flex items-center gap-3">
             <button

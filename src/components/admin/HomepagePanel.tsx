@@ -1,5 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Textarea } from "@/components/ui/Textarea";
@@ -188,7 +188,7 @@ export function HomepagePanel({ supabase }: Props) {
   const [jsonDraft, setJsonDraft] = useState("");
   const [jsonError, setJsonError] = useState<string | null>(null);
 
-  async function load() {
+  const load = useCallback(async () => {
     setError(null);
     setSaved(null);
     setLoading(true);
@@ -210,7 +210,7 @@ export function HomepagePanel({ supabase }: Props) {
     } finally {
       setLoading(false);
     }
-  }
+  }, [supabase]);
 
   async function uploadFile(file: File, folder: string, previousPath?: string) {
     const safeName = sanitizePathSegment(file.name);
@@ -235,12 +235,12 @@ export function HomepagePanel({ supabase }: Props) {
     [content.application.fields.revenueOptions],
   );
 
-  function resetJsonDraft(nextContent = content) {
+  const resetJsonDraft = useCallback((nextContent = content) => {
     setJsonDraft(JSON.stringify(nextContent, null, 2));
     setJsonError(null);
-  }
+  }, [content]);
 
-  function applyJsonDraft() {
+  const applyJsonDraft = useCallback(() => {
     setJsonError(null);
     setSaved(null);
     try {
@@ -256,15 +256,15 @@ export function HomepagePanel({ supabase }: Props) {
     } catch (err) {
       setJsonError(err instanceof Error ? err.message : "Invalid JSON");
     }
-  }
+  }, [jsonDraft]);
 
   useEffect(() => {
     load();
-  }, []);
+  }, [load]);
 
   useEffect(() => {
     if (!jsonEditorOpen) resetJsonDraft(content);
-  }, [content, jsonEditorOpen]);
+  }, [content, jsonEditorOpen, resetJsonDraft]);
 
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-4 px-4 pb-10 lg:px-6">

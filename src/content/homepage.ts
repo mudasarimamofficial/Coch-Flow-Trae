@@ -653,7 +653,7 @@ export const homepageDefaults: HomepageContent = {
         settings: {
           heading: "Not sure which tier is right for you?",
           subcopy:
-            "Take our free 60-second client acquisition audit. Answer 7 questions and we will show you exactly where your lead generation is leaking — and which tier fits your current stage.",
+            "Take the client acquisition fit audit. Answer a few questions and we will show you where your lead generation may be leaking - and which tier fits your current stage.",
           ctaText: "Take the free audit",
           ctaHref: "#lead-form",
         },
@@ -703,7 +703,6 @@ export const homepageDefaults: HomepageContent = {
       value: "",
       label: "Pipeline visibility",
     },
-    primaryCta: { text: "Apply for Partnership", href: "#lead-form", icon: "arrow_forward" },
     primaryCta: { text: "Apply for Partnership", href: "#lead-form", icon: "arrow_forward" },
     secondaryCta: { text: "See How It Works", href: "#workflow" },
   },
@@ -774,7 +773,7 @@ export const homepageDefaults: HomepageContent = {
     id: "pricing",
     heading: "Transparent pricing for serious coaches",
     subcopy: "Three tiers built around where you are right now and where you want to go. No hidden fees. No long-term lock-in.",
-    note: "Currently onboarding 5 new coaches this month — apply to see if you qualify.",
+    note: "Applications are reviewed for fit before onboarding begins.",
     bulletIcon: "check_circle",
     tiers: [
       {
@@ -782,7 +781,7 @@ export const homepageDefaults: HomepageContent = {
         tagline: "For coaches building their first consistent lead flow.",
         price: "$900",
         priceSuffix: "/mo",
-        outcome: "Expected 8–15 qualified conversations per month",
+        outcome: "Built to establish a consistent qualified-conversation workflow.",
         bullets: [
           "Targeted prospect identification",
           "Instagram + email outreach",
@@ -794,11 +793,11 @@ export const homepageDefaults: HomepageContent = {
       },
       {
         name: "Growth",
-        tagline: "For coaches ready for predictable $20k+ months.",
+        tagline: "For coaches ready to scale beyond ad hoc lead flow.",
         price: "$1,400",
         priceSuffix: "/mo",
         highlight: { badge: "Most Popular", accentHex: "#b58a2f" },
-        outcome: "Expected 20–35 booked calls per month",
+        outcome: "Built to scale multi-channel booked-call delivery with weekly optimization.",
         bullets: [
           "Everything in Starter",
           "Multi-channel outreach",
@@ -814,7 +813,7 @@ export const homepageDefaults: HomepageContent = {
         tagline: "For established coaches scaling aggressively.",
         price: "$2,000",
         priceSuffix: "/mo",
-        outcome: "Expected 40+ calls with full pipeline visibility",
+        outcome: "Built for full pipeline visibility and priority optimization.",
         bullets: [
           "Everything in Growth",
           "Full funnel automation",
@@ -830,7 +829,7 @@ export const homepageDefaults: HomepageContent = {
     id: "lead-form",
     heading: "Let's build your system",
     subcopy:
-      "We only work with 5 new coaches per month to ensure delivery quality. Tell us about your business and we will be in touch within 24 hours.",
+      "Tell us about your business and we will review fit before the next step.",
     fields: {
       firstNameLabel: "First name",
       lastNameLabel: "Last name",
@@ -853,9 +852,9 @@ export const homepageDefaults: HomepageContent = {
     submitText: "Submit Application",
     successTitle: "Application received.",
     successBody:
-      "We review every application personally and will be in touch within 24 hours if it is a fit. Check your email — including your spam folder.",
+      "We review every application personally and will be in touch if it is a fit. Check your email, including your spam folder.",
     submitAnotherText: "Submit another",
-    footnote: "We review every application personally and respond within 24 hours.",
+    footnote: "We review every application personally.",
   },
   footer: {
     brandText: "CoachFlow AI",

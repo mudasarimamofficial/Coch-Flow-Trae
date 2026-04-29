@@ -82,19 +82,23 @@ function hasClaimyNumbers(value: string) {
 }
 
 export function TestimonialsSection({ section }: Props) {
-  const settings = objectValue<Record<string, unknown>>(section.settings) || {};
+  const settings = useMemo(() => objectValue<Record<string, unknown>>(section.settings) || {}, [section.settings]);
   const eyebrow = asString(settings.eyebrow) || "Proof of pipeline";
   const heading = asString(settings.heading) || "Built for coaches who need booked calls, not vanity metrics";
   const subcopy =
     asString(settings.subcopy) ||
     "Concrete pipeline indicators and client-style proof before asking a serious buyer to choose a partnership tier.";
-  const stats = Array.isArray(settings.stats)
-    ? settings.stats
-        .map((stat) => objectValue<{ value?: unknown; label?: unknown }>(stat))
-        .filter(Boolean)
-        .map((stat) => ({ value: asString(stat?.value), label: asString(stat?.label) }))
-        .filter((stat) => stat.value && stat.label)
-    : [];
+  const stats = useMemo(
+    () =>
+      Array.isArray(settings.stats)
+        ? settings.stats
+            .map((stat) => objectValue<{ value?: unknown; label?: unknown }>(stat))
+            .filter(Boolean)
+            .map((stat) => ({ value: asString(stat?.value), label: asString(stat?.label) }))
+            .filter((stat) => stat.value && stat.label)
+        : [],
+    [settings],
+  );
 
   const showStats = useMemo(() => {
     if (!stats.length) return false;

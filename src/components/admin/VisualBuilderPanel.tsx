@@ -556,7 +556,7 @@ export function VisualBuilderPanel({ supabase, onNavigateTab, onSignOut }: Props
     ];
   }, [pageSections, content.whatsapp?.enabled]);
 
-  async function loadAll() {
+  const loadAll = useCallback(async () => {
     setError(null);
     setNotice(null);
     setPublishConflict(null);
@@ -600,9 +600,9 @@ export function VisualBuilderPanel({ supabase, onNavigateTab, onSignOut }: Props
     } finally {
       setLoading(false);
     }
-  }
+  }, [loadBackups, resetHistory, supabase, toMs]);
 
-  async function saveDraft(next: HomepageContent): Promise<boolean> {
+  const saveDraft = useCallback(async (next: HomepageContent): Promise<boolean> => {
     setSaving(true);
     setError(null);
     setNotice(null);
@@ -619,7 +619,7 @@ export function VisualBuilderPanel({ supabase, onNavigateTab, onSignOut }: Props
     } finally {
       setSaving(false);
     }
-  }
+  }, [publishedUpdatedAt, supabase]);
 
   async function createBackupSnapshot(next: HomepageContent) {
     const res = await supabase.from("homepage_content_versions").insert({ homepage_id: 1, content: next, created_by: null });
@@ -734,7 +734,7 @@ export function VisualBuilderPanel({ supabase, onNavigateTab, onSignOut }: Props
     }
   }
 
-  function setContent(next: HomepageContent, opts?: { recordHistory?: boolean }) {
+  const setContent = useCallback((next: HomepageContent, opts?: { recordHistory?: boolean }) => {
     const recordHistory = opts?.recordHistory !== false;
     if (recordHistory && !historyBatchRef.current) {
       historyBatchRef.current = true;
@@ -755,7 +755,7 @@ export function VisualBuilderPanel({ supabase, onNavigateTab, onSignOut }: Props
     draftSaveTimer.current = window.setTimeout(() => {
       saveDraft(next);
     }, 600);
-  }
+  }, [cloneContent, saveDraft]);
 
   const undo = useCallback(() => {
     if (!historyRef.current.length) return;
@@ -770,7 +770,7 @@ export function VisualBuilderPanel({ supabase, onNavigateTab, onSignOut }: Props
     setFutureSize(nextFuture.length);
 
     setContent(cloneContent(prev), { recordHistory: false });
-  }, [cloneContent]);
+  }, [cloneContent, setContent]);
 
   const redo = useCallback(() => {
     if (!futureRef.current.length) return;
@@ -785,7 +785,7 @@ export function VisualBuilderPanel({ supabase, onNavigateTab, onSignOut }: Props
     setHistorySize(nextHistory.length);
 
     setContent(cloneContent(next), { recordHistory: false });
-  }, [cloneContent]);
+  }, [cloneContent, setContent]);
 
   useEffect(() => {
     function shouldIgnoreShortcut(target: EventTarget | null) {
@@ -821,7 +821,7 @@ export function VisualBuilderPanel({ supabase, onNavigateTab, onSignOut }: Props
 
   useEffect(() => {
     loadAll();
-  }, []);
+  }, [loadAll]);
 
   useEffect(() => {
     const channel = supabase
@@ -864,17 +864,17 @@ export function VisualBuilderPanel({ supabase, onNavigateTab, onSignOut }: Props
     [pageSections, selectedId],
   );
 
-  function updateSections(next: PageSection[], opts?: { recordHistory?: boolean }) {
+  const updateSections = useCallback((next: PageSection[], opts?: { recordHistory?: boolean }) => {
     setContent({ ...content, page: { sections: next } }, opts);
-  }
+  }, [content, setContent]);
 
-  function updateSection(id: string, updater: (s: PageSection) => PageSection, opts?: { recordHistory?: boolean }) {
+  const updateSection = useCallback((id: string, updater: (s: PageSection) => PageSection, opts?: { recordHistory?: boolean }) => {
     updateSections(pageSections.map((s) => (s.id === id ? updater(s) : s)), opts);
-  }
+  }, [pageSections, updateSections]);
 
-  function updateSectionSilent(id: string, updater: (s: PageSection) => PageSection) {
+  const updateSectionSilent = useCallback((id: string, updater: (s: PageSection) => PageSection) => {
     updateSection(id, updater, { recordHistory: false });
-  }
+  }, [updateSection]);
 
   function makeId(prefix: string) {
     const safePrefix = prefix.replace(/[^a-z0-9_]+/gi, "_");
@@ -1056,7 +1056,18 @@ export function VisualBuilderPanel({ supabase, onNavigateTab, onSignOut }: Props
       }));
       return;
     }
-  }, [selectedId]);
+  }, [
+    selectedId,
+    selectedSection,
+    content.features.cards,
+    content.hero,
+    content.pricing.note,
+    content.pricing.tiers,
+    content.socialLinks,
+    content.socialLinksV2,
+    content.trust.eyebrow,
+    updateSectionSilent,
+  ]);
 
   if (loading) {
     return <div className="px-6 py-10 text-sm text-white/60">Loading…</div>;
@@ -2707,26 +2718,27 @@ export function VisualBuilderPanel({ supabase, onNavigateTab, onSignOut }: Props
                         }))
                       }
                     />
-                    <Select
-                      label="Rating"
-                      disabled={active.type === "proof_card"}
-                      value={String(active.content?.rating ?? 5)}
-                      onChange={(e) =>
-                        updateSection(selectedSection.id, (s) => ({
-                          ...s,
-                          blocks: (s.blocks || []).map((x) =>
-                            x.id === active.id ? { ...x, content: { ...x.content, rating: Number(e.target.value) } } : x,
-                          ),
-                        }))
-                      }
-                      options={[
-                        { value: "5", label: "5" },
-                        { value: "4", label: "4" },
-                        { value: "3", label: "3" },
-                        { value: "2", label: "2" },
-                        { value: "1", label: "1" },
-                      ]}
-                    />
+                    {active.type === "testimonial" ? (
+                      <Select
+                        label="Rating"
+                        value={String(active.content?.rating ?? 5)}
+                        onChange={(e) =>
+                          updateSection(selectedSection.id, (s) => ({
+                            ...s,
+                            blocks: (s.blocks || []).map((x) =>
+                              x.id === active.id ? { ...x, content: { ...x.content, rating: Number(e.target.value) } } : x,
+                            ),
+                          }))
+                        }
+                        options={[
+                          { value: "5", label: "5" },
+                          { value: "4", label: "4" },
+                          { value: "3", label: "3" },
+                          { value: "2", label: "2" },
+                          { value: "1", label: "1" },
+                        ]}
+                      />
+                    ) : null}
                     <Textarea
                       label={active.type === "proof_card" ? "Proof detail" : "Quote"}
                       value={String(active.content?.quote || active.content?.body || "")}
@@ -2748,8 +2760,9 @@ export function VisualBuilderPanel({ supabase, onNavigateTab, onSignOut }: Props
                       }
                       rows={4}
                     />
+                    {active.type === "testimonial" ? (
                     <div className="flex flex-col gap-2">
-                      <div className="text-xs font-semibold text-slate-600 dark:text-slate-300">Avatar</div>
+                      <div className="text-xs font-semibold text-slate-600 dark:text-slate-300">Verified testimonial avatar</div>
                       {typeof (active.content as any)?.avatar?.url === "string" &&
                       String((active.content as any).avatar.url).trim().length ? (
                         <div className="flex items-center gap-3">
@@ -2821,6 +2834,7 @@ export function VisualBuilderPanel({ supabase, onNavigateTab, onSignOut }: Props
                         </Button>
                       )}
                     </div>
+                    ) : null}
                   </div>
                 );
               })()}

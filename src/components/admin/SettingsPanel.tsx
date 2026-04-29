@@ -1,5 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
@@ -11,25 +11,51 @@ type Props = {
   supabase: SupabaseClient;
 };
 
-export function SettingsPanel({ supabase }: Props) {
-  const defaultTheme =
-    homepageDefaults.site.theme ??
-    ({
-      colors: {
-        primary: "#C9982A",
-        secondary: "#0F1629",
-        accent: "#E8B84B",
-        background: "#0A0F1E",
-        text: "#FFFFFF",
-        surface: "#141D35",
-        border: "rgba(255,255,255,0.07)",
-      },
-      typography: {
-        headingFont: "",
-        bodyFont: "",
-      },
-    } as NonNullable<HomepageContent["site"]["theme"]>);
+const defaultTheme =
+  homepageDefaults.site.theme ??
+  ({
+    colors: {
+      primary: "#C9982A",
+      secondary: "#0F1629",
+      accent: "#E8B84B",
+      background: "#0A0F1E",
+      text: "#FFFFFF",
+      surface: "#141D35",
+      border: "rgba(255,255,255,0.07)",
+    },
+    typography: {
+      headingFont: "",
+      bodyFont: "",
+    },
+  } as NonNullable<HomepageContent["site"]["theme"]>);
 
+const mergeScale = (base: any, extra: any) => {
+  const b = base || (defaultTheme as any)?.typography?.scale;
+  const e = extra || {};
+  return {
+    mobile: { ...(b?.mobile || {}), ...(e.mobile || {}) },
+    tablet: { ...(b?.tablet || {}), ...(e.tablet || {}) },
+    laptop: { ...(b?.laptop || {}), ...(e.laptop || {}) },
+    desktopLarge: { ...(b?.desktopLarge || {}), ...(e.desktopLarge || {}) },
+  };
+};
+
+const mergeTheme = (base: any, extra: any) => {
+  const b = base || defaultTheme;
+  const e = extra || {};
+  return {
+    ...b,
+    ...e,
+    colors: { ...(b?.colors || {}), ...(e.colors || {}) },
+    typography: {
+      ...(b?.typography || {}),
+      ...(e.typography || {}),
+      scale: mergeScale(b?.typography?.scale, e.typography?.scale),
+    },
+  };
+};
+
+export function SettingsPanel({ supabase }: Props) {
   const [settingsLoading, setSettingsLoading] = useState(true);
   const [settingsError, setSettingsError] = useState<string | null>(null);
   const [settingsSaved, setSettingsSaved] = useState<string | null>(null);
@@ -43,33 +69,7 @@ export function SettingsPanel({ supabase }: Props) {
   const [theme, setTheme] = useState<HomepageContent["site"]["theme"]>(defaultTheme);
   const [designPreset, setDesignPreset] = useState<"landing_html_v1" | "classic">("landing_html_v1");
 
-  const mergeScale = (base: any, extra: any) => {
-    const b = base || (defaultTheme as any)?.typography?.scale;
-    const e = extra || {};
-    return {
-      mobile: { ...(b?.mobile || {}), ...(e.mobile || {}) },
-      tablet: { ...(b?.tablet || {}), ...(e.tablet || {}) },
-      laptop: { ...(b?.laptop || {}), ...(e.laptop || {}) },
-      desktopLarge: { ...(b?.desktopLarge || {}), ...(e.desktopLarge || {}) },
-    };
-  };
-
-  const mergeTheme = (base: any, extra: any) => {
-    const b = base || defaultTheme;
-    const e = extra || {};
-    return {
-      ...b,
-      ...e,
-      colors: { ...(b?.colors || {}), ...(e.colors || {}) },
-      typography: {
-        ...(b?.typography || {}),
-        ...(e.typography || {}),
-        scale: mergeScale(b?.typography?.scale, e.typography?.scale),
-      },
-    };
-  };
-
-  async function loadSettings() {
+  const loadSettings = useCallback(async () => {
     setSettingsSaved(null);
     setSettingsError(null);
     setSettingsLoading(true);
@@ -120,11 +120,11 @@ export function SettingsPanel({ supabase }: Props) {
     } finally {
       setSettingsLoading(false);
     }
-  }
+  }, [supabase]);
 
   useEffect(() => {
     loadSettings();
-  }, []);
+  }, [loadSettings]);
 
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-4 px-4 pb-10 lg:px-6">

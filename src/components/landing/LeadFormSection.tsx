@@ -21,9 +21,25 @@ type Props = {
   section?: PageSection;
 };
 
+function safeApplicationCopy(value: string, fallback: string) {
+  if (/24\s*h(?:ours?)?|24\s*hours|5\s+new\s+coaches/i.test(value)) return fallback;
+  return value;
+}
+
 export function LeadFormSection({ content, section }: Props) {
   const label = (section?.settings as any)?.label ? String((section?.settings as any).label) : "";
-  const footnote = content.application.footnote || "We'll review your answers and reply with next steps.";
+  const subcopy = safeApplicationCopy(
+    content.application.subcopy || "",
+    "Tell us about your business and we will review fit before the next step.",
+  );
+  const footnote = safeApplicationCopy(
+    content.application.footnote || "",
+    "We'll review your answers and reply with next steps if there is alignment.",
+  );
+  const successBody = safeApplicationCopy(
+    content.application.successBody || "",
+    "We review every application personally and will be in touch if there is a fit. Check your email, including your spam folder.",
+  );
   const [values, setValues] = useState<FormState>({
     first_name: "",
     last_name: "",
@@ -56,12 +72,12 @@ export function LeadFormSection({ content, section }: Props) {
             {label ? <div className="label-tag">{label}</div> : null}
             <div className="gold-line" aria-hidden="true" />
             <h2>{content.application.heading}</h2>
-            <p>{content.application.subcopy}</p>
+            <p>{subcopy}</p>
 
             <div className="form-intro-grid" aria-label="Application expectations">
               <div>
-                <strong>24h</strong>
-                <span>review window</span>
+                <strong>Fit</strong>
+                <span>review process</span>
               </div>
               <div>
                 <strong>Fit-first</strong>
@@ -258,7 +274,7 @@ export function LeadFormSection({ content, section }: Props) {
             <div className="form-success" id="form-success" style={{ display: submitted ? "block" : "none" }}>
               <div className="gold-line" style={{ display: "block", margin: "0 auto 20px" }} />
               <h3>{content.application.successTitle}</h3>
-              <p>{content.application.successBody}</p>
+              <p>{successBody}</p>
             </div>
           </div>
         </div>

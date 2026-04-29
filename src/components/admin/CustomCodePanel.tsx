@@ -1,5 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Textarea } from "@/components/ui/Textarea";
 import { homepageDefaults, type HomepageContent } from "@/content/homepage";
@@ -17,7 +17,7 @@ export function CustomCodePanel({ supabase }: Props) {
   const [saved, setSaved] = useState<string | null>(null);
   const [content, setContent] = useState<HomepageContent>(homepageDefaults);
 
-  async function load() {
+  const load = useCallback(async () => {
     setError(null);
     setSaved(null);
     setLoading(true);
@@ -37,11 +37,11 @@ export function CustomCodePanel({ supabase }: Props) {
     } finally {
       setLoading(false);
     }
-  }
+  }, [supabase]);
 
   useEffect(() => {
     load();
-  }, []);
+  }, [load]);
 
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-4 px-4 pb-10 lg:px-6">
