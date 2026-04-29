@@ -23,6 +23,7 @@ export function Hero({ content, section }: Props) {
   const trustText = hero.trust?.text || content.trust?.eyebrow || "";
   const trustPills = Array.isArray(hero.trust?.pills) ? hero.trust.pills.filter(Boolean) : [];
   const showBackground = (section?.settings as any)?.heroBackground !== false;
+  const showPanel = (section?.settings as any)?.heroPanel !== false;
   const primaryHref = hero.primaryCta?.href || "#lead-form";
   const secondaryHref = hero.secondaryCta?.href || "#workflow";
   const primaryText = (hero.primaryCta?.text || "").toString();
@@ -34,7 +35,7 @@ export function Hero({ content, section }: Props) {
     <section id="hero" className="hero-section">
       {showBackground ? <HeroBackground /> : null}
 
-      <div className="container hero-shell">
+      <div className={`container hero-shell${showPanel ? "" : " hero-shell--no-panel"}`}>
         <div className="hero-content" data-reveal="left">
           {hero.badge?.text ? (
             <div className="hero-tagline">
@@ -82,38 +83,40 @@ export function Hero({ content, section }: Props) {
           ) : null}
         </div>
 
-        <div className="hero-visual" data-reveal="right" aria-label="CoachFlow pipeline metrics">
-          <div className="hero-panel">
-            <div className="hero-panel-glow" aria-hidden="true" />
-            <div className="hero-metrics">
-              {metrics.map((metric, idx) => (
-                <div className="hero-metric-card" key={`${metric.title}-${idx}`}>
-                  <div className="hero-metric-main">
-                    <div className={`hero-metric-icon tone-${metric.tone || "gold"}`}>
-                      {renderMetricIcon(metric.icon || metric.title)}
+        {showPanel ? (
+          <div className="hero-visual" data-reveal="right" aria-label="CoachFlow pipeline metrics">
+            <div className="hero-panel">
+              <div className="hero-panel-glow" aria-hidden="true" />
+              <div className="hero-metrics">
+                {metrics.map((metric, idx) => (
+                  <div className="hero-metric-card" key={`${metric.title}-${idx}`}>
+                    <div className="hero-metric-main">
+                      <div className={`hero-metric-icon tone-${metric.tone || "gold"}`}>
+                        {renderMetricIcon(metric.icon || metric.title)}
+                      </div>
+                      <div>
+                        <div className="hero-metric-title">{metric.title}</div>
+                        <div className="hero-metric-value">{metric.value}</div>
+                      </div>
                     </div>
-                    <div>
-                      <div className="hero-metric-title">{metric.title}</div>
-                      <div className="hero-metric-value">{metric.value}</div>
-                    </div>
+                    {metric.change ? <div className="hero-metric-change">{metric.change}</div> : null}
                   </div>
-                  {metric.change ? <div className="hero-metric-change">{metric.change}</div> : null}
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
 
-            <div className="hero-revenue-orbit">
-              <div className="hero-ring ring-one" />
-              <div className="hero-ring ring-two" />
-              <div className="hero-revenue-copy">
-                <div>{hero.revenueVisual?.value || "$42k"}</div>
-                <span>{hero.revenueVisual?.label || "New Revenue"}</span>
+              <div className="hero-revenue-orbit">
+                <div className="hero-ring ring-one" />
+                <div className="hero-ring ring-two" />
+                <div className="hero-revenue-copy">
+                  <div>{hero.revenueVisual?.value || "$42k"}</div>
+                  <span>{hero.revenueVisual?.label || "New Revenue"}</span>
+                </div>
               </div>
             </div>
+            <div className="hero-float float-one" aria-hidden="true" />
+            <div className="hero-float float-two" aria-hidden="true" />
           </div>
-          <div className="hero-float float-one" aria-hidden="true" />
-          <div className="hero-float float-two" aria-hidden="true" />
-        </div>
+        ) : null}
       </div>
     </section>
   );
@@ -127,7 +130,7 @@ function HeroBackground() {
         <defs>
           <linearGradient id="heroFlowGold" x1="0%" y1="0%" x2="100%" y2="0%">
             <stop offset="0%" stopColor="transparent" />
-            <stop offset="50%" stopColor="#EAB308" />
+            <stop offset="50%" stopColor="var(--gold2)" />
             <stop offset="100%" stopColor="transparent" />
           </linearGradient>
         </defs>

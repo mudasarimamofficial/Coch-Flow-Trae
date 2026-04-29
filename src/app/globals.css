@@ -2,6 +2,49 @@
 
 :root {
   color-scheme: light;
+
+  --font-size-h1: 22px;
+  --font-size-h2: 20px;
+  --font-size-h3: 18px;
+  --font-size-h4: 16px;
+  --font-size-h5: 15px;
+  --font-size-h6: 14px;
+  --font-size-body: 16px;
+  --font-size-small: 14px;
+}
+
+@media (min-width: 768px) {
+  :root {
+    --font-size-h1: 28px;
+    --font-size-h2: 24px;
+    --font-size-h3: 22px;
+    --font-size-h4: 20px;
+    --font-size-h5: 18px;
+    --font-size-h6: 16px;
+  }
+}
+
+@media (min-width: 1024px) {
+  :root {
+    --font-size-h1: 36px;
+    --font-size-h2: 30px;
+    --font-size-h3: 26px;
+    --font-size-h4: 22px;
+    --font-size-h5: 20px;
+    --font-size-h6: 18px;
+  }
+}
+
+@media (min-width: 1440px) {
+  :root {
+    --font-size-h1: 42px;
+    --font-size-h2: 36px;
+    --font-size-h3: 30px;
+    --font-size-h4: 26px;
+    --font-size-h5: 22px;
+    --font-size-h6: 18px;
+    --font-size-body: 18px;
+  }
 }
 
 html.dark {
@@ -24,9 +67,16 @@ html[data-device="desktop"] {
   font-size: 16px;
 }
 
+html:has(.cf-admin) {
+  font-size: var(--font-size-body);
+}
+
 body {
   font-family: var(--cf-font-body, var(--font-body)), system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial,
     sans-serif;
+  font-size: var(--font-size-body);
+  line-height: 1.5;
+  font-weight: 400;
 }
 
 .cf-admin {
@@ -48,6 +98,8 @@ body {
   --cf-secondary: var(--cf-surface-container);
   font-family: var(--font-admin), var(--cf-font-body, var(--font-body)), system-ui, -apple-system, Segoe UI, Roboto,
     Helvetica, Arial, sans-serif;
+  font-size: var(--font-size-body);
+  line-height: 1.5;
 }
 
 h1,
@@ -59,25 +111,95 @@ h6 {
   font-family: var(--cf-font-heading, var(--cf-font-body, var(--font-body)));
 }
 
-.cf-landing {
-  --navy: #0a0f1e;
-  --navy2: #0f1629;
-  --navy3: #141d35;
-  --navy4: #1a2444;
-  --gold: var(--cf-primary);
-  --gold2: var(--cf-accent);
-  --gold3: #f5cc6e;
-  --white: #ffffff;
-  --off: #f0ede6;
-  --muted: #8a8f9e;
-  --border: rgba(201, 152, 42, 0.18);
-  --border2: rgba(255, 255, 255, 0.07);
-  font-family: "DM Sans", var(--cf-font-body, var(--font-body)), system-ui, -apple-system, Segoe UI, Roboto,
+.cf-admin h1,
+.cf-admin h2,
+.cf-admin h3,
+.cf-admin h4,
+.cf-admin h5,
+.cf-admin h6 {
+  font-family: var(--font-admin), var(--cf-font-body, var(--font-body)), system-ui, -apple-system, Segoe UI, Roboto,
     Helvetica, Arial, sans-serif;
+}
+
+h1 {
+  font-size: var(--font-size-h1);
+  line-height: 1.1;
+  font-weight: 700;
+}
+
+h2 {
+  font-size: var(--font-size-h2);
+  line-height: 1.1;
+  font-weight: 700;
+}
+
+h3 {
+  font-size: var(--font-size-h3);
+  line-height: 1.2;
+  font-weight: 600;
+}
+
+h4 {
+  font-size: var(--font-size-h4);
+  line-height: 1.2;
+  font-weight: 600;
+}
+
+h5 {
+  font-size: var(--font-size-h5);
+  line-height: 1.3;
+  font-weight: 600;
+}
+
+h6 {
+  font-size: var(--font-size-h6);
+  line-height: 1.4;
+  font-weight: 600;
+}
+
+p {
+  font-size: var(--font-size-body);
+  line-height: 1.5;
+  font-weight: 400;
+}
+
+small {
+  font-size: var(--font-size-small);
+  line-height: 1.5;
+  font-weight: 400;
+}
+
+.cf-visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.cf-landing {
+  --navy: var(--cf-navy, var(--cf-bg, #0a0f1e));
+  --navy2: var(--cf-navy2, var(--cf-secondary, #0f1629));
+  --navy3: var(--cf-navy3, var(--cf-surface, #141d35));
+  --navy4: var(--cf-navy4, #1a2444);
+  --gold: var(--cf-gold, var(--cf-primary, #c9982a));
+  --gold2: var(--cf-gold2, var(--cf-accent, #e8b84b));
+  --gold3: var(--cf-gold3, #f5cc6e);
+  --white: var(--cf-white, var(--cf-text, #ffffff));
+  --off: var(--cf-off, #f0ede6);
+  --muted: var(--cf-muted, #8a8f9e);
+  --border: var(--cf-border-gold, rgba(201, 152, 42, 0.18));
+  --border2: var(--cf-border2, var(--cf-border, rgba(255, 255, 255, 0.07)));
+  font-family: var(--cf-font-body, var(--font-body)), system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial,
+    sans-serif;
   background: var(--navy);
   color: var(--white);
-  font-size: 16px;
-  line-height: 1.7;
+  font-size: var(--font-size-body);
+  line-height: 1.5;
   overflow-x: hidden;
 }
 
@@ -85,21 +207,19 @@ h6 {
 .cf-landing h2,
 .cf-landing h3,
 .cf-landing h4 {
-  font-family: "Playfair Display", var(--cf-font-heading, var(--cf-font-body, var(--font-body)));
-  font-weight: 500;
-  line-height: 1.2;
+  font-family: var(--cf-font-heading, var(--cf-font-body, var(--font-body)));
 }
 
 .cf-landing h1 {
-  font-size: clamp(2.4rem, 5vw, 3.8rem);
+  font-size: var(--font-size-h1);
 }
 
 .cf-landing h2 {
-  font-size: clamp(1.8rem, 3.5vw, 2.6rem);
+  font-size: var(--font-size-h2);
 }
 
 .cf-landing h3 {
-  font-size: 1.25rem;
+  font-size: var(--font-size-h3);
 }
 
 .cf-landing .container {
@@ -984,27 +1104,52 @@ h6 {
 }
 
 .cf-landing .form-wrap {
-  max-width: 620px;
+  max-width: 980px;
   margin: 0 auto;
   background: var(--navy3);
   border: 0.5px solid var(--border);
   border-radius: 16px;
-  padding: 48px;
+  padding: 56px;
 }
 
-.cf-landing .form-header {
-  text-align: center;
-  margin-bottom: 36px;
+.cf-landing .form-shell {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  gap: 36px;
+  align-items: start;
 }
 
-.cf-landing .form-header h2 {
-  font-size: 1.8rem;
-  margin-bottom: 12px;
+.cf-landing .form-copy {
+  padding-right: 10px;
 }
 
-.cf-landing .form-header p {
-  font-size: 14px;
+.cf-landing .form-title {
+  margin: 14px 0 10px;
+}
+
+.cf-landing .form-subcopy {
+  margin: 0;
   color: var(--muted);
+}
+
+.cf-landing .form-fields {
+  min-width: 0;
+}
+
+.cf-landing .form-section {
+  border: 0;
+  padding: 0;
+  margin: 0 0 18px;
+  min-width: 0;
+}
+
+.cf-landing .form-section-title {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(240, 237, 230, 0.8);
+  margin: 0 0 12px;
 }
 
 .cf-landing .form-row {
@@ -1022,8 +1167,8 @@ h6 {
 }
 
 .cf-landing .form-group label {
-  font-size: 12px;
-  font-weight: 500;
+  font-size: var(--font-size-small);
+  font-weight: 600;
   color: var(--muted);
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -1037,7 +1182,7 @@ h6 {
   border-radius: 8px;
   padding: 13px 16px;
   font-family: inherit;
-  font-size: 14px;
+  font-size: var(--font-size-body);
   color: var(--white);
   outline: none;
   transition: border-color 0.2s;
@@ -1067,14 +1212,36 @@ h6 {
 .cf-landing .form-submit {
   width: 100%;
   padding: 16px;
-  font-size: 15px;
+  font-size: var(--font-size-body);
   justify-content: center;
+}
+
+.cf-landing .form-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
   margin-top: 8px;
+}
+
+.cf-landing .form-trust {
+  border-radius: 14px;
+  border: 0.5px solid var(--border2);
+  background: rgba(255, 255, 255, 0.03);
+  padding: 14px 16px;
+}
+
+.cf-landing .form-trust-title {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(240, 237, 230, 0.9);
+  margin: 0 0 6px;
 }
 
 .cf-landing .form-note {
   text-align: center;
-  font-size: 12px;
+  font-size: var(--font-size-small);
   color: var(--muted);
   margin-top: 16px;
 }
@@ -1097,7 +1264,7 @@ h6 {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  font-family: "Playfair Display", serif;
+  font-family: var(--cf-font-heading, var(--cf-font-body, var(--font-body))), serif;
   font-size: 16px;
   color: var(--white);
 }
@@ -1137,8 +1304,53 @@ h6 {
   color: var(--white);
 }
 
+.cf-landing .footer-socials {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.cf-landing .footer-social {
+  width: 38px;
+  height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  border: 0.5px solid var(--border2);
+  background: rgba(255, 255, 255, 0.02);
+  color: rgba(240, 237, 230, 0.85);
+  transition: background 0.18s ease, border-color 0.18s ease, transform 0.18s ease, color 0.18s ease;
+}
+
+.cf-landing .footer-social:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(201, 152, 42, 0.3);
+  color: var(--white);
+}
+
+.cf-landing .footer-social:active {
+  transform: scale(0.98);
+}
+
+.cf-landing .footer-social:focus-visible {
+  outline: 2px solid rgba(201, 152, 42, 0.55);
+  outline-offset: 2px;
+}
+
+.cf-landing .footer-social-icon {
+  width: 18px;
+  height: 18px;
+}
+
+.cf-landing .footer-social-text {
+  font-size: var(--font-size-small);
+  color: var(--muted);
+}
+
 .cf-landing .footer-copy {
-  font-size: 12px;
+  font-size: var(--font-size-small);
   color: var(--muted);
 }
 
@@ -1153,6 +1365,11 @@ h6 {
 
   .cf-landing .form-wrap {
     padding: 32px 24px;
+  }
+
+  .cf-landing .form-shell {
+    grid-template-columns: 1fr;
+    gap: 22px;
   }
 
   .cf-landing .hero-ctas {
@@ -1250,18 +1467,7 @@ h6 {
 
 /* Google Build visual integration layer. Functional data still comes from CoachFlow admin/Supabase. */
 .cf-landing {
-  --navy: #05060b;
-  --navy2: #080911;
-  --navy3: rgba(255, 255, 255, 0.03);
-  --navy4: rgba(255, 255, 255, 0.05);
-  --gold: #eab308;
-  --gold2: #facc15;
-  --gold-dark: #b45309;
-  --white: #ffffff;
-  --off: #f8fafc;
-  --muted: #94a3b8;
-  --border: rgba(234, 179, 8, 0.2);
-  --border2: rgba(255, 255, 255, 0.08);
+  --gold-dark: var(--gold2);
   --ease-premium: cubic-bezier(0.2, 0.8, 0.2, 1);
   background: var(--navy);
   color: var(--white);
@@ -1448,9 +1654,9 @@ h6 {
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(circle at 82% 0%, rgba(234, 179, 8, 0.12), transparent 34%),
-    radial-gradient(circle at 0% 100%, rgba(59, 130, 246, 0.12), transparent 36%),
-    #05060b;
+    radial-gradient(circle at 82% 0%, rgba(201, 152, 42, 0.14), transparent 34%),
+    radial-gradient(circle at 0% 100%, rgba(232, 184, 75, 0.08), transparent 36%),
+    var(--navy);
 }
 
 .cf-landing .hero-bg-grid {
@@ -1481,6 +1687,10 @@ h6 {
   align-items: center;
 }
 
+.cf-landing .hero-shell.hero-shell--no-panel {
+  grid-template-columns: minmax(0, 1fr);
+}
+
 .cf-landing .hero-content {
   max-width: 700px;
 }
@@ -1491,9 +1701,9 @@ h6 {
   gap: 8px;
   margin-bottom: 40px;
   padding: 6px 12px;
-  border: 1px solid rgba(234, 179, 8, 0.2);
+  border: 1px solid rgba(201, 152, 42, 0.2);
   border-radius: 999px;
-  background: rgba(234, 179, 8, 0.1);
+  background: rgba(201, 152, 42, 0.1);
   color: var(--gold);
   font-size: 10px;
   font-weight: 800;
@@ -1517,28 +1727,28 @@ h6 {
 .cf-landing .hero-h1 {
   margin: 0 0 40px;
   color: #fff;
-  font-family: var(--cf-font-body, var(--font-body)), system-ui, sans-serif;
-  font-size: 64px;
-  font-weight: 800;
-  line-height: 0.95;
+  font-family: var(--cf-font-heading, var(--cf-font-body, var(--font-body))), system-ui, sans-serif;
+  font-size: var(--font-size-h1);
+  font-weight: 700;
+  line-height: 1.1;
 }
 
 .cf-landing .hero-h1 em {
   display: block;
   margin-top: 8px;
   color: var(--gold);
-  font-family: var(--cf-font-heading, var(--font-heading)), Georgia, serif;
+  font-family: var(--cf-font-heading, var(--cf-font-body, var(--font-body))), Georgia, serif;
   font-style: italic;
-  font-weight: 500;
+  font-weight: 600;
 }
 
 .cf-landing .hero-sub {
   max-width: 600px;
   margin-bottom: 48px;
   color: #94a3b8;
-  font-size: 22px;
-  font-weight: 300;
-  line-height: 1.65;
+  font-size: var(--font-size-body);
+  font-weight: 400;
+  line-height: 1.5;
 }
 
 .cf-landing .hero-human {
@@ -2151,7 +2361,7 @@ h6 {
   position: relative;
   overflow: hidden;
   padding: 128px 0;
-  background: #05060b;
+  background: var(--navy);
 }
 
 .cf-landing #lead-form::before {
@@ -2159,7 +2369,7 @@ h6 {
   position: absolute;
   inset: 0;
   opacity: 0.3;
-  background: radial-gradient(circle at 50% 50%, rgba(234, 179, 8, 0.12), transparent 42%);
+  background: radial-gradient(circle at 50% 50%, rgba(201, 152, 42, 0.14), transparent 42%);
 }
 
 .cf-landing .form-wrap {
@@ -2167,10 +2377,10 @@ h6 {
   z-index: 1;
   max-width: 896px;
   padding: 64px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--border2);
   border-radius: 24px;
-  background: rgba(255, 255, 255, 0.02);
-  box-shadow: 0 28px 80px rgba(234, 179, 8, 0.05);
+  background: var(--navy3);
+  box-shadow: 0 28px 80px rgba(201, 152, 42, 0.06);
   backdrop-filter: blur(12px);
 }
 
@@ -2180,21 +2390,21 @@ h6 {
 
 .cf-landing .form-header h2 {
   color: #fff;
-  font-family: var(--cf-font-body, var(--font-body)), system-ui, sans-serif;
-  font-size: 48px;
-  font-weight: 800;
+  font-family: var(--cf-font-heading, var(--cf-font-body, var(--font-body))), system-ui, sans-serif;
+  font-size: var(--font-size-h2);
+  font-weight: 700;
 }
 
 .cf-landing .form-header p {
-  color: #94a3b8;
-  font-size: 18px;
-  line-height: 1.7;
+  color: var(--muted);
+  font-size: var(--font-size-body);
+  line-height: 1.5;
 }
 
 .cf-landing .form-row {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 40px;
+  gap: 18px;
   margin-bottom: 0;
 }
 
@@ -2222,10 +2432,10 @@ h6 {
 
 .cf-landing .form-group label {
   margin-left: 4px;
-  color: #64748b;
-  font-size: 10px;
-  font-weight: 800;
-  letter-spacing: 0.2em;
+  color: var(--muted);
+  font-size: var(--font-size-small);
+  font-weight: 600;
+  letter-spacing: 0.06em;
 }
 
 .cf-landing .form-group input,
@@ -2233,11 +2443,11 @@ h6 {
 .cf-landing .form-group textarea {
   min-height: 56px;
   padding: 16px 24px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 12px;
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--navy2);
   color: #fff;
-  font-size: 16px;
+  font-size: var(--font-size-body);
   transition: border-color 0.22s var(--ease-premium), box-shadow 0.22s var(--ease-premium);
 }
 
@@ -2248,14 +2458,14 @@ h6 {
 
 .cf-landing .form-group input::placeholder,
 .cf-landing .form-group textarea::placeholder {
-  color: #334155;
+  color: var(--muted);
 }
 
 .cf-landing .form-group input:focus,
 .cf-landing .form-group select:focus,
 .cf-landing .form-group textarea:focus {
   border-color: var(--gold);
-  box-shadow: 0 0 0 1px rgba(234, 179, 8, 0.3);
+  box-shadow: 0 0 0 1px rgba(201, 152, 42, 0.3);
   outline: none;
 }
 

@@ -9,10 +9,64 @@ export type HomepageContent = {
       text: string;
       surface: string;
       border: string;
+      navy?: string;
+      navy2?: string;
+      navy3?: string;
+      navy4?: string;
+      white?: string;
+      muted?: string;
+      off?: string;
+      gold?: string;
+      gold2?: string;
+      gold3?: string;
+      borderGold?: string;
+      border2?: string;
     };
     typography?: {
       headingFont?: string;
       bodyFont?: string;
+      scale?: {
+        mobile: {
+          h1: string;
+          h2: string;
+          h3: string;
+          h4: string;
+          h5: string;
+          h6: string;
+          body: string;
+          small: string;
+        };
+        tablet: {
+          h1: string;
+          h2: string;
+          h3: string;
+          h4: string;
+          h5: string;
+          h6: string;
+          body: string;
+          small: string;
+        };
+        laptop: {
+          h1: string;
+          h2: string;
+          h3: string;
+          h4: string;
+          h5: string;
+          h6: string;
+          body: string;
+          small: string;
+        };
+        desktopLarge: {
+          h1: string;
+          h2: string;
+          h3: string;
+          h4: string;
+          h5: string;
+          h6: string;
+          body: string;
+          small: string;
+        };
+      };
     };
   };
   site: {
@@ -28,10 +82,64 @@ export type HomepageContent = {
         text: string;
         surface: string;
         border: string;
+        navy?: string;
+        navy2?: string;
+        navy3?: string;
+        navy4?: string;
+        white?: string;
+        muted?: string;
+        off?: string;
+        gold?: string;
+        gold2?: string;
+        gold3?: string;
+        borderGold?: string;
+        border2?: string;
       };
       typography?: {
         headingFont?: string;
         bodyFont?: string;
+        scale?: {
+          mobile: {
+            h1: string;
+            h2: string;
+            h3: string;
+            h4: string;
+            h5: string;
+            h6: string;
+            body: string;
+            small: string;
+          };
+          tablet: {
+            h1: string;
+            h2: string;
+            h3: string;
+            h4: string;
+            h5: string;
+            h6: string;
+            body: string;
+            small: string;
+          };
+          laptop: {
+            h1: string;
+            h2: string;
+            h3: string;
+            h4: string;
+            h5: string;
+            h6: string;
+            body: string;
+            small: string;
+          };
+          desktopLarge: {
+            h1: string;
+            h2: string;
+            h3: string;
+            h4: string;
+            h5: string;
+            h6: string;
+            body: string;
+            small: string;
+          };
+        };
       };
     };
     customCss?: string;
@@ -201,17 +309,71 @@ export const homepageDefaults: HomepageContent = {
   branding: {
     enabled: false,
     colors: {
-      primary: "#0fa3a3",
-      secondary: "#0b1414",
-      accent: "#b58a2f",
-      background: "#0b1414",
-      text: "#e2e8f0",
-      surface: "#112121",
-      border: "rgba(255,255,255,0.10)",
+      primary: "#C9982A",
+      secondary: "#0F1629",
+      accent: "#E8B84B",
+      background: "#0A0F1E",
+      text: "#FFFFFF",
+      surface: "#141D35",
+      border: "rgba(255,255,255,0.07)",
+      navy: "#0A0F1E",
+      navy2: "#0F1629",
+      navy3: "#141D35",
+      navy4: "#1A2444",
+      white: "#FFFFFF",
+      muted: "#8A8F9E",
+      off: "#F0EDE6",
+      gold: "#C9982A",
+      gold2: "#E8B84B",
+      gold3: "#F5CC6E",
+      borderGold: "rgba(201,152,42,0.18)",
+      border2: "rgba(255,255,255,0.07)",
     },
     typography: {
-      headingFont: "",
-      bodyFont: "",
+      headingFont: "var(--font-heading)",
+      bodyFont: "var(--font-body)",
+      scale: {
+        mobile: {
+          h1: "22px",
+          h2: "20px",
+          h3: "18px",
+          h4: "16px",
+          h5: "15px",
+          h6: "14px",
+          body: "16px",
+          small: "14px",
+        },
+        tablet: {
+          h1: "28px",
+          h2: "24px",
+          h3: "22px",
+          h4: "20px",
+          h5: "18px",
+          h6: "16px",
+          body: "16px",
+          small: "14px",
+        },
+        laptop: {
+          h1: "36px",
+          h2: "30px",
+          h3: "26px",
+          h4: "22px",
+          h5: "20px",
+          h6: "18px",
+          body: "16px",
+          small: "14px",
+        },
+        desktopLarge: {
+          h1: "42px",
+          h2: "36px",
+          h3: "30px",
+          h4: "26px",
+          h5: "22px",
+          h6: "18px",
+          body: "18px",
+          small: "14px",
+        },
+      },
     },
   },
   site: {
@@ -230,10 +392,64 @@ export const homepageDefaults: HomepageContent = {
         text: "#FFFFFF",
         surface: "#141D35",
         border: "rgba(255,255,255,0.07)",
+        navy: "#0A0F1E",
+        navy2: "#0F1629",
+        navy3: "#141D35",
+        navy4: "#1A2444",
+        white: "#FFFFFF",
+        muted: "#8A8F9E",
+        off: "#F0EDE6",
+        gold: "#C9982A",
+        gold2: "#E8B84B",
+        gold3: "#F5CC6E",
+        borderGold: "rgba(201,152,42,0.18)",
+        border2: "rgba(255,255,255,0.07)",
       },
       typography: {
-        headingFont: "",
-        bodyFont: "",
+        headingFont: "var(--font-heading)",
+        bodyFont: "var(--font-body)",
+        scale: {
+          mobile: {
+            h1: "22px",
+            h2: "20px",
+            h3: "18px",
+            h4: "16px",
+            h5: "15px",
+            h6: "14px",
+            body: "16px",
+            small: "14px",
+          },
+          tablet: {
+            h1: "28px",
+            h2: "24px",
+            h3: "22px",
+            h4: "20px",
+            h5: "18px",
+            h6: "16px",
+            body: "16px",
+            small: "14px",
+          },
+          laptop: {
+            h1: "36px",
+            h2: "30px",
+            h3: "26px",
+            h4: "22px",
+            h5: "20px",
+            h6: "18px",
+            body: "16px",
+            small: "14px",
+          },
+          desktopLarge: {
+            h1: "42px",
+            h2: "36px",
+            h3: "30px",
+            h4: "26px",
+            h5: "22px",
+            h6: "18px",
+            body: "18px",
+            small: "14px",
+          },
+        },
       },
     },
     customCss: "",
@@ -265,6 +481,13 @@ export const homepageDefaults: HomepageContent = {
       icon: { type: "library", value: "instagram" },
     },
     {
+      id: "facebook",
+      platform: "facebook",
+      url: "https://facebook.com/",
+      enabled: false,
+      icon: { type: "library", value: "facebook" },
+    },
+    {
       id: "youtube",
       platform: "youtube",
       url: "https://youtube.com/",
@@ -277,6 +500,48 @@ export const homepageDefaults: HomepageContent = {
       url: "https://x.com/",
       enabled: true,
       icon: { type: "library", value: "x" },
+    },
+    {
+      id: "linkedin",
+      platform: "linkedin",
+      url: "https://linkedin.com/",
+      enabled: true,
+      icon: { type: "library", value: "linkedin" },
+    },
+    {
+      id: "tiktok",
+      platform: "tiktok",
+      url: "https://tiktok.com/",
+      enabled: false,
+      icon: { type: "library", value: "tiktok" },
+    },
+    {
+      id: "whatsapp",
+      platform: "whatsapp",
+      url: "https://wa.me/",
+      enabled: false,
+      icon: { type: "library", value: "whatsapp" },
+    },
+    {
+      id: "telegram",
+      platform: "telegram",
+      url: "https://t.me/",
+      enabled: false,
+      icon: { type: "library", value: "telegram" },
+    },
+    {
+      id: "email",
+      platform: "email",
+      url: "mailto:",
+      enabled: false,
+      icon: { type: "library", value: "email" },
+    },
+    {
+      id: "website",
+      platform: "website",
+      url: "https://",
+      enabled: false,
+      icon: { type: "library", value: "website" },
     },
   ],
   whatsapp: {
@@ -294,7 +559,7 @@ export const homepageDefaults: HomepageContent = {
   },
   page: {
     sections: [
-      { id: "hero", type: "hero", enabled: true, settings: { heroBackground: true } },
+      { id: "hero", type: "hero", enabled: true, settings: { heroBackground: true, heroPanel: true } },
       { id: "features", type: "features", enabled: true, settings: { label: "What we do" } },
       {
         id: "workflow",

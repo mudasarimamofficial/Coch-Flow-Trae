@@ -51,6 +51,19 @@ type Props = {
 type PreviewMode = "desktop" | "tablet" | "mobile";
 type MobilePane = "preview" | "sections" | "inspector";
 
+const SOCIAL_PLATFORM_PRESETS = [
+  { value: "instagram", label: "Instagram" },
+  { value: "facebook", label: "Facebook" },
+  { value: "x", label: "Twitter / X" },
+  { value: "linkedin", label: "LinkedIn" },
+  { value: "youtube", label: "YouTube" },
+  { value: "tiktok", label: "TikTok" },
+  { value: "whatsapp", label: "WhatsApp" },
+  { value: "telegram", label: "Telegram" },
+  { value: "email", label: "Email" },
+  { value: "website", label: "Website" },
+] as const;
+
 type PageSection = NonNullable<HomepageContent["page"]>["sections"][number];
 
 type SectionItem = {
@@ -63,10 +76,76 @@ type SectionItem = {
 
 function mergeContent(c: Partial<HomepageContent> | null): HomepageContent {
   if (!c) return homepageDefaults;
+
+  const mergeScale = (base: any, extra: any) => {
+    const b = base || homepageDefaults.site.theme?.typography?.scale;
+    const e = extra || {};
+    return {
+      mobile: { ...(b?.mobile || {}), ...(e.mobile || {}) },
+      tablet: { ...(b?.tablet || {}), ...(e.tablet || {}) },
+      laptop: { ...(b?.laptop || {}), ...(e.laptop || {}) },
+      desktopLarge: { ...(b?.desktopLarge || {}), ...(e.desktopLarge || {}) },
+    };
+  };
+
+  const mergeTheme = (base: any, extra: any) => {
+    const b = base || homepageDefaults.site.theme;
+    const e = extra || {};
+    return {
+      ...b,
+      ...e,
+      colors: { ...(b?.colors || {}), ...(e.colors || {}) },
+      typography: {
+        ...(b?.typography || {}),
+        ...(e.typography || {}),
+        scale: mergeScale(b?.typography?.scale, e.typography?.scale),
+      },
+    };
+  };
+
+  const mergeBranding = (base: any, extra: any) => {
+    const b = base || homepageDefaults.branding;
+    const e = extra || {};
+    return {
+      ...b,
+      ...e,
+      colors: { ...(b?.colors || {}), ...(e.colors || {}) },
+      typography: {
+        ...(b?.typography || {}),
+        ...(e.typography || {}),
+        scale: mergeScale(b?.typography?.scale, e.typography?.scale),
+      },
+    };
+  };
+
+  const mergeSocialLinksV2 = (
+    base: HomepageContent["socialLinksV2"] | undefined,
+    extra: HomepageContent["socialLinksV2"] | undefined,
+  ) => {
+    const b = Array.isArray(base) ? base : [];
+    const e = Array.isArray(extra) ? extra : [];
+    const byId = new Map<string, any>();
+    for (const item of e) {
+      const id = String((item as any)?.id || "").trim();
+      if (!id) continue;
+      byId.set(id, item);
+    }
+    const out: any[] = [];
+    for (const preset of b) {
+      const id = String((preset as any)?.id || "").trim();
+      const override = id ? byId.get(id) : null;
+      out.push(override ? { ...(preset as any), ...(override as any) } : preset);
+      if (id) byId.delete(id);
+    }
+    for (const rest of byId.values()) out.push(rest);
+    return out as HomepageContent["socialLinksV2"];
+  };
+
   return {
     ...homepageDefaults,
     ...c,
-    site: { ...homepageDefaults.site, ...(c.site || {}) },
+    site: { ...homepageDefaults.site, ...(c.site || {}), theme: mergeTheme(homepageDefaults.site.theme, c.site?.theme) },
+    branding: mergeBranding(homepageDefaults.branding, c.branding),
     header: {
       ...homepageDefaults.header,
       ...(c.header || {}),
@@ -128,7 +207,7 @@ function mergeContent(c: Partial<HomepageContent> | null): HomepageContent {
       links: c.footer?.links || homepageDefaults.footer.links,
     },
     socialLinks: c.socialLinks || homepageDefaults.socialLinks,
-    socialLinksV2: c.socialLinksV2 || homepageDefaults.socialLinksV2,
+    socialLinksV2: mergeSocialLinksV2(homepageDefaults.socialLinksV2, c.socialLinksV2),
     whatsapp: {
       ...(homepageDefaults.whatsapp || {
         enabled: false,
@@ -840,7 +919,7 @@ export function VisualBuilderPanel({ supabase, onNavigateTab, onSignOut }: Props
             platform: x.platform,
             url: x.url,
             enabled: x.enabled,
-            icon: { type: "library", value: x.platform },
+            icon: (x as any).icon || { type: "library", value: x.platform },
           },
         })),
       }));
@@ -1506,6 +1585,19 @@ export function VisualBuilderPanel({ supabase, onNavigateTab, onSignOut }: Props
                     { value: "off", label: "Off" },
                   ]}
                 />
+
+                <Select
+                  label={labelRow("Hero metrics panel")}
+                  value={((pageSections.find((s) => s.id === "hero")?.settings as any)?.heroPanel ?? true) ? "on" : "off"}
+                  onChange={(e) => {
+                    const on = e.target.value === "on";
+                    updateSection("hero", (s) => ({ ...s, settings: { ...(s.settings || {}), heroPanel: on } }));
+                  }}
+                  options={[
+                    { value: "on", label: "On" },
+                    { value: "off", label: "Off" },
+                  ]}
+                />
               </InspectorGroup>
 
               <InspectorGroup title="Content">
@@ -1901,18 +1993,56 @@ export function VisualBuilderPanel({ supabase, onNavigateTab, onSignOut }: Props
                   .filter((b) => b.type === "social_link")
                   .map((b) => (
                     <div key={b.id} className="rounded-2xl border border-white/10 bg-white/5 p-3">
-                      <Input
-                        label={labelRow("Platform")}
-                        value={String(b.content?.platform || "")}
-                        onChange={(e) =>
-                          updateSection("footer", (s) => ({
-                            ...s,
-                            blocks: (s.blocks || []).map((x) =>
-                              x.id === b.id ? { ...x, content: { ...x.content, platform: e.target.value } } : x,
-                            ),
-                          }))
-                        }
-                      />
+                      {(() => {
+                        const raw = String(b.content?.platform || "");
+                        const key = raw.trim().toLowerCase();
+                        const isPreset = SOCIAL_PLATFORM_PRESETS.some((p) => p.value === (key as any));
+                        const presetValue = isPreset ? (key as (typeof SOCIAL_PLATFORM_PRESETS)[number]["value"]) : "custom";
+                        return (
+                          <>
+                            <Select
+                              label={labelRow("Platform")}
+                              value={presetValue}
+                              onChange={(e) => {
+                                const next = e.target.value;
+                                if (next === "custom") return;
+                                updateSection("footer", (s) => ({
+                                  ...s,
+                                  blocks: (s.blocks || []).map((x) => {
+                                    if (x.id !== b.id) return x;
+                                    const existingIcon = (x.content as any)?.icon as IconRef | null | undefined;
+                                    const keepUpload = existingIcon?.type === "upload";
+                                    return {
+                                      ...x,
+                                      content: {
+                                        ...x.content,
+                                        platform: next,
+                                        icon: keepUpload ? existingIcon : ({ type: "library", value: next } as any),
+                                      },
+                                    };
+                                  }),
+                                }));
+                              }}
+                              options={[...SOCIAL_PLATFORM_PRESETS, { value: "custom", label: "Custom" }]}
+                            />
+
+                            {!isPreset ? (
+                              <Input
+                                label={labelRow("Custom platform")}
+                                value={raw}
+                                onChange={(e) =>
+                                  updateSection("footer", (s) => ({
+                                    ...s,
+                                    blocks: (s.blocks || []).map((x) =>
+                                      x.id === b.id ? { ...x, content: { ...x.content, platform: e.target.value } } : x,
+                                    ),
+                                  }))
+                                }
+                              />
+                            ) : null}
+                          </>
+                        );
+                      })()}
                       <Input
                         label={labelRow("URL")}
                         value={String(b.content?.url || "")}

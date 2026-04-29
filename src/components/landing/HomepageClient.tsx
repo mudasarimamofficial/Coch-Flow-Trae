@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import type { HomepageContent } from "@/content/homepage";
+import { homepageDefaults } from "@/content/homepage";
 import { createBrowserSupabaseClient } from "@/utils/supabase/browserClient";
 import { WhatsAppWidget } from "@/components/landing/WhatsAppWidget";
 import { applyBuilderOverrides } from "@/utils/homepageBuilder";
@@ -10,6 +11,7 @@ import { SectionErrorBoundary } from "@/components/landing/SectionErrorBoundary"
 import { SectionWrapper } from "@/components/landing/SectionWrapper";
 import { SECTION_REGISTRY, type PageSection } from "@/components/landing/sectionRegistry";
 import { Header } from "@/components/landing/Header";
+import { mergePageSectionsWithDefaults } from "@/utils/homepageSections";
 
 type Props = {
   initialContent: HomepageContent;
@@ -17,7 +19,7 @@ type Props = {
 };
 
 export function HomepageClient({ initialContent, isBuilderPreview }: Props) {
-  const [content, setContent] = useState<HomepageContent>(() => sanitizeContentStrings(initialContent));
+  const [content, setContent] = useState<HomepageContent>(() => mergeClientContent(initialContent));
   const [hasPreviewOverride, setHasPreviewOverride] = useState(false);
 
   useEffect(() => {
@@ -36,7 +38,7 @@ export function HomepageClient({ initialContent, isBuilderPreview }: Props) {
             .select("content")
             .eq("id", 1)
             .maybeSingle();
-          if (data?.content) setContent(sanitizeContentStrings(data.content as HomepageContent));
+          if (data?.content) setContent(mergeClientContent(data.content as HomepageContent));
         },
       )
       .subscribe();
@@ -57,7 +59,7 @@ export function HomepageClient({ initialContent, isBuilderPreview }: Props) {
       if (!data || data.type !== "coachflow_builder_preview") return;
       if (!data.content) return;
       setHasPreviewOverride(true);
-      setContent(sanitizeContentStrings(data.content as HomepageContent));
+      setContent(mergeClientContent(data.content as HomepageContent));
     }
     window.addEventListener("message", onMessage);
     return () => {
@@ -131,4 +133,158 @@ export function HomepageClient({ initialContent, isBuilderPreview }: Props) {
       ) : null}
     </div>
   );
+}
+
+function mergeClientContent(c: Partial<HomepageContent> | null): HomepageContent {
+  if (!c) return homepageDefaults;
+
+  const mergeScale = (base: any, extra: any) => {
+    const b = base || homepageDefaults.site.theme?.typography?.scale;
+    const e = extra || {};
+    return {
+      mobile: { ...(b?.mobile || {}), ...(e.mobile || {}) },
+      tablet: { ...(b?.tablet || {}), ...(e.tablet || {}) },
+      laptop: { ...(b?.laptop || {}), ...(e.laptop || {}) },
+      desktopLarge: { ...(b?.desktopLarge || {}), ...(e.desktopLarge || {}) },
+    };
+  };
+
+  const mergeTheme = (base: any, extra: any) => {
+    const b = base || homepageDefaults.site.theme;
+    const e = extra || {};
+    return {
+      ...b,
+      ...e,
+      colors: { ...(b?.colors || {}), ...(e.colors || {}) },
+      typography: {
+        ...(b?.typography || {}),
+        ...(e.typography || {}),
+        scale: mergeScale(b?.typography?.scale, e.typography?.scale),
+      },
+    };
+  };
+
+  const mergeBranding = (base: any, extra: any) => {
+    const b = base || homepageDefaults.branding;
+    const e = extra || {};
+    return {
+      ...b,
+      ...e,
+      colors: { ...(b?.colors || {}), ...(e.colors || {}) },
+      typography: {
+        ...(b?.typography || {}),
+        ...(e.typography || {}),
+        scale: mergeScale(b?.typography?.scale, e.typography?.scale),
+      },
+    };
+  };
+
+  const mergeSocialLinksV2 = (
+    base: HomepageContent["socialLinksV2"] | undefined,
+    extra: HomepageContent["socialLinksV2"] | undefined,
+  ) => {
+    const b = Array.isArray(base) ? base : [];
+    const e = Array.isArray(extra) ? extra : [];
+    const byId = new Map<string, any>();
+    for (const item of e) {
+      const id = String((item as any)?.id || "").trim();
+      if (!id) continue;
+      byId.set(id, item);
+    }
+    const out: any[] = [];
+    for (const preset of b) {
+      const id = String((preset as any)?.id || "").trim();
+      const override = id ? byId.get(id) : null;
+      out.push(override ? { ...(preset as any), ...(override as any) } : preset);
+      if (id) byId.delete(id);
+    }
+    for (const rest of byId.values()) out.push(rest);
+    return out as HomepageContent["socialLinksV2"];
+  };
+
+  return sanitizeContentStrings({
+    ...homepageDefaults,
+    ...c,
+    site: {
+      ...homepageDefaults.site,
+      ...(c.site || {}),
+      theme: mergeTheme(homepageDefaults.site.theme, (c.site as any)?.theme),
+    },
+    branding: mergeBranding(homepageDefaults.branding, (c as any).branding),
+    header: {
+      ...homepageDefaults.header,
+      ...(c.header || {}),
+      brandIcon: { ...homepageDefaults.header.brandIcon, ...(c.header?.brandIcon || {}) },
+      primaryCta: { ...homepageDefaults.header.primaryCta, ...(c.header?.primaryCta || {}) },
+      nav: (c.header?.nav as any) || homepageDefaults.header.nav,
+    },
+    hero: {
+      ...homepageDefaults.hero,
+      ...(c.hero || {}),
+      badge: { ...homepageDefaults.hero.badge, ...(c.hero?.badge || {}) },
+      heading: { ...homepageDefaults.hero.heading, ...(c.hero?.heading || {}) },
+      primaryCta: { ...homepageDefaults.hero.primaryCta, ...(c.hero?.primaryCta || {}) },
+      secondaryCta: { ...homepageDefaults.hero.secondaryCta, ...(c.hero?.secondaryCta || {}) },
+      proof: {
+        ...(homepageDefaults.hero.proof || { title: "", eyebrow: "", avatars: [] }),
+        ...((c.hero as any)?.proof || {}),
+        avatars: (c.hero as any)?.proof?.avatars || homepageDefaults.hero.proof?.avatars || [],
+      },
+      metrics: (c.hero as any)?.metrics || (homepageDefaults.hero as any).metrics,
+      revenueVisual: {
+        ...(homepageDefaults.hero.revenueVisual || { value: "", label: "" }),
+        ...((c.hero as any)?.revenueVisual || {}),
+      },
+      backgroundImage: (c.hero as any)?.backgroundImage || homepageDefaults.hero.backgroundImage,
+    },
+    trust: {
+      ...homepageDefaults.trust,
+      ...(c.trust || {}),
+      icons: c.trust?.icons || homepageDefaults.trust.icons,
+    },
+    features: {
+      ...homepageDefaults.features,
+      ...(c.features || {}),
+      cards: c.features?.cards || homepageDefaults.features.cards,
+      backgroundImage: c.features?.backgroundImage || homepageDefaults.features.backgroundImage,
+    },
+    workflow: {
+      ...homepageDefaults.workflow,
+      ...(c.workflow || {}),
+      steps: c.workflow?.steps || homepageDefaults.workflow.steps,
+      backgroundImage: c.workflow?.backgroundImage || homepageDefaults.workflow.backgroundImage,
+    },
+    pricing: {
+      ...homepageDefaults.pricing,
+      ...(c.pricing || {}),
+      tiers: c.pricing?.tiers || homepageDefaults.pricing.tiers,
+      backgroundImage: c.pricing?.backgroundImage || homepageDefaults.pricing.backgroundImage,
+    },
+    application: {
+      ...homepageDefaults.application,
+      ...(c.application || {}),
+      fields: {
+        ...homepageDefaults.application.fields,
+        ...(c.application?.fields || {}),
+        revenueOptions: c.application?.fields?.revenueOptions || homepageDefaults.application.fields.revenueOptions,
+      },
+      backgroundImage: c.application?.backgroundImage || homepageDefaults.application.backgroundImage,
+    },
+    footer: {
+      ...homepageDefaults.footer,
+      ...(c.footer || {}),
+      brandIcon: { ...homepageDefaults.footer.brandIcon, ...(c.footer?.brandIcon || {}) },
+      links: c.footer?.links || homepageDefaults.footer.links,
+    },
+    page: {
+      sections: mergePageSectionsWithDefaults((c.page as any)?.sections),
+    },
+    customSections: (c as any).customSections || homepageDefaults.customSections,
+    socialLinks: (c as any).socialLinks || homepageDefaults.socialLinks,
+    socialLinksV2: mergeSocialLinksV2(homepageDefaults.socialLinksV2, (c as any).socialLinksV2),
+    whatsapp: {
+      ...(homepageDefaults.whatsapp as any),
+      ...((c as any).whatsapp || {}),
+    },
+  });
 }

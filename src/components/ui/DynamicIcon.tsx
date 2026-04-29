@@ -6,6 +6,7 @@ import {
   Mail,
   MessageCircle,
   Music2,
+  Send,
   Twitter,
   Youtube,
 } from "lucide-react";
@@ -29,6 +30,7 @@ const library = {
   whatsapp: MessageCircle,
   email: Mail,
   website: Globe,
+  telegram: Send,
 } as const;
 
 function pick(ref: IconRef | null | undefined) {

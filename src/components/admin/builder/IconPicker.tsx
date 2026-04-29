@@ -23,7 +23,10 @@ const libraryOptions = [
   { value: "x", label: "X" },
   { value: "linkedin", label: "LinkedIn" },
   { value: "youtube", label: "YouTube" },
+  { value: "tiktok", label: "TikTok" },
   { value: "whatsapp", label: "WhatsApp" },
+  { value: "telegram", label: "Telegram" },
+  { value: "email", label: "Email" },
   { value: "website", label: "Website" },
 ];
 

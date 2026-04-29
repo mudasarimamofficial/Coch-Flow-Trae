@@ -1,5 +1,7 @@
 import type { HomepageContent } from "@/content/homepage";
 import type { PageSection } from "@/components/landing/sectionRegistry";
+import { DynamicIcon } from "@/components/ui/DynamicIcon";
+import { MaterialIcon } from "@/components/ui/MaterialIcon";
 
 type Props = {
   content: HomepageContent;
@@ -30,15 +32,25 @@ export function Footer({ content, section }: Props) {
           </div>
 
           {showSocial && (socialV2.length || socialLegacy.length) ? (
-            <div className="footer-links">
+            <div className="footer-socials" aria-label="Social links">
               {socialV2.map((s) => (
-                <a key={s.id} href={s.url} target="_blank" rel="noreferrer">
-                  {s.platform}
+                <a key={s.id} className="footer-social" href={s.url} target="_blank" rel="noreferrer" aria-label={s.platform}>
+                  <DynamicIcon
+                    icon={s.icon || { type: "library", value: s.platform } as any}
+                    className="footer-social-icon"
+                  />
+                  <span className="cf-visually-hidden">{s.platform}</span>
                 </a>
               ))}
               {socialLegacy.map((s, idx) => (
-                <a key={`${s.href}-${idx}`} href={s.href} target="_blank" rel="noreferrer">
-                  {s.label}
+                <a key={`${s.href}-${idx}`} className="footer-social" href={s.href} target="_blank" rel="noreferrer" aria-label={s.label}>
+                  {s.icon?.type === "image" && s.icon.url ? (
+                    <img className="footer-social-icon" src={s.icon.url} alt="" />
+                  ) : s.icon?.type === "material" && s.icon.name ? (
+                    <MaterialIcon name={s.icon.name} className="footer-social-icon" aria-hidden="true" />
+                  ) : (
+                    <span className="footer-social-text">{s.label}</span>
+                  )}
                 </a>
               ))}
             </div>

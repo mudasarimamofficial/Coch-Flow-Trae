@@ -42,6 +42,32 @@ export function SettingsPanel({ supabase }: Props) {
   const [theme, setTheme] = useState<HomepageContent["site"]["theme"]>(defaultTheme);
   const [designPreset, setDesignPreset] = useState<"landing_html_v1" | "classic">("landing_html_v1");
 
+  const mergeScale = (base: any, extra: any) => {
+    const b = base || (defaultTheme as any)?.typography?.scale;
+    const e = extra || {};
+    return {
+      mobile: { ...(b?.mobile || {}), ...(e.mobile || {}) },
+      tablet: { ...(b?.tablet || {}), ...(e.tablet || {}) },
+      laptop: { ...(b?.laptop || {}), ...(e.laptop || {}) },
+      desktopLarge: { ...(b?.desktopLarge || {}), ...(e.desktopLarge || {}) },
+    };
+  };
+
+  const mergeTheme = (base: any, extra: any) => {
+    const b = base || defaultTheme;
+    const e = extra || {};
+    return {
+      ...b,
+      ...e,
+      colors: { ...(b?.colors || {}), ...(e.colors || {}) },
+      typography: {
+        ...(b?.typography || {}),
+        ...(e.typography || {}),
+        scale: mergeScale(b?.typography?.scale, e.typography?.scale),
+      },
+    };
+  };
+
   async function loadSettings() {
     setSettingsSaved(null);
     setSettingsError(null);
@@ -87,7 +113,7 @@ export function SettingsPanel({ supabase }: Props) {
         .maybeSingle();
       if (!homeErr && home?.content) {
         const c = home.content as HomepageContent;
-        setTheme(c.site?.theme || defaultTheme);
+        setTheme(mergeTheme(defaultTheme, c.site?.theme));
         setDesignPreset(((c.site as any)?.designPreset as any) === "classic" ? "classic" : "landing_html_v1");
       }
     } finally {
@@ -363,6 +389,54 @@ export function SettingsPanel({ supabase }: Props) {
               placeholder="e.g. Inter, system-ui"
             />
           </div>
+
+          <div className="mt-2 text-sm font-bold">Typography Scale</div>
+          {(
+            [
+              { key: "mobile", label: "Mobile" },
+              { key: "tablet", label: "Tablet" },
+              { key: "laptop", label: "Laptop" },
+              { key: "desktopLarge", label: "Large Desktop" },
+            ] as const
+          ).map((tier) => {
+            const scale = (theme as any)?.typography?.scale || (defaultTheme as any)?.typography?.scale;
+            const tierScale = (scale as any)?.[tier.key] || {};
+            const setTierValue = (token: string, value: string) => {
+              setTheme((t) => {
+                const next = mergeTheme(defaultTheme, t);
+                const nextScale = (next as any).typography.scale;
+                return {
+                  ...next,
+                  typography: {
+                    ...(next as any).typography,
+                    scale: {
+                      ...nextScale,
+                      [tier.key]: {
+                        ...(nextScale as any)[tier.key],
+                        [token]: value,
+                      },
+                    },
+                  },
+                };
+              });
+            };
+
+            return (
+              <div key={tier.key} className="rounded-2xl border border-white/10 bg-white/5 p-4">
+                <div className="text-sm font-semibold text-white/80">{tier.label}</div>
+                <div className="mt-3 grid grid-cols-1 gap-4 md:grid-cols-2">
+                  <Input label="H1" value={String(tierScale.h1 || "")} onChange={(e) => setTierValue("h1", e.target.value)} placeholder="e.g. 22px" />
+                  <Input label="H2" value={String(tierScale.h2 || "")} onChange={(e) => setTierValue("h2", e.target.value)} placeholder="e.g. 20px" />
+                  <Input label="H3" value={String(tierScale.h3 || "")} onChange={(e) => setTierValue("h3", e.target.value)} placeholder="e.g. 18px" />
+                  <Input label="H4" value={String(tierScale.h4 || "")} onChange={(e) => setTierValue("h4", e.target.value)} placeholder="e.g. 16px" />
+                  <Input label="H5" value={String(tierScale.h5 || "")} onChange={(e) => setTierValue("h5", e.target.value)} placeholder="e.g. 15px" />
+                  <Input label="H6" value={String(tierScale.h6 || "")} onChange={(e) => setTierValue("h6", e.target.value)} placeholder="e.g. 14px" />
+                  <Input label="Body" value={String(tierScale.body || "")} onChange={(e) => setTierValue("body", e.target.value)} placeholder="e.g. 16px" />
+                  <Input label="Small" value={String(tierScale.small || "")} onChange={(e) => setTierValue("small", e.target.value)} placeholder="e.g. 14px" />
+                </div>
+              </div>
+            );
+          })}
           <div className="flex items-center gap-3">
             <Button
               className="h-12"
@@ -398,27 +472,29 @@ export function SettingsPanel({ supabase }: Props) {
                     return;
                   }
                   const current = home.content as HomepageContent;
+                  const themeWithDefaults = mergeTheme(defaultTheme, theme || defaultTheme);
+                  const currentBranding = (current.branding || homepageDefaults.branding || { colors: themeWithDefaults.colors }) as any;
+                  const mergedBrandingColors = {
+                    ...(homepageDefaults.branding?.colors || {}),
+                    ...(currentBranding.colors || {}),
+                    ...(themeWithDefaults.colors || {}),
+                  };
                   const updated: HomepageContent = {
                     ...current,
                     site: {
                       ...current.site,
                       designPreset,
-                      theme: theme || defaultTheme,
+                      theme: themeWithDefaults,
                     },
                     branding: {
-                      enabled: Boolean(theme?.enabled),
-                      colors: {
-                        primary: theme?.colors.primary || defaultTheme.colors.primary,
-                        secondary: theme?.colors.secondary || defaultTheme.colors.secondary,
-                        accent: theme?.colors.accent || defaultTheme.colors.accent,
-                        background: theme?.colors.background || defaultTheme.colors.background,
-                        text: theme?.colors.text || defaultTheme.colors.text,
-                        surface: theme?.colors.surface || defaultTheme.colors.surface,
-                        border: theme?.colors.border || defaultTheme.colors.border,
-                      },
+                      ...currentBranding,
+                      enabled: Boolean(themeWithDefaults?.enabled),
+                      colors: mergedBrandingColors,
                       typography: {
-                        headingFont: theme?.typography?.headingFont || "",
-                        bodyFont: theme?.typography?.bodyFont || "",
+                        ...(currentBranding.typography || {}),
+                        headingFont: themeWithDefaults?.typography?.headingFont || "",
+                        bodyFont: themeWithDefaults?.typography?.bodyFont || "",
+                        scale: (themeWithDefaults as any)?.typography?.scale,
                       },
                     },
                   };

@@ -22,10 +22,76 @@ function sanitizePathSegment(v: string) {
 
 function mergeContent(c: Partial<HomepageContent> | null): HomepageContent {
   if (!c) return homepageDefaults;
+
+  const mergeScale = (base: any, extra: any) => {
+    const b = base || homepageDefaults.site.theme?.typography?.scale;
+    const e = extra || {};
+    return {
+      mobile: { ...(b?.mobile || {}), ...(e.mobile || {}) },
+      tablet: { ...(b?.tablet || {}), ...(e.tablet || {}) },
+      laptop: { ...(b?.laptop || {}), ...(e.laptop || {}) },
+      desktopLarge: { ...(b?.desktopLarge || {}), ...(e.desktopLarge || {}) },
+    };
+  };
+
+  const mergeTheme = (base: any, extra: any) => {
+    const b = base || homepageDefaults.site.theme;
+    const e = extra || {};
+    return {
+      ...b,
+      ...e,
+      colors: { ...(b?.colors || {}), ...(e.colors || {}) },
+      typography: {
+        ...(b?.typography || {}),
+        ...(e.typography || {}),
+        scale: mergeScale(b?.typography?.scale, e.typography?.scale),
+      },
+    };
+  };
+
+  const mergeBranding = (base: any, extra: any) => {
+    const b = base || homepageDefaults.branding;
+    const e = extra || {};
+    return {
+      ...b,
+      ...e,
+      colors: { ...(b?.colors || {}), ...(e.colors || {}) },
+      typography: {
+        ...(b?.typography || {}),
+        ...(e.typography || {}),
+        scale: mergeScale(b?.typography?.scale, e.typography?.scale),
+      },
+    };
+  };
+
+  const mergeSocialLinksV2 = (
+    base: HomepageContent["socialLinksV2"] | undefined,
+    extra: HomepageContent["socialLinksV2"] | undefined,
+  ) => {
+    const b = Array.isArray(base) ? base : [];
+    const e = Array.isArray(extra) ? extra : [];
+    const byId = new Map<string, any>();
+    for (const item of e) {
+      const id = String((item as any)?.id || "").trim();
+      if (!id) continue;
+      byId.set(id, item);
+    }
+    const out: any[] = [];
+    for (const preset of b) {
+      const id = String((preset as any)?.id || "").trim();
+      const override = id ? byId.get(id) : null;
+      out.push(override ? { ...(preset as any), ...(override as any) } : preset);
+      if (id) byId.delete(id);
+    }
+    for (const rest of byId.values()) out.push(rest);
+    return out as HomepageContent["socialLinksV2"];
+  };
+
   return {
     ...homepageDefaults,
     ...c,
-    site: { ...homepageDefaults.site, ...(c.site || {}) },
+    site: { ...homepageDefaults.site, ...(c.site || {}), theme: mergeTheme(homepageDefaults.site.theme, c.site?.theme) },
+    branding: mergeBranding(homepageDefaults.branding, c.branding),
     header: {
       ...homepageDefaults.header,
       ...(c.header || {}),
@@ -82,7 +148,7 @@ function mergeContent(c: Partial<HomepageContent> | null): HomepageContent {
       links: c.footer?.links || homepageDefaults.footer.links,
     },
     socialLinks: c.socialLinks || homepageDefaults.socialLinks,
-    socialLinksV2: c.socialLinksV2 || homepageDefaults.socialLinksV2,
+    socialLinksV2: mergeSocialLinksV2(homepageDefaults.socialLinksV2, c.socialLinksV2),
     whatsapp: {
       ...(homepageDefaults.whatsapp || {
         enabled: false,
