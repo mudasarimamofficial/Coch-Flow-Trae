@@ -80,9 +80,16 @@ export async function getHomepageContent(): Promise<HomepageContent> {
       return out as HomepageContent["socialLinksV2"];
     };
 
+    const isLegacyScale = (scale: any) =>
+      scale?.mobile?.h1 === "22px" &&
+      scale?.tablet?.h1 === "28px" &&
+      scale?.laptop?.h1 === "36px" &&
+      scale?.desktopLarge?.h1 === "42px" &&
+      scale?.desktopLarge?.body === "18px";
+
     const mergeScale = (base: any, extra: any) => {
       const b = base || homepageDefaults.site.theme?.typography?.scale;
-      const e = extra || {};
+      const e = isLegacyScale(extra) ? {} : extra || {};
       return {
         mobile: { ...(b?.mobile || {}), ...(e.mobile || {}) },
         tablet: { ...(b?.tablet || {}), ...(e.tablet || {}) },

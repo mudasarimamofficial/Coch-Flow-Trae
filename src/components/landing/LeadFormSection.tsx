@@ -23,7 +23,7 @@ type Props = {
 
 export function LeadFormSection({ content, section }: Props) {
   const label = (section?.settings as any)?.label ? String((section?.settings as any).label) : "";
-  const footnote = content.application.footnote || "We’ll review your answers and reply with next steps.";
+  const footnote = content.application.footnote || "We'll review your answers and reply with next steps.";
   const [values, setValues] = useState<FormState>({
     first_name: "",
     last_name: "",
@@ -51,191 +51,218 @@ export function LeadFormSection({ content, section }: Props) {
   return (
     <section id="lead-form">
       <div className="container">
-        <div className="form-wrap" id={content.application.id}>
-          <div id="form-content" style={{ display: submitted ? "none" : "block" }}>
-            <form
-              onSubmit={async (e) => {
-                e.preventDefault();
-                setError(null);
-                setFieldErrors({});
+        <div className="form-wrap" data-content-id={content.application.id}>
+          <div className="form-intro-panel">
+            {label ? <div className="label-tag">{label}</div> : null}
+            <div className="gold-line" aria-hidden="true" />
+            <h2>{content.application.heading}</h2>
+            <p>{content.application.subcopy}</p>
 
-                const parsed = schema.safeParse(payload);
-                if (!parsed.success) {
-                  const next: Record<string, string> = {};
-                  for (const issue of parsed.error.issues) {
-                    const key = String(issue.path[0] ?? "");
-                    if (key && !next[key]) next[key] = issue.message;
-                  }
-                  setFieldErrors(next);
-                  return;
-                }
+            <div className="form-intro-grid" aria-label="Application expectations">
+              <div>
+                <strong>24h</strong>
+                <span>review window</span>
+              </div>
+              <div>
+                <strong>Fit-first</strong>
+                <span>no pressure call</span>
+              </div>
+            </div>
 
-                setSubmitting(true);
-                try {
-                  const res = await fetch("/api/leads", {
-                    method: "POST",
-                    headers: { "content-type": "application/json" },
-                    body: JSON.stringify(parsed.data),
-                  });
+            <div className="form-reassurance">
+              <div className="form-reassurance-title">What happens after you apply</div>
+              <p>{footnote}</p>
+            </div>
+          </div>
 
-                  const json = (await res.json()) as { ok: boolean; message?: string };
-                  if (!res.ok || !json.ok) {
-                    setError(json.message || "Something went wrong. Please try again.");
+          <div className="form-card">
+            <div id="form-content" style={{ display: submitted ? "none" : "block" }}>
+              <form
+                onSubmit={async (e) => {
+                  e.preventDefault();
+                  setError(null);
+                  setFieldErrors({});
+
+                  const parsed = schema.safeParse(payload);
+                  if (!parsed.success) {
+                    const next: Record<string, string> = {};
+                    for (const issue of parsed.error.issues) {
+                      const key = String(issue.path[0] ?? "");
+                      if (key && !next[key]) next[key] = issue.message;
+                    }
+                    setFieldErrors(next);
                     return;
                   }
 
-                  setSubmitted(true);
-                  setValues({
-                    first_name: "",
-                    last_name: "",
-                    email: "",
-                    revenue: "",
-                    message: "",
-                    company: "",
-                  });
-                } catch {
-                  setError("Network error. Please try again.");
-                } finally {
-                  setSubmitting(false);
-                }
-              }}
-            >
-              <div className="form-header">
-                {label ? <div className="label-tag">{label}</div> : null}
-                <h2>{content.application.heading}</h2>
-                <p>{content.application.subcopy}</p>
-              </div>
+                  setSubmitting(true);
+                  try {
+                    const res = await fetch("/api/leads", {
+                      method: "POST",
+                      headers: { "content-type": "application/json" },
+                      body: JSON.stringify(parsed.data),
+                    });
 
-              {error ? (
-                <div className="form-alert" role="alert">
-                  {error}
-                </div>
-              ) : null}
+                    const json = (await res.json()) as { ok: boolean; message?: string };
+                    if (!res.ok || !json.ok) {
+                      setError(json.message || "Something went wrong. Please try again.");
+                      return;
+                    }
 
-              <fieldset className="form-section" aria-label="Your details">
-                <legend className="form-section-title">Your details</legend>
-                <div className="form-row">
-                  <div className="form-group">
-                    <label>{content.application.fields.firstNameLabel}</label>
-                    <input
-                      value={values.first_name}
-                      onChange={(e) => setValues((v) => ({ ...v, first_name: e.target.value }))}
-                      autoComplete="given-name"
-                      placeholder={content.application.fields.firstNamePlaceholder || ""}
-                      aria-invalid={Boolean(fieldErrors.first_name)}
-                      aria-describedby={fieldErrors.first_name ? "cf-first-name-error" : undefined}
-                    />
-                    {fieldErrors.first_name ? (
-                      <div className="form-note form-error" id="cf-first-name-error">
-                        {fieldErrors.first_name}
-                      </div>
-                    ) : null}
-                  </div>
-
-                  <div className="form-group">
-                    <label>{content.application.fields.lastNameLabel}</label>
-                    <input
-                      value={values.last_name}
-                      onChange={(e) => setValues((v) => ({ ...v, last_name: e.target.value }))}
-                      autoComplete="family-name"
-                      placeholder={content.application.fields.lastNamePlaceholder || ""}
-                      aria-invalid={Boolean(fieldErrors.last_name)}
-                      aria-describedby={fieldErrors.last_name ? "cf-last-name-error" : undefined}
-                    />
-                    {fieldErrors.last_name ? (
-                      <div className="form-note form-error" id="cf-last-name-error">
-                        {fieldErrors.last_name}
-                      </div>
-                    ) : null}
-                  </div>
+                    setSubmitted(true);
+                    setValues({
+                      first_name: "",
+                      last_name: "",
+                      email: "",
+                      revenue: "",
+                      message: "",
+                      company: "",
+                    });
+                  } catch {
+                    setError("Network error. Please try again.");
+                  } finally {
+                    setSubmitting(false);
+                  }
+                }}
+              >
+                <div className="form-card-header">
+                  <span>Private application</span>
+                  <p>Tell us where the pipeline is stuck. The team will use this to decide fit before the next step.</p>
                 </div>
 
-                <div className="form-group">
-                  <label>{content.application.fields.emailLabel}</label>
-                  <input
-                    type="email"
-                    inputMode="email"
-                    value={values.email}
-                    onChange={(e) => setValues((v) => ({ ...v, email: e.target.value }))}
-                    placeholder={content.application.fields.emailPlaceholder || ""}
-                    autoComplete="email"
-                    aria-invalid={Boolean(fieldErrors.email)}
-                    aria-describedby={fieldErrors.email ? "cf-email-error" : undefined}
-                  />
-                  {fieldErrors.email ? (
-                    <div className="form-note form-error" id="cf-email-error">
-                      {fieldErrors.email}
+                {error ? (
+                  <div className="form-alert" role="alert">
+                    {error}
+                  </div>
+                ) : null}
+
+                <fieldset className="form-section" aria-label="Your details">
+                  <legend className="form-section-title">Your details</legend>
+                  <div className="form-row">
+                    <div className="form-group">
+                      <label htmlFor="cf-first-name">{content.application.fields.firstNameLabel}</label>
+                      <input
+                        id="cf-first-name"
+                        value={values.first_name}
+                        onChange={(e) => setValues((v) => ({ ...v, first_name: e.target.value }))}
+                        autoComplete="given-name"
+                        placeholder={content.application.fields.firstNamePlaceholder || ""}
+                        aria-invalid={Boolean(fieldErrors.first_name)}
+                        aria-describedby={fieldErrors.first_name ? "cf-first-name-error" : undefined}
+                      />
+                      {fieldErrors.first_name ? (
+                        <div className="form-note form-error" id="cf-first-name-error">
+                          {fieldErrors.first_name}
+                        </div>
+                      ) : null}
                     </div>
-                  ) : null}
-                </div>
-              </fieldset>
 
-              <fieldset className="form-section" aria-label="Your business">
-                <legend className="form-section-title">Your business</legend>
-                <div className="form-group">
-                  <label>{content.application.fields.revenueLabel}</label>
-                  <select
-                    value={values.revenue || ""}
-                    onChange={(e) => setValues((v) => ({ ...v, revenue: e.target.value }))}
-                    aria-invalid={Boolean(fieldErrors.revenue)}
-                    aria-describedby={fieldErrors.revenue ? "cf-revenue-error" : undefined}
-                  >
-                    <option value="" disabled>
-                      {content.application.fields.revenuePlaceholder || "Select..."}
-                    </option>
-                    {content.application.fields.revenueOptions.map((o) => (
-                      <option key={o.value} value={o.value}>
-                        {o.label}
+                    <div className="form-group">
+                      <label htmlFor="cf-last-name">{content.application.fields.lastNameLabel}</label>
+                      <input
+                        id="cf-last-name"
+                        value={values.last_name}
+                        onChange={(e) => setValues((v) => ({ ...v, last_name: e.target.value }))}
+                        autoComplete="family-name"
+                        placeholder={content.application.fields.lastNamePlaceholder || ""}
+                        aria-invalid={Boolean(fieldErrors.last_name)}
+                        aria-describedby={fieldErrors.last_name ? "cf-last-name-error" : undefined}
+                      />
+                      {fieldErrors.last_name ? (
+                        <div className="form-note form-error" id="cf-last-name-error">
+                          {fieldErrors.last_name}
+                        </div>
+                      ) : null}
+                    </div>
+                  </div>
+
+                  <div className="form-group">
+                    <label htmlFor="cf-email">{content.application.fields.emailLabel}</label>
+                    <input
+                      id="cf-email"
+                      type="email"
+                      inputMode="email"
+                      value={values.email}
+                      onChange={(e) => setValues((v) => ({ ...v, email: e.target.value }))}
+                      placeholder={content.application.fields.emailPlaceholder || ""}
+                      autoComplete="email"
+                      aria-invalid={Boolean(fieldErrors.email)}
+                      aria-describedby={fieldErrors.email ? "cf-email-error" : undefined}
+                    />
+                    {fieldErrors.email ? (
+                      <div className="form-note form-error" id="cf-email-error">
+                        {fieldErrors.email}
+                      </div>
+                    ) : null}
+                  </div>
+                </fieldset>
+
+                <fieldset className="form-section" aria-label="Your business">
+                  <legend className="form-section-title">Your business</legend>
+                  <div className="form-group">
+                    <label htmlFor="cf-revenue">{content.application.fields.revenueLabel}</label>
+                    <select
+                      id="cf-revenue"
+                      value={values.revenue || ""}
+                      onChange={(e) => setValues((v) => ({ ...v, revenue: e.target.value }))}
+                      aria-invalid={Boolean(fieldErrors.revenue)}
+                      aria-describedby={fieldErrors.revenue ? "cf-revenue-error" : undefined}
+                    >
+                      <option value="" disabled>
+                        {content.application.fields.revenuePlaceholder || "Select..."}
                       </option>
-                    ))}
-                  </select>
-                  {fieldErrors.revenue ? (
-                    <div className="form-note form-error" id="cf-revenue-error">
-                      {fieldErrors.revenue}
-                    </div>
-                  ) : null}
+                      {content.application.fields.revenueOptions.map((o) => (
+                        <option key={o.value} value={o.value}>
+                          {o.label}
+                        </option>
+                      ))}
+                    </select>
+                    {fieldErrors.revenue ? (
+                      <div className="form-note form-error" id="cf-revenue-error">
+                        {fieldErrors.revenue}
+                      </div>
+                    ) : null}
+                  </div>
+
+                  <div className="form-group">
+                    <label htmlFor="cf-message">{content.application.fields.bottleneckLabel}</label>
+                    <textarea
+                      id="cf-message"
+                      value={values.message || ""}
+                      onChange={(e) => setValues((v) => ({ ...v, message: e.target.value }))}
+                      placeholder={content.application.fields.bottleneckPlaceholder}
+                    />
+                  </div>
+                </fieldset>
+
+                <input
+                  tabIndex={-1}
+                  autoComplete="off"
+                  className="hidden"
+                  name="company"
+                  value={values.company || ""}
+                  onChange={(e) => setValues((v) => ({ ...v, company: e.target.value }))}
+                />
+
+                <div className="form-action-row">
+                  <button type="submit" className="btn-primary form-submit" disabled={submitting}>
+                    {submitting ? "Submitting..." : content.application.submitText}
+                    <span className="arrow" aria-hidden="true">
+                      -&gt;
+                    </span>
+                  </button>
+                  <p className="form-note">No public newsletter. No automated sales blast. Just a fit review.</p>
                 </div>
+              </form>
+            </div>
 
-                <div className="form-group">
-                  <label>{content.application.fields.bottleneckLabel}</label>
-                  <textarea
-                    value={values.message || ""}
-                    onChange={(e) => setValues((v) => ({ ...v, message: e.target.value }))}
-                    placeholder={content.application.fields.bottleneckPlaceholder}
-                  />
-                </div>
-              </fieldset>
-
-              <button type="submit" className="btn-primary form-submit" disabled={submitting}>
-                {submitting ? "Submitting..." : content.application.submitText}
-                <span className="arrow">→</span>
-              </button>
-
-              <div className="form-trust" aria-label="What happens next">
-                <div className="form-trust-title">What happens next</div>
-                <p className="form-note">{footnote}</p>
-              </div>
-
-              <input
-                tabIndex={-1}
-                autoComplete="off"
-                className="hidden"
-                name="company"
-                value={values.company || ""}
-                onChange={(e) => setValues((v) => ({ ...v, company: e.target.value }))}
-              />
-
-            </form>
-          </div>
-
-          <div className="form-success" id="form-success" style={{ display: submitted ? "block" : "none" }}>
-            <div className="gold-line" style={{ display: "block", margin: "0 auto 20px" }} />
-            <h3>{content.application.successTitle}</h3>
-            <p>{content.application.successBody}</p>
+            <div className="form-success" id="form-success" style={{ display: submitted ? "block" : "none" }}>
+              <div className="gold-line" style={{ display: "block", margin: "0 auto 20px" }} />
+              <h3>{content.application.successTitle}</h3>
+              <p>{content.application.successBody}</p>
+            </div>
           </div>
         </div>
       </div>
     </section>
   );
 }
-

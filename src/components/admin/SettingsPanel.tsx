@@ -45,7 +45,7 @@ export function SettingsPanel({ supabase }: Props) {
 
   const mergeScale = (base: any, extra: any) => {
     const b = base || (defaultTheme as any)?.typography?.scale;
-    const e = extra || {};
+    const e = isLegacyScale(extra) ? {} : extra || {};
     return {
       mobile: { ...(b?.mobile || {}), ...(e.mobile || {}) },
       tablet: { ...(b?.tablet || {}), ...(e.tablet || {}) },
@@ -53,6 +53,13 @@ export function SettingsPanel({ supabase }: Props) {
       desktopLarge: { ...(b?.desktopLarge || {}), ...(e.desktopLarge || {}) },
     };
   };
+
+  const isLegacyScale = (scale: any) =>
+    scale?.mobile?.h1 === "22px" &&
+    scale?.tablet?.h1 === "28px" &&
+    scale?.laptop?.h1 === "36px" &&
+    scale?.desktopLarge?.h1 === "42px" &&
+    scale?.desktopLarge?.body === "18px";
 
   const mergeTheme = (base: any, extra: any) => {
     const b = base || defaultTheme;

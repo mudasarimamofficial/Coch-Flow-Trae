@@ -3,47 +3,47 @@
 :root {
   color-scheme: light;
 
-  --font-size-h1: 22px;
-  --font-size-h2: 20px;
-  --font-size-h3: 18px;
+  --font-size-h1: 38px;
+  --font-size-h2: 29px;
+  --font-size-h3: 20px;
   --font-size-h4: 16px;
   --font-size-h5: 15px;
   --font-size-h6: 14px;
   --font-size-body: 16px;
-  --font-size-small: 14px;
+  --font-size-small: 12px;
 }
 
 @media (min-width: 768px) {
   :root {
-    --font-size-h1: 28px;
-    --font-size-h2: 24px;
-    --font-size-h3: 22px;
-    --font-size-h4: 20px;
-    --font-size-h5: 18px;
-    --font-size-h6: 16px;
+    --font-size-h1: 44px;
+    --font-size-h2: 34px;
+    --font-size-h3: 20px;
+    --font-size-h4: 18px;
+    --font-size-h5: 16px;
+    --font-size-h6: 14px;
   }
 }
 
 @media (min-width: 1024px) {
   :root {
-    --font-size-h1: 36px;
-    --font-size-h2: 30px;
-    --font-size-h3: 26px;
-    --font-size-h4: 22px;
-    --font-size-h5: 20px;
-    --font-size-h6: 18px;
+    --font-size-h1: 54px;
+    --font-size-h2: 40px;
+    --font-size-h3: 20px;
+    --font-size-h4: 18px;
+    --font-size-h5: 16px;
+    --font-size-h6: 14px;
   }
 }
 
 @media (min-width: 1440px) {
   :root {
-    --font-size-h1: 42px;
-    --font-size-h2: 36px;
-    --font-size-h3: 30px;
-    --font-size-h4: 26px;
-    --font-size-h5: 22px;
-    --font-size-h6: 18px;
-    --font-size-body: 18px;
+    --font-size-h1: 61px;
+    --font-size-h2: 42px;
+    --font-size-h3: 20px;
+    --font-size-h4: 18px;
+    --font-size-h5: 16px;
+    --font-size-h6: 14px;
+    --font-size-body: 16px;
   }
 }
 
@@ -3448,4 +3448,463 @@ small {
 .cf-landing .proof-dot.is-active {
   background: rgba(201, 152, 42, 0.7);
   border-color: rgba(201, 152, 42, 0.9);
+}
+
+/* Canonical coachflow-landing.html design-system correction layer. */
+.cf-landing {
+  --navy: var(--cf-navy, #0a0f1e);
+  --navy2: var(--cf-navy2, #0f1629);
+  --navy3: var(--cf-navy3, #141d35);
+  --navy4: var(--cf-navy4, #1a2444);
+  --white: var(--cf-white, #ffffff);
+  --muted: var(--cf-muted, #8a8f9e);
+  --off: var(--cf-off, #f0ede6);
+  --gold: var(--cf-gold, #c9982a);
+  --gold2: var(--cf-gold2, #e8b84b);
+  --gold3: var(--cf-gold3, #f5cc6e);
+  --border: var(--cf-border-gold, rgba(201, 152, 42, 0.18));
+  --border2: var(--cf-border2, rgba(255, 255, 255, 0.07));
+  font-family: var(--cf-font-body, var(--font-body)), sans-serif;
+  background: var(--navy);
+  color: var(--white);
+  line-height: 1.7;
+}
+
+.cf-landing h1,
+.cf-landing h2,
+.cf-landing h3,
+.cf-landing h4,
+.cf-landing .nav-logo,
+.cf-landing .footer-logo,
+.cf-landing .section-intro h2,
+.cf-landing .feature-card h3,
+.cf-landing .step-body h3,
+.cf-landing .timeline-card h3,
+.cf-landing .pricing-card h3,
+.cf-landing .audit-text h3,
+.cf-landing .form-intro-panel h2,
+.cf-landing .form-success h3,
+.cf-landing .proof-copy h2 {
+  font-family: var(--cf-font-heading, var(--font-heading)), Georgia, serif;
+  font-weight: 500;
+}
+
+.cf-landing p,
+.cf-landing li,
+.cf-landing a,
+.cf-landing button,
+.cf-landing label,
+.cf-landing input,
+.cf-landing select,
+.cf-landing textarea,
+.cf-landing .label-tag,
+.cf-landing .form-section-title,
+.cf-landing .form-card-header,
+.cf-landing .form-reassurance,
+.cf-landing .tier-name,
+.cf-landing .tier-desc,
+.cf-landing .pricing-note,
+.cf-landing .footer-links a {
+  font-family: var(--cf-font-body, var(--font-body)), sans-serif;
+}
+
+.cf-landing .container {
+  max-width: 1100px;
+}
+
+.cf-landing .label-tag {
+  border-color: var(--border);
+  background: rgba(201, 152, 42, 0.06);
+  color: var(--gold2);
+  font-size: var(--font-size-small);
+  font-weight: 500;
+  letter-spacing: 0.1em;
+}
+
+.cf-landing .btn-primary {
+  border-radius: 6px;
+  background: var(--gold);
+  color: var(--navy);
+  font-weight: 500;
+  box-shadow: none;
+}
+
+.cf-landing .btn-primary:hover {
+  background: var(--gold2);
+  box-shadow: none;
+}
+
+.cf-landing .btn-ghost {
+  border-radius: 6px;
+  border-color: rgba(255, 255, 255, 0.2);
+  color: var(--off);
+  font-weight: 400;
+}
+
+.cf-landing nav,
+.cf-landing nav.is-scrolled,
+.cf-landing .site-header:has(+ .nav-sheet.is-open) nav,
+.cf-landing nav:hover {
+  background: rgba(10, 15, 30, 0.92);
+  border-bottom-color: var(--border2);
+}
+
+.cf-landing .nav-links a,
+.cf-landing .footer-links a,
+.cf-landing .hero-sub,
+.cf-landing .section-intro p,
+.cf-landing .feature-card p,
+.cf-landing .step-body p,
+.cf-landing .timeline-card p,
+.cf-landing .audit-text p,
+.cf-landing .proof-copy p,
+.cf-landing .pricing-note,
+.cf-landing .form-note {
+  color: var(--muted);
+}
+
+.cf-landing .nav-logo,
+.cf-landing .footer-logo {
+  font-size: 18px;
+  font-weight: 500;
+}
+
+.cf-landing .section-intro h2,
+.cf-landing .proof-copy h2,
+.cf-landing .form-intro-panel h2 {
+  color: var(--white);
+  font-size: var(--font-size-h2);
+  line-height: 1.2;
+}
+
+.cf-landing .feature-card h3,
+.cf-landing .step-body h3,
+.cf-landing .timeline-card h3 {
+  color: var(--white);
+  font-size: var(--font-size-h3);
+  line-height: 1.2;
+}
+
+.cf-landing .feature-card,
+.cf-landing .pricing-card,
+.cf-landing .proof-card,
+.cf-landing .proof-stat {
+  border-color: var(--border2);
+  background: var(--navy3);
+}
+
+.cf-landing .pricing-card.featured {
+  border-color: var(--gold);
+  background: var(--navy4);
+  box-shadow: 0 30px 60px -24px rgba(201, 152, 42, 0.32);
+}
+
+.cf-landing .audit-text h3 {
+  color: var(--white);
+  font-size: var(--font-size-h2);
+  line-height: 1.2;
+}
+
+.cf-landing #lead-form {
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(ellipse 52% 42% at 20% 0%, rgba(201, 152, 42, 0.1), transparent 70%),
+    linear-gradient(180deg, var(--navy) 0%, var(--navy2) 100%);
+}
+
+.cf-landing #lead-form::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.018) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.018) 1px, transparent 1px);
+  background-size: 56px 56px;
+  mask-image: radial-gradient(circle at 50% 30%, black, transparent 76%);
+}
+
+.cf-landing .form-wrap {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 0.88fr) minmax(0, 1.12fr);
+  gap: 0;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0;
+  overflow: hidden;
+  border: 0.5px solid var(--border);
+  border-radius: 22px;
+  background: linear-gradient(145deg, rgba(15, 22, 41, 0.96), rgba(20, 29, 53, 0.94));
+  box-shadow: 0 34px 90px rgba(0, 0, 0, 0.36);
+}
+
+.cf-landing .form-intro-panel {
+  position: relative;
+  min-height: 100%;
+  padding: 56px;
+  background:
+    radial-gradient(circle at 20% 10%, rgba(201, 152, 42, 0.12), transparent 34%),
+    linear-gradient(180deg, rgba(10, 15, 30, 0.72), rgba(10, 15, 30, 0.95));
+  border-right: 0.5px solid var(--border2);
+}
+
+.cf-landing .form-intro-panel .gold-line {
+  display: block;
+  margin-bottom: 18px;
+}
+
+.cf-landing .form-intro-panel h2 {
+  margin: 0 0 18px;
+  max-width: 420px;
+}
+
+.cf-landing .form-intro-panel > p {
+  max-width: 430px;
+  margin: 0;
+  color: rgba(240, 237, 230, 0.78);
+  font-size: var(--font-size-body);
+  line-height: 1.75;
+}
+
+.cf-landing .form-intro-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 42px;
+}
+
+.cf-landing .form-intro-grid > div {
+  padding: 18px;
+  border: 0.5px solid var(--border2);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.cf-landing .form-intro-grid strong {
+  display: block;
+  color: var(--gold2);
+  font-family: var(--cf-font-heading, var(--font-heading)), Georgia, serif;
+  font-size: 26px;
+  font-weight: 500;
+  line-height: 1.1;
+}
+
+.cf-landing .form-intro-grid span {
+  display: block;
+  margin-top: 8px;
+  color: var(--muted);
+  font-size: var(--font-size-small);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.cf-landing .form-reassurance {
+  margin-top: 34px;
+  padding: 20px;
+  border: 0.5px solid var(--border);
+  border-radius: 16px;
+  background: rgba(201, 152, 42, 0.055);
+}
+
+.cf-landing .form-reassurance-title {
+  margin-bottom: 8px;
+  color: var(--gold2);
+  font-size: var(--font-size-small);
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.cf-landing .form-reassurance p {
+  margin: 0;
+  color: rgba(240, 237, 230, 0.78);
+  font-size: var(--font-size-small);
+  line-height: 1.7;
+}
+
+.cf-landing .form-card {
+  padding: 54px 48px;
+  background: rgba(15, 22, 41, 0.82);
+}
+
+.cf-landing .form-card-header {
+  margin-bottom: 30px;
+}
+
+.cf-landing .form-card-header span {
+  display: block;
+  color: var(--gold2);
+  font-size: var(--font-size-small);
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.cf-landing .form-card-header p {
+  max-width: 520px;
+  margin: 10px 0 0;
+  color: var(--muted);
+  font-size: var(--font-size-small);
+  line-height: 1.7;
+}
+
+.cf-landing .form-card form {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.cf-landing .form-section {
+  display: grid;
+  gap: 18px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.cf-landing .form-section-title {
+  margin-bottom: 2px;
+  color: var(--off);
+  font-size: var(--font-size-small);
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.cf-landing .form-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.cf-landing .form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.cf-landing .form-group + .form-group,
+.cf-landing .form-row + .form-group {
+  margin-top: 0;
+}
+
+.cf-landing .form-group label {
+  margin-left: 2px;
+  color: var(--muted);
+  font-size: var(--font-size-small);
+  font-weight: 500;
+}
+
+.cf-landing .form-group input,
+.cf-landing .form-group select,
+.cf-landing .form-group textarea {
+  width: 100%;
+  min-height: 54px;
+  padding: 15px 17px;
+  border: 0.5px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  background: rgba(10, 15, 30, 0.82);
+  color: var(--white);
+  font-size: 14px;
+  line-height: 1.4;
+  outline: none;
+}
+
+.cf-landing .form-group textarea {
+  min-height: 122px;
+  resize: vertical;
+}
+
+.cf-landing .form-group input:focus,
+.cf-landing .form-group select:focus,
+.cf-landing .form-group textarea:focus {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 3px rgba(201, 152, 42, 0.14);
+}
+
+.cf-landing .form-action-row {
+  display: grid;
+  gap: 14px;
+  padding-top: 4px;
+}
+
+.cf-landing .form-submit {
+  justify-content: center;
+  width: 100%;
+  min-height: 56px;
+}
+
+.cf-landing .form-alert {
+  border: 0.5px solid rgba(248, 113, 113, 0.35);
+  border-radius: 12px;
+  background: rgba(248, 113, 113, 0.08);
+  color: #fecaca;
+  padding: 12px 14px;
+  font-size: var(--font-size-small);
+}
+
+.cf-landing .form-success {
+  min-height: 440px;
+  display: grid;
+  place-items: center;
+  text-align: center;
+}
+
+@media (max-width: 900px) {
+  .cf-landing .form-wrap {
+    grid-template-columns: 1fr;
+  }
+
+  .cf-landing .form-intro-panel {
+    padding: 36px 28px;
+    border-right: 0;
+    border-bottom: 0.5px solid var(--border2);
+  }
+
+  .cf-landing .form-card {
+    padding: 34px 28px;
+  }
+}
+
+@media (max-width: 640px) {
+  .cf-landing section {
+    padding: 78px 0;
+  }
+
+  .cf-landing .form-wrap {
+    border-radius: 18px;
+  }
+
+  .cf-landing .form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .cf-landing .form-intro-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .cf-landing .form-intro-grid > div {
+    padding: 14px 12px;
+  }
+
+  .cf-landing .form-intro-grid strong {
+    font-size: 22px;
+  }
+
+  .cf-landing .form-intro-grid span {
+    font-size: 10px;
+  }
+
+  .cf-landing .form-intro-panel,
+  .cf-landing .form-card {
+    padding: 28px 22px;
+  }
+
+  .cf-landing .form-card form {
+    gap: 22px;
+  }
 }
