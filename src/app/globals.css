@@ -96,9 +96,12 @@ body {
   --cf-accent-ink: #342800;
   --cf-border: rgba(255, 255, 255, 0.08);
   --cf-secondary: var(--cf-surface-container);
+  --cf-admin-font-body: var(--font-size-body);
+  --cf-admin-font-control: max(14px, var(--font-size-small));
+  --cf-admin-font-small: max(12px, calc(var(--font-size-small) * 0.92));
   font-family: var(--font-admin), var(--cf-font-body, var(--font-body)), system-ui, -apple-system, Segoe UI, Roboto,
     Helvetica, Arial, sans-serif;
-  font-size: var(--font-size-body);
+  font-size: var(--cf-admin-font-body);
   line-height: 1.5;
 }
 
@@ -119,6 +122,24 @@ h6 {
 .cf-admin h6 {
   font-family: var(--font-admin), var(--cf-font-body, var(--font-body)), system-ui, -apple-system, Segoe UI, Roboto,
     Helvetica, Arial, sans-serif;
+}
+
+.cf-admin h1 {
+  font-size: var(--font-size-h2);
+}
+
+.cf-admin h2 {
+  font-size: var(--font-size-h3);
+}
+
+.cf-admin h3 {
+  font-size: var(--font-size-h4);
+}
+
+.cf-admin input,
+.cf-admin select,
+.cf-admin textarea {
+  font-size: var(--cf-admin-font-control);
 }
 
 h1 {
@@ -1514,15 +1535,15 @@ small {
   margin: 0;
   color: var(--white);
   font-family: var(--cf-font-heading, var(--font-heading)), Georgia, serif;
-  font-size: clamp(34px, 5vw, 58px);
+  font-size: var(--font-size-h1);
   font-weight: 600;
-  line-height: 1.05;
+  line-height: 1.1;
 }
 
 .cf-landing .cf-rich-text-body {
   margin-top: 28px;
   color: rgba(255, 255, 255, 0.76);
-  font-size: 16px;
+  font-size: var(--font-size-body);
   line-height: 1.8;
 }
 
@@ -1539,11 +1560,11 @@ small {
 }
 
 .cf-landing .cf-rich-text-body h2 {
-  font-size: 28px;
+  font-size: var(--font-size-h2);
 }
 
 .cf-landing .cf-rich-text-body h3 {
-  font-size: 22px;
+  font-size: var(--font-size-h3);
 }
 
 .cf-landing .cf-rich-text-body a {
@@ -1577,7 +1598,7 @@ small {
   }
 
   .cf-landing .cf-rich-text-body {
-    font-size: 15px;
+    font-size: var(--font-size-body);
     line-height: 1.75;
   }
 }
@@ -1716,7 +1737,7 @@ small {
   padding: 0;
   border: 0;
   color: #fff;
-  font-size: 32px;
+  font-size: max(var(--font-size-h2), 28px);
   font-weight: 800;
   letter-spacing: 0;
 }
@@ -1730,7 +1751,7 @@ small {
   margin-top: 32px;
   padding: 16px 22px;
   border-radius: 4px;
-  font-size: 20px;
+  font-size: max(var(--font-size-h4), 18px);
 }
 
 .cf-landing .hero-section {
@@ -1981,7 +2002,7 @@ small {
 
 .cf-landing .hero-metric-title {
   color: #64748b;
-  font-size: 12px;
+  font-size: max(12px, calc(var(--font-size-small) * 0.86));
   font-weight: 800;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -1990,7 +2011,7 @@ small {
 .cf-landing .hero-metric-value {
   margin-top: 2px;
   color: #fff;
-  font-size: 28px;
+  font-size: var(--font-size-h2);
   font-weight: 800;
 }
 
@@ -2045,7 +2066,7 @@ small {
 
 .cf-landing .hero-revenue-copy div {
   color: #fff;
-  font-size: 40px;
+  font-size: var(--font-size-h1);
   font-weight: 800;
 }
 
@@ -2089,7 +2110,7 @@ small {
 .cf-landing .section-intro h2 {
   color: var(--white);
   font-family: var(--cf-font-heading, var(--font-heading)), Georgia, serif;
-  font-size: 48px;
+  font-size: var(--font-size-h2);
   font-weight: 600;
   line-height: 1.08;
 }
@@ -2098,7 +2119,7 @@ small {
   max-width: 680px;
   margin: 24px auto 0;
   color: var(--muted);
-  font-size: 18px;
+  font-size: var(--font-size-body);
   line-height: 1.7;
 }
 
@@ -2150,13 +2171,13 @@ small {
   margin-bottom: 20px;
   color: var(--white);
   font-family: var(--cf-font-heading, var(--font-heading)), Georgia, serif;
-  font-size: 24px;
+  font-size: var(--font-size-h4);
   font-weight: 600;
 }
 
 .cf-landing .feature-card p {
   color: var(--muted);
-  font-size: 16px;
+  font-size: var(--font-size-body);
   font-weight: 300;
   line-height: 1.75;
 }
@@ -2222,7 +2243,7 @@ small {
   margin-bottom: 16px;
   color: var(--white);
   font-family: var(--cf-font-heading, var(--font-heading)), Georgia, serif;
-  font-size: 28px;
+  font-size: var(--font-size-h3);
   font-weight: 600;
   line-height: 1.15;
   transition: color 0.22s var(--ease-premium);
@@ -2234,7 +2255,7 @@ small {
 
 .cf-landing .timeline-card p {
   color: var(--muted);
-  font-size: 18px;
+  font-size: var(--font-size-body);
   font-weight: 300;
   line-height: 1.75;
 }
@@ -2253,7 +2274,7 @@ small {
   background: var(--navy2);
   color: var(--gold);
   font-family: var(--cf-font-heading, var(--font-heading)), Georgia, serif;
-  font-size: 24px;
+  font-size: var(--font-size-h4);
   font-style: italic;
   box-shadow: 0 0 30px rgba(201, 152, 42, 0.2);
 }
@@ -2305,7 +2326,7 @@ small {
   margin-bottom: 12px;
   color: var(--white);
   font-family: var(--cf-font-heading, var(--font-heading)), Georgia, serif;
-  font-size: 24px;
+  font-size: var(--font-size-h4);
   font-weight: 600;
   letter-spacing: 0;
   text-transform: none;
@@ -2315,7 +2336,7 @@ small {
   min-height: 48px;
   margin-bottom: 40px;
   color: var(--muted);
-  font-size: 14px;
+  font-size: var(--font-size-small);
   line-height: 1.7;
 }
 
@@ -2323,13 +2344,13 @@ small {
   margin-bottom: 24px;
   color: var(--white);
   font-family: var(--cf-font-body, var(--font-body)), system-ui, sans-serif;
-  font-size: 48px;
+  font-size: calc(var(--font-size-h1) + 6px);
   font-weight: 600;
 }
 
 .cf-landing .tier-price span {
   color: var(--muted);
-  font-size: 16px;
+  font-size: var(--font-size-body);
   font-family: inherit;
   font-weight: 600;
 }
@@ -2364,7 +2385,7 @@ small {
   padding: 0;
   border: 0;
   color: #cbd5e1;
-  font-size: 14px;
+  font-size: var(--font-size-small);
 }
 
 .cf-landing .tier-features li + li {
@@ -2387,7 +2408,7 @@ small {
   border-radius: 12px;
   background: rgba(255, 255, 255, 0.05);
   color: #fff;
-  font-size: 18px;
+  font-size: var(--font-size-body);
   font-weight: 800;
   text-decoration: none;
   transition: background 0.22s var(--ease-premium), transform 0.22s var(--ease-premium);
@@ -2400,7 +2421,7 @@ small {
 
 .cf-landing .pricing-note {
   color: #64748b;
-  font-size: 12px;
+  font-size: var(--font-size-small);
   font-weight: 800;
   letter-spacing: 0.25em;
   text-transform: uppercase;
@@ -2438,7 +2459,7 @@ small {
   margin-bottom: 24px;
   color: #fff;
   font-family: var(--cf-font-heading, var(--font-heading)), Georgia, serif;
-  font-size: 48px;
+  font-size: var(--font-size-h2);
   font-weight: 800;
   line-height: 1.1;
 }
@@ -2446,7 +2467,7 @@ small {
 .cf-landing .audit-text p {
   max-width: 680px;
   color: var(--muted);
-  font-size: 18px;
+  font-size: var(--font-size-body);
   line-height: 1.7;
 }
 
@@ -2566,12 +2587,12 @@ small {
   min-height: 64px;
   margin-top: 40px;
   padding: 18px 24px;
-  font-size: 20px;
+  font-size: var(--font-size-h4);
 }
 
 .cf-landing .form-note {
   color: #64748b;
-  font-size: 11px;
+  font-size: max(11px, calc(var(--font-size-small) * 0.86));
   font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -2600,7 +2621,7 @@ small {
 .cf-landing .footer-logo {
   justify-self: start;
   gap: 8px;
-  font-size: 18px;
+  font-size: var(--font-size-h5);
 }
 
 .cf-landing .footer-links {
@@ -2610,13 +2631,13 @@ small {
 
 .cf-landing .footer-links a {
   color: #94a3b8;
-  font-size: 14px;
+  font-size: var(--font-size-small);
 }
 
 .cf-landing .footer-copy {
   justify-self: end;
   color: #475569;
-  font-size: 12px;
+  font-size: max(12px, calc(var(--font-size-small) * 0.86));
 }
 
 [data-reveal] {
@@ -2781,11 +2802,11 @@ small {
   }
 
   .cf-landing .hero-h1 {
-    font-size: 44px;
+    font-size: var(--font-size-h1);
   }
 
   .cf-landing .hero-sub {
-    font-size: 18px;
+    font-size: var(--font-size-body);
   }
 
   .cf-landing .hero-ctas {
@@ -2799,7 +2820,7 @@ small {
     justify-content: center;
     min-height: 58px;
     padding: 16px 24px;
-    font-size: 16px;
+    font-size: var(--font-size-body);
   }
 
   .cf-landing .hero-proof {
@@ -2809,8 +2830,8 @@ small {
   .cf-landing .section-intro h2,
   .cf-landing .audit-text h3,
   .cf-landing .form-header h2,
-  .cf-landing .proof-copy h2{
-    font-size: 34px;
+  .cf-landing .proof-copy h2 {
+    font-size: var(--font-size-h2);
   }
 
   .cf-landing .feature-card,
@@ -2820,11 +2841,11 @@ small {
   }
 
   .cf-landing .timeline-card h3 {
-    font-size: 24px;
+    font-size: var(--font-size-h3);
   }
 
   .cf-landing .timeline-card p {
-    font-size: 16px;
+    font-size: var(--font-size-body);
   }
 
   .cf-landing .audit-inner {
@@ -3234,9 +3255,9 @@ small {
 .cf-landing .proof-copy h2 {
   margin: 0;
   color: var(--text-white);
-  font-size: 48px;
+  font-size: var(--font-size-h2);
   font-weight: 900;
-  letter-spacing: -0.06em;
+  letter-spacing: 0;
   line-height: 0.95;
 }
 
@@ -3244,7 +3265,7 @@ small {
   max-width: 620px;
   margin: 20px auto 0;
   color: var(--text-muted);
-  font-size: 17px;
+  font-size: var(--font-size-body);
   line-height: 1.75;
 }
 
@@ -3266,16 +3287,16 @@ small {
 .cf-landing .proof-stat strong {
   display: block;
   color: var(--gold);
-  font-size: 34px;
+  font-size: var(--font-size-h2);
   font-weight: 900;
-  letter-spacing: -0.04em;
+  letter-spacing: 0;
 }
 
 .cf-landing .proof-stat span {
   display: block;
   margin-top: 4px;
   color: var(--text-muted);
-  font-size: 12px;
+  font-size: var(--font-size-small);
   font-weight: 800;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -3434,14 +3455,14 @@ small {
 
 .cf-landing .proof-name {
   color: var(--text-white);
-  font-size: 15px;
+  font-size: var(--font-size-h5);
   font-weight: 900;
 }
 
 .cf-landing .proof-role {
   margin-top: 3px;
   color: var(--text-dim);
-  font-size: 12px;
+  font-size: var(--font-size-small);
   font-weight: 700;
   letter-spacing: 0.03em;
   text-transform: uppercase;
@@ -3450,9 +3471,9 @@ small {
 .cf-landing .proof-quote {
   margin: 34px 0 0;
   color: rgba(255, 255, 255, 0.88);
-  font-size: 19px;
+  font-size: var(--font-size-h4);
   font-weight: 700;
-  letter-spacing: -0.03em;
+  letter-spacing: 0;
   line-height: 1.5;
 }
 
@@ -3463,7 +3484,7 @@ small {
   justify-content: space-between;
   gap: 16px;
   color: var(--gold);
-  font-size: 12px;
+  font-size: var(--font-size-small);
   font-weight: 900;
   letter-spacing: 0.08em;
   text-transform: uppercase;

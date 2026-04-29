@@ -6,6 +6,7 @@ import { Select } from "@/components/ui/Select";
 import { homepageDefaults, type HomepageContent } from "@/content/homepage";
 import { validateSenderEmailBasic } from "@/utils/resendSender";
 import { requestAdminRevalidate } from "@/utils/adminRevalidate";
+import { mergeTypographyScale, TYPOGRAPHY_TIERS, TYPOGRAPHY_TOKENS } from "@/utils/typographyScale";
 
 type Props = {
   supabase: SupabaseClient;
@@ -30,14 +31,7 @@ const defaultTheme =
   } as NonNullable<HomepageContent["site"]["theme"]>);
 
 const mergeScale = (base: any, extra: any) => {
-  const b = base || (defaultTheme as any)?.typography?.scale;
-  const e = extra || {};
-  return {
-    mobile: { ...(b?.mobile || {}), ...(e.mobile || {}) },
-    tablet: { ...(b?.tablet || {}), ...(e.tablet || {}) },
-    laptop: { ...(b?.laptop || {}), ...(e.laptop || {}) },
-    desktopLarge: { ...(b?.desktopLarge || {}), ...(e.desktopLarge || {}) },
-  };
+  return mergeTypographyScale(extra, mergeTypographyScale(base || (defaultTheme as any)?.typography?.scale));
 };
 
 const mergeTheme = (base: any, extra: any) => {
@@ -392,20 +386,13 @@ export function SettingsPanel({ supabase }: Props) {
           </div>
 
           <div className="mt-2 text-sm font-bold">Typography Scale</div>
-          {(
-            [
-              { key: "mobile", label: "Mobile" },
-              { key: "tablet", label: "Tablet" },
-              { key: "laptop", label: "Laptop" },
-              { key: "desktopLarge", label: "Large Desktop" },
-            ] as const
-          ).map((tier) => {
-            const scale = (theme as any)?.typography?.scale || (defaultTheme as any)?.typography?.scale;
-            const tierScale = (scale as any)?.[tier.key] || {};
+          {TYPOGRAPHY_TIERS.map((tier) => {
+            const scale = mergeTypographyScale((theme as any)?.typography?.scale || (defaultTheme as any)?.typography?.scale);
+            const tierScale = scale[tier.key];
             const setTierValue = (token: string, value: string) => {
               setTheme((t) => {
                 const next = mergeTheme(defaultTheme, t);
-                const nextScale = (next as any).typography.scale;
+                const nextScale = mergeTypographyScale((next as any).typography.scale);
                 return {
                   ...next,
                   typography: {
@@ -424,16 +411,20 @@ export function SettingsPanel({ supabase }: Props) {
 
             return (
               <div key={tier.key} className="rounded-2xl border border-white/10 bg-white/5 p-4">
-                <div className="text-sm font-semibold text-white/80">{tier.label}</div>
-                <div className="mt-3 grid grid-cols-1 gap-4 md:grid-cols-2">
-                  <Input label="H1" value={String(tierScale.h1 || "")} onChange={(e) => setTierValue("h1", e.target.value)} placeholder="e.g. 22px" />
-                  <Input label="H2" value={String(tierScale.h2 || "")} onChange={(e) => setTierValue("h2", e.target.value)} placeholder="e.g. 20px" />
-                  <Input label="H3" value={String(tierScale.h3 || "")} onChange={(e) => setTierValue("h3", e.target.value)} placeholder="e.g. 18px" />
-                  <Input label="H4" value={String(tierScale.h4 || "")} onChange={(e) => setTierValue("h4", e.target.value)} placeholder="e.g. 16px" />
-                  <Input label="H5" value={String(tierScale.h5 || "")} onChange={(e) => setTierValue("h5", e.target.value)} placeholder="e.g. 15px" />
-                  <Input label="H6" value={String(tierScale.h6 || "")} onChange={(e) => setTierValue("h6", e.target.value)} placeholder="e.g. 14px" />
-                  <Input label="Body" value={String(tierScale.body || "")} onChange={(e) => setTierValue("body", e.target.value)} placeholder="e.g. 16px" />
-                  <Input label="Small" value={String(tierScale.small || "")} onChange={(e) => setTierValue("small", e.target.value)} placeholder="e.g. 14px" />
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div className="text-sm font-semibold text-white/80">{tier.label}</div>
+                  {tier.minWidth ? <div className="text-xs font-semibold text-white/40">{tier.minWidth}px+</div> : null}
+                </div>
+                <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
+                  {TYPOGRAPHY_TOKENS.map((token) => (
+                    <Input
+                      key={token.key}
+                      label={token.label}
+                      value={String(tierScale[token.key] || "")}
+                      onChange={(e) => setTierValue(token.key, e.target.value)}
+                      placeholder="16px"
+                    />
+                  ))}
                 </div>
               </div>
             );

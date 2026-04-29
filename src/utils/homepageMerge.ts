@@ -1,17 +1,11 @@
 import { homepageDefaults, type HomepageContent } from "@/content/homepage";
 import { mergePageSectionsWithDefaults } from "@/utils/homepageSections";
+import { mergeTypographyScale } from "@/utils/typographyScale";
 
 type Link = { label: string; href: string };
 
 function mergeScale(base: any, extra: any) {
-  const b = base || homepageDefaults.site.theme?.typography?.scale;
-  const e = extra || {};
-  return {
-    mobile: { ...(b?.mobile || {}), ...(e.mobile || {}) },
-    tablet: { ...(b?.tablet || {}), ...(e.tablet || {}) },
-    laptop: { ...(b?.laptop || {}), ...(e.laptop || {}) },
-    desktopLarge: { ...(b?.desktopLarge || {}), ...(e.desktopLarge || {}) },
-  };
+  return mergeTypographyScale(extra, mergeTypographyScale(base));
 }
 
 function mergeTheme(base: any, extra: any) {

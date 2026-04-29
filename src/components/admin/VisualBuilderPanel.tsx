@@ -30,6 +30,7 @@ import { applyBuilderOverrides } from "@/utils/homepageBuilder";
 import { mergePageSectionsWithDefaults } from "@/utils/homepageSections";
 import { neutralizeLegacyProofContent } from "@/utils/homepageMerge";
 import { requestAdminRevalidate } from "@/utils/adminRevalidate";
+import { mergeTypographyScale } from "@/utils/typographyScale";
 import type { Tab } from "@/components/admin/types";
 import {
   Monitor,
@@ -81,14 +82,7 @@ function mergeContent(c: Partial<HomepageContent> | null): HomepageContent {
   if (!c) return homepageDefaults;
 
   const mergeScale = (base: any, extra: any) => {
-    const b = base || homepageDefaults.site.theme?.typography?.scale;
-    const e = extra || {};
-    return {
-      mobile: { ...(b?.mobile || {}), ...(e.mobile || {}) },
-      tablet: { ...(b?.tablet || {}), ...(e.tablet || {}) },
-      laptop: { ...(b?.laptop || {}), ...(e.laptop || {}) },
-      desktopLarge: { ...(b?.desktopLarge || {}), ...(e.desktopLarge || {}) },
-    };
+    return mergeTypographyScale(extra, mergeTypographyScale(base));
   };
 
   const mergeTheme = (base: any, extra: any) => {

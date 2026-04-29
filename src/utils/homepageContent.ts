@@ -3,6 +3,7 @@ import { homepageDefaults, type HomepageContent } from "@/content/homepage";
 import { sanitizeContentStrings } from "@/utils/textSanitize";
 import { mergePageSectionsWithDefaults } from "@/utils/homepageSections";
 import { neutralizeLegacyProofContent } from "@/utils/homepageMerge";
+import { mergeTypographyScale } from "@/utils/typographyScale";
 
 export async function getHomepageContent(): Promise<HomepageContent> {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -82,14 +83,7 @@ export async function getHomepageContent(): Promise<HomepageContent> {
     };
 
     const mergeScale = (base: any, extra: any) => {
-      const b = base || homepageDefaults.site.theme?.typography?.scale;
-      const e = extra || {};
-      return {
-        mobile: { ...(b?.mobile || {}), ...(e.mobile || {}) },
-        tablet: { ...(b?.tablet || {}), ...(e.tablet || {}) },
-        laptop: { ...(b?.laptop || {}), ...(e.laptop || {}) },
-        desktopLarge: { ...(b?.desktopLarge || {}), ...(e.desktopLarge || {}) },
-      };
+      return mergeTypographyScale(extra, mergeTypographyScale(base));
     };
 
     const mergeTheme = (base: any, extra: any) => {

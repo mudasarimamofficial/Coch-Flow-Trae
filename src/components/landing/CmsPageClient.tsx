@@ -8,6 +8,7 @@ import { SectionErrorBoundary } from "@/components/landing/SectionErrorBoundary"
 import { SectionWrapper } from "@/components/landing/SectionWrapper";
 import { SECTION_REGISTRY, type PageSection } from "@/components/landing/sectionRegistry";
 import { Header } from "@/components/landing/Header";
+import { buildThemeCssVars } from "@/utils/themeCss";
 
 export type CmsPageContent = {
   sections: PageSection[];
@@ -43,12 +44,14 @@ export function CmsPageClient({ globalContent, initialPage, isBuilderPreview }: 
   }, [isBuilderPreview]);
 
   const resolved = applyBuilderOverrides(globalContent);
+  const liveThemeCss = isBuilderPreview ? buildThemeCssVars(resolved) : "";
   const sections = page.sections || [];
   const preset = ((resolved.site as any)?.designPreset as string | undefined) || "landing_html_v1";
   const useLanding = preset !== "classic";
 
   return (
     <div className={`${useLanding ? "cf-landing" : ""} flex flex-1 flex-col`}>
+      {isBuilderPreview ? <style id="cf-live-theme-vars" dangerouslySetInnerHTML={{ __html: liveThemeCss }} /> : null}
       <Header content={resolved} />
       <main className="flex-1">
         {sections

@@ -13,6 +13,8 @@ import { SECTION_REGISTRY, type PageSection } from "@/components/landing/section
 import { Header } from "@/components/landing/Header";
 import { mergePageSectionsWithDefaults } from "@/utils/homepageSections";
 import { neutralizeLegacyProofContent } from "@/utils/homepageMerge";
+import { buildThemeCssVars } from "@/utils/themeCss";
+import { mergeTypographyScale } from "@/utils/typographyScale";
 
 type Props = {
   initialContent: HomepageContent;
@@ -92,6 +94,7 @@ export function HomepageClient({ initialContent, isBuilderPreview }: Props) {
   }, [content, isBuilderPreview]);
 
   const resolved = applyBuilderOverrides(sanitizeContentStrings(content));
+  const liveThemeCss = isBuilderPreview ? buildThemeCssVars(resolved) : "";
 
   const sections: PageSection[] = resolved.page?.sections?.length
     ? (resolved.page.sections as PageSection[])
@@ -110,6 +113,7 @@ export function HomepageClient({ initialContent, isBuilderPreview }: Props) {
 
   return (
     <div className={`${useLanding ? "cf-landing" : ""} flex flex-1 flex-col`}>
+      {isBuilderPreview ? <style id="cf-live-theme-vars" dangerouslySetInnerHTML={{ __html: liveThemeCss }} /> : null}
       {sections.find((s) => s.type === "hero")?.enabled !== false ? <Header content={resolved} /> : null}
       <main className="flex-1">
         {sections
@@ -140,14 +144,7 @@ function mergeClientContent(c: Partial<HomepageContent> | null): HomepageContent
   if (!c) return homepageDefaults;
 
   const mergeScale = (base: any, extra: any) => {
-    const b = base || homepageDefaults.site.theme?.typography?.scale;
-    const e = extra || {};
-    return {
-      mobile: { ...(b?.mobile || {}), ...(e.mobile || {}) },
-      tablet: { ...(b?.tablet || {}), ...(e.tablet || {}) },
-      laptop: { ...(b?.laptop || {}), ...(e.laptop || {}) },
-      desktopLarge: { ...(b?.desktopLarge || {}), ...(e.desktopLarge || {}) },
-    };
+    return mergeTypographyScale(extra, mergeTypographyScale(base));
   };
 
   const mergeTheme = (base: any, extra: any) => {

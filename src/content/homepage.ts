@@ -1,3 +1,5 @@
+import { createDefaultTypographyScale, type TypographyScale } from "@/utils/typographyScale";
+
 export type HomepageContent = {
   branding?: {
     enabled?: boolean;
@@ -25,48 +27,7 @@ export type HomepageContent = {
     typography?: {
       headingFont?: string;
       bodyFont?: string;
-      scale?: {
-        mobile: {
-          h1: string;
-          h2: string;
-          h3: string;
-          h4: string;
-          h5: string;
-          h6: string;
-          body: string;
-          small: string;
-        };
-        tablet: {
-          h1: string;
-          h2: string;
-          h3: string;
-          h4: string;
-          h5: string;
-          h6: string;
-          body: string;
-          small: string;
-        };
-        laptop: {
-          h1: string;
-          h2: string;
-          h3: string;
-          h4: string;
-          h5: string;
-          h6: string;
-          body: string;
-          small: string;
-        };
-        desktopLarge: {
-          h1: string;
-          h2: string;
-          h3: string;
-          h4: string;
-          h5: string;
-          h6: string;
-          body: string;
-          small: string;
-        };
-      };
+      scale?: TypographyScale;
     };
   };
   site: {
@@ -98,48 +59,7 @@ export type HomepageContent = {
       typography?: {
         headingFont?: string;
         bodyFont?: string;
-        scale?: {
-          mobile: {
-            h1: string;
-            h2: string;
-            h3: string;
-            h4: string;
-            h5: string;
-            h6: string;
-            body: string;
-            small: string;
-          };
-          tablet: {
-            h1: string;
-            h2: string;
-            h3: string;
-            h4: string;
-            h5: string;
-            h6: string;
-            body: string;
-            small: string;
-          };
-          laptop: {
-            h1: string;
-            h2: string;
-            h3: string;
-            h4: string;
-            h5: string;
-            h6: string;
-            body: string;
-            small: string;
-          };
-          desktopLarge: {
-            h1: string;
-            h2: string;
-            h3: string;
-            h4: string;
-            h5: string;
-            h6: string;
-            body: string;
-            small: string;
-          };
-        };
+        scale?: TypographyScale;
       };
     };
     customCss?: string;
@@ -332,48 +252,7 @@ export const homepageDefaults: HomepageContent = {
     typography: {
       headingFont: "var(--font-heading)",
       bodyFont: "var(--font-body)",
-      scale: {
-        mobile: {
-          h1: "22px",
-          h2: "20px",
-          h3: "18px",
-          h4: "16px",
-          h5: "15px",
-          h6: "14px",
-          body: "16px",
-          small: "14px",
-        },
-        tablet: {
-          h1: "28px",
-          h2: "24px",
-          h3: "22px",
-          h4: "20px",
-          h5: "18px",
-          h6: "16px",
-          body: "16px",
-          small: "14px",
-        },
-        laptop: {
-          h1: "36px",
-          h2: "30px",
-          h3: "26px",
-          h4: "22px",
-          h5: "20px",
-          h6: "18px",
-          body: "16px",
-          small: "14px",
-        },
-        desktopLarge: {
-          h1: "42px",
-          h2: "36px",
-          h3: "30px",
-          h4: "26px",
-          h5: "22px",
-          h6: "18px",
-          body: "18px",
-          small: "14px",
-        },
-      },
+      scale: createDefaultTypographyScale(),
     },
   },
   site: {
@@ -408,48 +287,7 @@ export const homepageDefaults: HomepageContent = {
       typography: {
         headingFont: "var(--font-heading)",
         bodyFont: "var(--font-body)",
-        scale: {
-          mobile: {
-            h1: "22px",
-            h2: "20px",
-            h3: "18px",
-            h4: "16px",
-            h5: "15px",
-            h6: "14px",
-            body: "16px",
-            small: "14px",
-          },
-          tablet: {
-            h1: "28px",
-            h2: "24px",
-            h3: "22px",
-            h4: "20px",
-            h5: "18px",
-            h6: "16px",
-            body: "16px",
-            small: "14px",
-          },
-          laptop: {
-            h1: "36px",
-            h2: "30px",
-            h3: "26px",
-            h4: "22px",
-            h5: "20px",
-            h6: "18px",
-            body: "16px",
-            small: "14px",
-          },
-          desktopLarge: {
-            h1: "42px",
-            h2: "36px",
-            h3: "30px",
-            h4: "26px",
-            h5: "22px",
-            h6: "18px",
-            body: "18px",
-            small: "14px",
-          },
-        },
+        scale: createDefaultTypographyScale(),
       },
     },
     customCss: "",

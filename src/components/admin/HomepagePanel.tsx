@@ -7,6 +7,7 @@ import { Select } from "@/components/ui/Select";
 import { homepageDefaults, type HomepageContent } from "@/content/homepage";
 import { requestAdminRevalidate } from "@/utils/adminRevalidate";
 import { neutralizeLegacyProofContent } from "@/utils/homepageMerge";
+import { mergeTypographyScale } from "@/utils/typographyScale";
 
 type Props = {
   supabase: SupabaseClient;
@@ -26,14 +27,7 @@ function mergeContent(c: Partial<HomepageContent> | null): HomepageContent {
   if (!c) return homepageDefaults;
 
   const mergeScale = (base: any, extra: any) => {
-    const b = base || homepageDefaults.site.theme?.typography?.scale;
-    const e = extra || {};
-    return {
-      mobile: { ...(b?.mobile || {}), ...(e.mobile || {}) },
-      tablet: { ...(b?.tablet || {}), ...(e.tablet || {}) },
-      laptop: { ...(b?.laptop || {}), ...(e.laptop || {}) },
-      desktopLarge: { ...(b?.desktopLarge || {}), ...(e.desktopLarge || {}) },
-    };
+    return mergeTypographyScale(extra, mergeTypographyScale(base));
   };
 
   const mergeTheme = (base: any, extra: any) => {
