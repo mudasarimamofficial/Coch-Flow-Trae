@@ -85,10 +85,143 @@ export function mergeSocialLinksV2(
   return out as HomepageContent["socialLinksV2"];
 }
 
+function neutralPricingNote(value: string) {
+  if (/onboarding\s+\d+\s+new coaches/i.test(value)) {
+    return "Applications are reviewed for fit before onboarding begins.";
+  }
+  return value;
+}
+
+function neutralTierTagline(value: string) {
+  if (/predictable\s+\$?\d+k\+?\s+months/i.test(value)) {
+    return "For coaches ready to scale beyond ad hoc lead flow.";
+  }
+  return value;
+}
+
+function neutralTierOutcome(name: string, value: string) {
+  if (!/expected\s+\d|expected\s+.*booked|expected\s+.*qualified|\d+\+\s+calls/i.test(value)) return value;
+  const key = name.toLowerCase();
+  if (key.includes("starter")) return "Built to establish a consistent qualified-conversation workflow.";
+  if (key.includes("growth")) return "Built to scale multi-channel booked-call delivery with weekly optimization.";
+  if (key.includes("scale")) return "Built for full pipeline visibility and priority optimization.";
+  return "Built around qualified conversations, follow-up discipline, and pipeline visibility.";
+}
+
+function neutralApplicationCopy(value: string, fallback: string) {
+  if (/24\s*h(?:ours?)?|24\s*hours|within\s+24\s+hours|5\s+new\s+coaches/i.test(value)) return fallback;
+  return value;
+}
+
+function neutralAuditCopy(value: string) {
+  if (/60[-\s]?second|answer\s+7\s+questions|show you exactly/i.test(value)) {
+    return "Take the client acquisition fit audit. Answer a few questions and we will show you where your lead generation may be leaking - and which tier fits your current stage.";
+  }
+  return value;
+}
+
+function generatedAvatarUrl(value: unknown) {
+  return typeof value === "string" && /text_to_image|picsum\.photos|coresg-normal/i.test(value);
+}
+
+function neutralProofBlock(block: any) {
+  if (!block || (block.type !== "testimonial" && block.type !== "proof_card")) return block;
+  const content = { ...(block.content || {}) };
+  const name = String(content.name || content.title || "");
+  const quote = String(content.quote || content.body || "");
+  const avatarUrl = content.avatar?.url || content.avatarUrl || "";
+  const generated = /High-ticket coach|Transformation mentor/i.test(name) || generatedAvatarUrl(avatarUrl);
+  if (!generated && !/(18 booked calls|312 qualified leads|\$42k pipeline|Averaging 15|Trusted by 50)/i.test(quote)) return block;
+
+  return {
+    ...block,
+    type: "proof_card",
+    content: {
+      ...content,
+      title: content.title || "Proof signal",
+      role: content.role || "Operational signal",
+      quote: "Use this slot for a verified client result, approved testimonial, or concrete delivery proof.",
+      rating: undefined,
+      avatar: undefined,
+      avatarUrl: undefined,
+    },
+  };
+}
+
+export function neutralizeLegacyProofContent(content: HomepageContent): HomepageContent {
+  const pricing = {
+    ...content.pricing,
+    note: neutralPricingNote(content.pricing.note || ""),
+    tiers: (content.pricing.tiers || []).map((tier) => ({
+      ...tier,
+      tagline: neutralTierTagline(tier.tagline || ""),
+      outcome: neutralTierOutcome(tier.name || "", (tier as any).outcome || ""),
+    })),
+  };
+
+  const application = {
+    ...content.application,
+    subcopy: neutralApplicationCopy(
+      content.application.subcopy || "",
+      "Tell us about your business and we will review fit before the next step.",
+    ),
+    footnote: neutralApplicationCopy(
+      content.application.footnote || "",
+      "We'll review your answers and reply with next steps if there is alignment.",
+    ),
+    successBody: neutralApplicationCopy(
+      content.application.successBody || "",
+      "We review every application personally and will be in touch if there is a fit. Check your email, including your spam folder.",
+    ),
+  };
+
+  const sections = (content.page?.sections || []).map((section: any) => {
+    const settings = { ...(section.settings || {}) };
+    if (section.type === "pricing" && typeof settings.note === "string") settings.note = neutralPricingNote(settings.note);
+    if (section.type === "application" && typeof settings.subcopy === "string") {
+      settings.subcopy = neutralApplicationCopy(settings.subcopy, application.subcopy);
+    }
+    if (section.type === "audit_bridge" && typeof settings.subcopy === "string") settings.subcopy = neutralAuditCopy(settings.subcopy);
+
+    const blocks = Array.isArray(section.blocks)
+      ? section.blocks.map((block: any) => {
+          if (section.type === "pricing" && block?.type === "tier") {
+            const content = { ...(block.content || {}) };
+            return {
+              ...block,
+              content: {
+                ...content,
+                tagline: neutralTierTagline(String(content.tagline || "")),
+                outcome: neutralTierOutcome(String(content.name || ""), String(content.outcome || "")),
+              },
+            };
+          }
+          return neutralProofBlock(block);
+        })
+      : section.blocks;
+
+    return {
+      ...section,
+      settings,
+      ...(blocks ? { blocks } : {}),
+    };
+  });
+
+  return {
+    ...content,
+    pricing,
+    application,
+    page: {
+      ...(content.page || { sections: [] }),
+      sections,
+    },
+  };
+}
+
 export function mergeHomepageContent(c: Partial<HomepageContent> | null | undefined): HomepageContent {
   if (!c) return homepageDefaults;
 
-  return {
+  return neutralizeLegacyProofContent({
     ...homepageDefaults,
     ...c,
     site: {
@@ -198,5 +331,5 @@ export function mergeHomepageContent(c: Partial<HomepageContent> | null | undefi
       headerColorHex: c.whatsapp?.headerColorHex ?? (homepageDefaults.whatsapp?.headerColorHex || "#25D366"),
       avatar: c.whatsapp?.avatar || homepageDefaults.whatsapp?.avatar,
     },
-  };
+  });
 }

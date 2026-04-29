@@ -28,6 +28,7 @@ import { IconPicker, type IconRef } from "@/components/admin/builder/IconPicker"
 import { MediaPickerModal } from "@/components/admin/builder/MediaPickerModal";
 import { applyBuilderOverrides } from "@/utils/homepageBuilder";
 import { mergePageSectionsWithDefaults } from "@/utils/homepageSections";
+import { neutralizeLegacyProofContent } from "@/utils/homepageMerge";
 import { requestAdminRevalidate } from "@/utils/adminRevalidate";
 import type { Tab } from "@/components/admin/types";
 import {
@@ -143,7 +144,7 @@ function mergeContent(c: Partial<HomepageContent> | null): HomepageContent {
     return out as HomepageContent["socialLinksV2"];
   };
 
-  return {
+  return neutralizeLegacyProofContent({
     ...homepageDefaults,
     ...c,
     site: { ...homepageDefaults.site, ...(c.site || {}), theme: mergeTheme(homepageDefaults.site.theme, c.site?.theme) },
@@ -235,7 +236,7 @@ function mergeContent(c: Partial<HomepageContent> | null): HomepageContent {
     },
     page: { sections: mergePageSectionsWithDefaults(c.page?.sections) },
     customSections: c.customSections || homepageDefaults.customSections,
-  };
+  });
 }
 
 function SectionRow({ item, selected, subtitle, children, onSelect, onToggle, onDuplicate }: {

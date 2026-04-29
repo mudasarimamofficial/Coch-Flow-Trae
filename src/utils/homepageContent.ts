@@ -2,6 +2,7 @@ import { createClient } from "@supabase/supabase-js";
 import { homepageDefaults, type HomepageContent } from "@/content/homepage";
 import { sanitizeContentStrings } from "@/utils/textSanitize";
 import { mergePageSectionsWithDefaults } from "@/utils/homepageSections";
+import { neutralizeLegacyProofContent } from "@/utils/homepageMerge";
 
 export async function getHomepageContent(): Promise<HomepageContent> {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -121,7 +122,7 @@ export async function getHomepageContent(): Promise<HomepageContent> {
       };
     };
 
-    return sanitizeContentStrings({
+    return neutralizeLegacyProofContent(sanitizeContentStrings({
       ...homepageDefaults,
       ...c,
       site: {
@@ -230,7 +231,7 @@ export async function getHomepageContent(): Promise<HomepageContent> {
         headerColorHex: c.whatsapp?.headerColorHex ?? (homepageDefaults.whatsapp?.headerColorHex || "#25D366"),
         avatar: c.whatsapp?.avatar || homepageDefaults.whatsapp?.avatar,
       },
-    });
+    }));
   } catch {
     return homepageDefaults;
   }

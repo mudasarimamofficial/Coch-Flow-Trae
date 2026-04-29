@@ -6,6 +6,7 @@ import { Textarea } from "@/components/ui/Textarea";
 import { Select } from "@/components/ui/Select";
 import { homepageDefaults, type HomepageContent } from "@/content/homepage";
 import { requestAdminRevalidate } from "@/utils/adminRevalidate";
+import { neutralizeLegacyProofContent } from "@/utils/homepageMerge";
 
 type Props = {
   supabase: SupabaseClient;
@@ -88,7 +89,7 @@ function mergeContent(c: Partial<HomepageContent> | null): HomepageContent {
     return out as HomepageContent["socialLinksV2"];
   };
 
-  return {
+  return neutralizeLegacyProofContent({
     ...homepageDefaults,
     ...c,
     site: { ...homepageDefaults.site, ...(c.site || {}), theme: mergeTheme(homepageDefaults.site.theme, c.site?.theme) },
@@ -175,7 +176,7 @@ function mergeContent(c: Partial<HomepageContent> | null): HomepageContent {
     },
     page: { sections: c.page?.sections || homepageDefaults.page?.sections || [] },
     customSections: c.customSections || homepageDefaults.customSections,
-  };
+  });
 }
 
 export function HomepagePanel({ supabase }: Props) {

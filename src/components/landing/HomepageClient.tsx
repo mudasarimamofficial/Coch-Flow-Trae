@@ -12,6 +12,7 @@ import { SectionWrapper } from "@/components/landing/SectionWrapper";
 import { SECTION_REGISTRY, type PageSection } from "@/components/landing/sectionRegistry";
 import { Header } from "@/components/landing/Header";
 import { mergePageSectionsWithDefaults } from "@/utils/homepageSections";
+import { neutralizeLegacyProofContent } from "@/utils/homepageMerge";
 
 type Props = {
   initialContent: HomepageContent;
@@ -202,7 +203,7 @@ function mergeClientContent(c: Partial<HomepageContent> | null): HomepageContent
     return out as HomepageContent["socialLinksV2"];
   };
 
-  return sanitizeContentStrings({
+  return neutralizeLegacyProofContent(sanitizeContentStrings({
     ...homepageDefaults,
     ...c,
     site: {
@@ -286,5 +287,5 @@ function mergeClientContent(c: Partial<HomepageContent> | null): HomepageContent
       ...(homepageDefaults.whatsapp as any),
       ...((c as any).whatsapp || {}),
     },
-  });
+  }));
 }
