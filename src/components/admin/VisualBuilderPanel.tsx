@@ -445,6 +445,9 @@ export function VisualBuilderPanel({ supabase, onNavigateTab, onSignOut }: Props
   const [published, setPublished] = useState<HomepageContent>(homepageDefaults);
   const [draft, setDraft] = useState<HomepageContent | null>(null);
   const [publishedUpdatedAt, setPublishedUpdatedAt] = useState<string | null>(null);
+  const [backups, setBackups] = useState<{ id: number; createdAt: string; content: HomepageContent }[]>([]);
+  const [backupsOpen, setBackupsOpen] = useState(false);
+  const backupsRef = useRef<HTMLDivElement | null>(null);
 
   const historyRef = useRef<HomepageContent[]>([]);
   const futureRef = useRef<HomepageContent[]>([]);
@@ -461,6 +464,14 @@ export function VisualBuilderPanel({ supabase, onNavigateTab, onSignOut }: Props
   const draftSaveTimer = useRef<number | null>(null);
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
 
+  const formatTimestamp = useCallback((value: string) => {
+    try {
+      return new Date(value).toLocaleString();
+    } catch {
+      return value;
+    }
+  }, []);
+
   const cloneContent = useCallback((v: HomepageContent): HomepageContent => {
     return JSON.parse(JSON.stringify(v)) as HomepageContent;
   }, []);
@@ -472,6 +483,36 @@ export function VisualBuilderPanel({ supabase, onNavigateTab, onSignOut }: Props
     setFutureSize(0);
     historyBatchRef.current = false;
   }, []);
+
+  const loadBackups = useCallback(async () => {
+    const res = await supabase
+      .from("homepage_content_versions")
+      .select("id, created_at, content")
+      .eq("homepage_id", 1)
+      .order("created_at", { ascending: false })
+      .limit(5);
+    if (res.error) return;
+    const next = (res.data || [])
+      .map((row: any) => ({
+        id: Number(row.id),
+        createdAt: String(row.created_at || ""),
+        content: mergeContent(row.content as Partial<HomepageContent>),
+      }))
+      .filter((x) => Number.isFinite(x.id) && x.createdAt);
+    setBackups(next);
+  }, [supabase]);
+
+  useEffect(() => {
+    if (!backupsOpen) return;
+    function onDown(e: MouseEvent) {
+      const root = backupsRef.current;
+      if (!root) return;
+      if (root.contains(e.target as Node)) return;
+      setBackupsOpen(false);
+    }
+    window.addEventListener("mousedown", onDown);
+    return () => window.removeEventListener("mousedown", onDown);
+  }, [backupsOpen]);
 
   const loadLandingPreset = useCallback(() => {
     const base = cloneContent(homepageDefaults);
@@ -537,12 +578,13 @@ export function VisualBuilderPanel({ supabase, onNavigateTab, onSignOut }: Props
       setDraft(has ? mergeContent(c) : null);
       if (dr.data?.published_updated_at) setPublishedUpdatedAt(dr.data.published_updated_at);
       resetHistory();
+      await loadBackups();
     } finally {
       setLoading(false);
     }
   }
 
-  async function saveDraft(next: HomepageContent) {
+  async function saveDraft(next: HomepageContent): Promise<boolean> {
     setSaving(true);
     setError(null);
     setNotice(null);
@@ -552,12 +594,19 @@ export function VisualBuilderPanel({ supabase, onNavigateTab, onSignOut }: Props
         .upsert({ id: 1, content: next, published_updated_at: publishedUpdatedAt }, { onConflict: "id" });
       if (error) {
         setError(error.message);
-        return;
+        return false;
       }
       setNotice("Draft saved");
+      return true;
     } finally {
       setSaving(false);
     }
+  }
+
+  async function createBackupSnapshot(next: HomepageContent) {
+    const res = await supabase.from("homepage_content_versions").insert({ homepage_id: 1, content: next, created_by: null });
+    if (res.error) return;
+    await loadBackups();
   }
 
   async function publishNow() {
@@ -566,33 +615,22 @@ export function VisualBuilderPanel({ supabase, onNavigateTab, onSignOut }: Props
     setError(null);
     setNotice(null);
     try {
-      const latest = await supabase
-        .from("homepage_content")
-        .select("updated_at")
-        .eq("id", 1)
-        .single();
-      if (latest.error) {
-        setError(latest.error.message);
-        return;
-      }
+      let updateQuery = supabase.from("homepage_content").update({ content: draft }).eq("id", 1);
+      if (publishedUpdatedAt) updateQuery = updateQuery.eq("updated_at", publishedUpdatedAt);
 
-      if (publishedUpdatedAt && latest.data.updated_at !== publishedUpdatedAt) {
-        setError("Publish conflict: the homepage was updated by another session.");
-        return;
-      }
-
-      const upd = await supabase
-        .from("homepage_content")
-        .update({ content: draft })
-        .eq("id", 1)
-        .select("updated_at")
-        .single();
+      const upd = await updateQuery.select("updated_at").maybeSingle();
       if (upd.error) {
         setError(upd.error.message);
         return;
       }
 
+      if (!upd.data?.updated_at) {
+        setError("Publish conflict: the published homepage changed since you started editing. Reload and try again.");
+        return;
+      }
+
       await supabase.from("homepage_content_versions").insert({ homepage_id: 1, content: draft, created_by: null });
+      await loadBackups();
 
       await supabase
         .from("homepage_content_drafts")
@@ -1033,11 +1071,80 @@ export function VisualBuilderPanel({ supabase, onNavigateTab, onSignOut }: Props
               >
                 Load landing preset
               </button>
+
+              <div ref={backupsRef} className="relative">
+                <button
+                  type="button"
+                  className="inline-flex h-9 items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 text-xs font-semibold text-white/80 hover:bg-white/10"
+                  onClick={async () => {
+                    const next = !backupsOpen;
+                    setBackupsOpen(next);
+                    if (next) await loadBackups();
+                  }}
+                >
+                  Backups
+                </button>
+
+                {backupsOpen ? (
+                  <div className="absolute right-0 top-full mt-2 w-[360px] rounded-2xl border border-white/10 bg-[var(--cf-secondary)] p-3 shadow-2xl">
+                    <div className="flex items-center justify-between px-1 pb-2">
+                      <div className="text-xs font-bold uppercase tracking-wide text-white/60">Latest backups (5)</div>
+                      <button
+                        type="button"
+                        className="text-xs font-semibold text-white/70 hover:text-white"
+                        onClick={async () => {
+                          await loadBackups();
+                        }}
+                      >
+                        Refresh
+                      </button>
+                    </div>
+                    <div className="flex flex-col gap-2">
+                      {!backups.length ? (
+                        <div className="rounded-xl border border-white/10 bg-white/5 px-3 py-3 text-sm text-white/70">
+                          No backups yet. Use Save Draft or Publish to create one.
+                        </div>
+                      ) : null}
+                      {backups.map((b) => (
+                        <div
+                          key={b.id}
+                          className="flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-white/5 px-3 py-3"
+                        >
+                          <div className="min-w-0">
+                            <div className="truncate text-sm font-semibold text-white">{formatTimestamp(b.createdAt)}</div>
+                            <div className="text-xs text-white/50">Backup #{b.id}</div>
+                          </div>
+                          <button
+                            type="button"
+                            className="inline-flex h-9 items-center justify-center rounded-xl bg-[var(--cf-accent)] px-3 text-xs font-bold text-[#0A0F1E] hover:brightness-95"
+                            onClick={() => {
+                              setDraft(b.content);
+                              setSelectedId("hero");
+                              setSelectedBlockId(null);
+                              resetHistory();
+                              setBackupsOpen(false);
+                              setNotice(`Restored backup from ${formatTimestamp(b.createdAt)}`);
+                            }}
+                          >
+                            Restore
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
+              </div>
+
               <button
                 type="button"
                 className="inline-flex h-9 items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 text-xs font-semibold text-white/80 hover:bg-white/10 disabled:opacity-50"
                 disabled={saving}
-                onClick={() => saveDraft(content)}
+                onClick={async () => {
+                  const ok = await saveDraft(content);
+                  if (!ok) return;
+                  await createBackupSnapshot(content);
+                  setNotice("Draft saved (backup created)");
+                }}
               >
                 Save Draft
               </button>
@@ -2969,7 +3076,17 @@ export function VisualBuilderPanel({ supabase, onNavigateTab, onSignOut }: Props
               <Button variant="secondary" className="h-11" onClick={loadLandingPreset}>
                 Load landing preset
               </Button>
-              <Button variant="secondary" className="h-11" disabled={saving} onClick={() => saveDraft(content)}>
+              <Button
+                variant="secondary"
+                className="h-11"
+                disabled={saving}
+                onClick={async () => {
+                  const ok = await saveDraft(content);
+                  if (!ok) return;
+                  await createBackupSnapshot(content);
+                  setNotice("Draft saved (backup created)");
+                }}
+              >
                 Save Draft
               </Button>
               <Button

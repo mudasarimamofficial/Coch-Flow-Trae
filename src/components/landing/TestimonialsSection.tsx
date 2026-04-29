@@ -100,29 +100,22 @@ export function TestimonialsSection({ section }: Props) {
       const explicitlyReal = asBoolean((content as any).isReal) || asBoolean((content as any).verified);
       const isRealTestimonial = block.type === "testimonial" && explicitlyReal && !isGeneratedAvatar(avatarUrl);
       const isProofCard = block.type === "proof_card";
-      const quote = asString(content.quote);
+      const quote = asString((content as any).quote || (content as any).body || (content as any).description);
+      const bodyText = isProofCard
+        ? asString((content as any).body || (content as any).description || (content as any).quote)
+        : quote;
       return {
         id: block.id,
         name:
-          isRealTestimonial || isProofCard
-            ? asString(content.name) || (isRealTestimonial ? "CoachFlow client" : fallbackProofTitle(index))
-            : fallbackProofTitle(index),
+          asString((content as any).name) || (isRealTestimonial ? "CoachFlow client" : fallbackProofTitle(index)),
         role:
-          isRealTestimonial || isProofCard
-            ? asString(content.role || content.title) || (isRealTestimonial ? "High-ticket coaching business" : "System proof point")
-            : "System proof point",
+          asString((content as any).role || (content as any).title) || (isRealTestimonial ? "High-ticket coaching business" : "System proof point"),
         body:
-          isRealTestimonial
-            ? quote
-            : isProofCard
-              ? asString((content as any).body || (content as any).description || content.quote) || fallbackProofBody(index)
-              : fallbackProofBody(index),
+          bodyText || fallbackProofBody(index),
         rating: asNumber(content.rating) || 5,
         avatarUrl,
         metric:
-          isRealTestimonial || isProofCard
-            ? asString((content as any).metric) || (isRealTestimonial ? "Qualified pipeline" : fallbackProofMetric(index))
-            : fallbackProofMetric(index),
+          asString((content as any).metric) || (isRealTestimonial ? "Qualified pipeline" : fallbackProofMetric(index)),
         isRealTestimonial,
       };
     })

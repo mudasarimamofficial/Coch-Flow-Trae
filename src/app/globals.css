@@ -1393,22 +1393,18 @@ small {
   }
 
   .cf-landing .nav-inner {
-    display: grid;
+    display: flex;
     align-items: center;
-    grid-template-columns: 42px 1fr 42px;
+    justify-content: space-between;
   }
 
   .cf-landing .nav-logo {
-    grid-column: 2;
-    justify-self: center;
+    justify-self: auto;
   }
 
   .cf-landing .nav-right {
-    grid-column: 1;
-    grid-row: 1;
-    justify-self: start;
-    width: 42px;
-    justify-content: flex-start;
+    justify-self: auto;
+    justify-content: flex-end;
     gap: 12px;
   }
 
@@ -1417,9 +1413,7 @@ small {
   }
 
   .cf-landing .nav-cta-spacer {
-    display: block;
-    width: 42px;
-    height: 42px;
+    display: none;
   }
 
   .cf-landing .hero-trust {
@@ -1438,22 +1432,18 @@ small {
   }
 
   .cf-landing .nav-inner {
-    display: grid;
-    grid-template-columns: 42px 1fr 42px;
+    display: flex;
     align-items: center;
+    justify-content: space-between;
   }
 
   .cf-landing .nav-logo {
-    grid-column: 2;
-    justify-self: center;
+    justify-self: auto;
   }
 
   .cf-landing .nav-right {
-    grid-column: 1;
-    grid-row: 1;
-    justify-self: start;
-    width: 42px;
-    justify-content: flex-start;
+    justify-self: auto;
+    justify-content: flex-end;
   }
 
   .cf-landing .nav-cta {
