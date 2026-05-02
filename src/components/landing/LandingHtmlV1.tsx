@@ -1,78 +1,79 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useRef } from "react";
 import type { HomepageContent } from "@/content/homepage";
-import { LandingHtmlV1View, type LandingHtmlV1ViewProps } from "@/components/landing/LandingHtmlV1View";
 
 type Props = { content: HomepageContent };
 
 export function LandingHtmlV1({ content }: Props) {
-  const [menuOpen, setMenuOpen] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [email, setEmail] = useState("");
-  const [revenue, setRevenue] = useState("");
-  const [bottleneck, setBottleneck] = useState("");
+  void content;
 
-  const nav = useMemo(() => {
-    const base = Array.isArray(content.header?.nav) ? content.header.nav : [];
-    const defaults = [
-      { label: "Our Story", href: "#founder" },
-      { label: "How It Works", href: "#how" },
-      { label: "Pricing", href: "#pricing" },
-    ];
-    return (base.length ? base : defaults).slice(0, 3);
-  }, [content.header?.nav]);
+  const iframeRef = useRef<HTMLIFrameElement | null>(null);
 
-  async function submit() {
-    const fn = firstName.trim();
-    const em = email.trim();
-    if (!fn || !em) {
-      alert("Please fill in your name and email to apply.");
-      return;
-    }
-    setSubmitting(true);
-    try {
-      const res = await fetch("/api/leads", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({
-          first_name: fn,
-          last_name: lastName.trim() || "-",
-          email: em,
-          revenue: revenue || null,
-          message: bottleneck.trim() || null,
-        }),
-      });
-      if (!res.ok) return;
-      setSubmitted(true);
-    } finally {
-      setSubmitting(false);
-    }
-  }
+  useEffect(() => {
+    const iframe = iframeRef.current;
+    if (!iframe) return;
 
-  const viewProps: LandingHtmlV1ViewProps = {
-    content,
-    nav,
-    menuOpen,
-    setMenuOpen,
-    submitted,
-    submitting,
-    firstName,
-    lastName,
-    email,
-    revenue,
-    bottleneck,
-    setFirstName,
-    setLastName,
-    setEmail,
-    setRevenue,
-    setBottleneck,
-    onSubmit: submit,
-  };
+    const bind = () => {
+      const win = iframe.contentWindow;
+      const doc = iframe.contentDocument;
+      if (!win || !doc) return;
 
-  return <LandingHtmlV1View {...viewProps} />;
+      (win as any).handleSubmit = async () => {
+        const fname = (doc.getElementById("fname") as HTMLInputElement | null)?.value?.trim() || "";
+        const lname = (doc.getElementById("lname") as HTMLInputElement | null)?.value?.trim() || "";
+        const email = (doc.getElementById("email") as HTMLInputElement | null)?.value?.trim() || "";
+        const revenue = (doc.getElementById("revenue") as HTMLSelectElement | null)?.value || "";
+        const bottleneck = (doc.getElementById("bottleneck") as HTMLTextAreaElement | null)?.value?.trim() || "";
+
+        if (!fname || !email) {
+          win.alert("Please fill in your name and email to apply.");
+          return;
+        }
+
+        try {
+          const res = await win.fetch("/api/leads", {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({
+              first_name: fname,
+              last_name: lname || "-",
+              email,
+              revenue: revenue || null,
+              message: bottleneck || null,
+            }),
+          });
+          if (!res.ok) {
+            win.alert("Something went wrong. Please try again.");
+            return;
+          }
+          const formContent = doc.getElementById("form-content");
+          const formSuccess = doc.getElementById("form-success");
+          if (formContent) (formContent as HTMLElement).style.display = "none";
+          if (formSuccess) (formSuccess as HTMLElement).style.display = "block";
+        } catch {
+          win.alert("Something went wrong. Please try again.");
+        }
+      };
+    };
+
+    const onLoad = () => {
+      bind();
+    };
+
+    iframe.addEventListener("load", onLoad);
+    return () => {
+      iframe.removeEventListener("load", onLoad);
+    };
+  }, []);
+
+  return (
+    <iframe
+      ref={iframeRef}
+      title="CoachFlow Landing"
+      src="/coachflow-rebuilt%20(1).html"
+      style={{ width: "100%", height: "100vh", border: 0, display: "block" }}
+    />
+  );
 }
 

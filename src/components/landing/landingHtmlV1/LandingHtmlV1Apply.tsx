@@ -20,9 +20,9 @@ type Props = {
 };
 
 export function LandingHtmlV1Apply(props: Props) {
-  const revenueOptions: RevenueOption[] =
-    (props.content.application?.fields?.revenueOptions || []).map((o) => ({ value: o.value, label: o.label })) || [];
-  const fallbackRevenueOptions: RevenueOption[] = [
+  void props.content;
+
+  const selectOptions: RevenueOption[] = [
     { value: "", label: "Select your range" },
     { value: "Under $3k/mo", label: "Under $3k/mo" },
     { value: "$3k – $8k/mo", label: "$3k – $8k/mo" },
@@ -30,7 +30,6 @@ export function LandingHtmlV1Apply(props: Props) {
     { value: "$20k – $50k/mo", label: "$20k – $50k/mo" },
     { value: "$50k+/mo", label: "$50k+/mo" },
   ];
-  const selectOptions = revenueOptions.length ? revenueOptions : fallbackRevenueOptions;
 
   return (
     <div className="form-section" id="apply">
@@ -73,21 +72,21 @@ export function LandingHtmlV1Apply(props: Props) {
 
             <div className="form-row">
               <div>
-                <label htmlFor="fname">{props.content.application?.fields?.firstNameLabel || "First Name"}</label>
+                <label htmlFor="fname">First Name</label>
                 <input
                   type="text"
                   id="fname"
-                  placeholder={props.content.application?.fields?.firstNamePlaceholder || "Hamza"}
+                  placeholder="Hamza"
                   value={props.firstName}
                   onChange={(e) => props.setFirstName(e.target.value)}
                 />
               </div>
               <div>
-                <label htmlFor="lname">{props.content.application?.fields?.lastNameLabel || "Last Name"}</label>
+                <label htmlFor="lname">Last Name</label>
                 <input
                   type="text"
                   id="lname"
-                  placeholder={props.content.application?.fields?.lastNamePlaceholder || "Khan"}
+                  placeholder="Khan"
                   value={props.lastName}
                   onChange={(e) => props.setLastName(e.target.value)}
                 />
@@ -95,18 +94,18 @@ export function LandingHtmlV1Apply(props: Props) {
             </div>
 
             <div className="form-group">
-              <label htmlFor="email">{props.content.application?.fields?.emailLabel || "Email Address"}</label>
+              <label htmlFor="email">Email Address</label>
               <input
                 type="email"
                 id="email"
-                placeholder={props.content.application?.fields?.emailPlaceholder || "you@yourcoaching.com"}
+                placeholder="you@yourcoaching.com"
                 value={props.email}
                 onChange={(e) => props.setEmail(e.target.value)}
               />
             </div>
 
             <div className="form-group">
-              <label htmlFor="revenue">{props.content.application?.fields?.revenueLabel || "Current Monthly Revenue"}</label>
+              <label htmlFor="revenue">Current Monthly Revenue</label>
               <select id="revenue" value={props.revenue} onChange={(e) => props.setRevenue(e.target.value)}>
                 {selectOptions.map((o) => (
                   <option key={o.value || o.label} value={o.value}>
@@ -117,15 +116,10 @@ export function LandingHtmlV1Apply(props: Props) {
             </div>
 
             <div className="form-group">
-              <label htmlFor="bottleneck">
-                {props.content.application?.fields?.bottleneckLabel || "What's your biggest bottleneck right now?"}
-              </label>
+              <label htmlFor="bottleneck">What&apos;s your biggest bottleneck right now?</label>
               <textarea
                 id="bottleneck"
-                placeholder={
-                  props.content.application?.fields?.bottleneckPlaceholder ||
-                  "Be honest — the more specific you are, the better we can assess fit."
-                }
+                placeholder="Be honest — the more specific you are, the better we can assess fit."
                 value={props.bottleneck}
                 onChange={(e) => props.setBottleneck(e.target.value)}
               />

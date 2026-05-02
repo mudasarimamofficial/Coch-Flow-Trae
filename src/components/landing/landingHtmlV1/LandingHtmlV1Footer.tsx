@@ -3,17 +3,16 @@ import type { HomepageContent } from "@/content/homepage";
 type Props = { content: HomepageContent };
 
 export function LandingHtmlV1Footer({ content }: Props) {
+  void content;
   return (
     <footer>
-      <div className="footer-logo">{content.footer?.brandText || "CoachFlow AI"}</div>
+      <div className="footer-logo">CoachFlow AI</div>
       <ul className="footer-links">
-        {(content.footer?.links || []).slice(0, 3).map((l) => (
-          <li key={`${l.href}-${l.label}`}>
-            <a href={l.href}>{l.label}</a>
-          </li>
-        ))}
+        <li><a href="#">Privacy Policy</a></li>
+        <li><a href="#">Terms of Service</a></li>
+        <li><a href="#">Contact</a></li>
       </ul>
-      <div className="footer-copy">{content.footer?.copyright || "© 2026 CoachFlow AI. All rights reserved."}</div>
+      <div className="footer-copy">© 2026 CoachFlow AI. All rights reserved.</div>
     </footer>
   );
 }
