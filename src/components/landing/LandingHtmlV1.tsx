@@ -71,7 +71,7 @@ export function LandingHtmlV1({ content }: Props) {
     <iframe
       ref={iframeRef}
       title="CoachFlow Landing"
-      src="/coachflow-rebuilt%20(1).html"
+      src="/coachflow-rebuilt-1.html"
       style={{ width: "100%", height: "100vh", border: 0, display: "block" }}
     />
   );
