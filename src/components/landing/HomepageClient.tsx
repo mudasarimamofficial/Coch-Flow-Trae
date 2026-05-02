@@ -15,6 +15,7 @@ import { mergePageSectionsWithDefaults } from "@/utils/homepageSections";
 import { neutralizeLegacyProofContent } from "@/utils/homepageMerge";
 import { buildThemeCssVars } from "@/utils/themeCss";
 import { mergeTypographyScale } from "@/utils/typographyScale";
+import { LandingHtmlV1 } from "@/components/landing/LandingHtmlV1";
 
 type Props = {
   initialContent: HomepageContent;
@@ -111,8 +112,32 @@ export function HomepageClient({ initialContent, isBuilderPreview }: Props) {
   const preset = ((resolved.site as any)?.designPreset as string | undefined) || "landing_html_v1";
   const useLanding = preset !== "classic";
 
+  useEffect(() => {
+    if (!useLanding) return;
+    document.documentElement.classList.add("cf-landing-html");
+    document.body.classList.add("cf-landing-body");
+    return () => {
+      document.documentElement.classList.remove("cf-landing-html");
+      document.body.classList.remove("cf-landing-body");
+    };
+  }, [useLanding]);
+
+  if (useLanding) {
+    return (
+      <>
+        {isBuilderPreview ? <style id="cf-live-theme-vars" dangerouslySetInnerHTML={{ __html: liveThemeCss }} /> : null}
+        <LandingHtmlV1 content={resolved} />
+        {isBuilderPreview && !hasPreviewOverride ? (
+          <div className="fixed bottom-4 left-4 rounded-lg border border-slate-200 bg-white/90 px-3 py-2 text-xs text-slate-700 shadow-sm backdrop-blur dark:border-white/10 dark:bg-black/50 dark:text-slate-200">
+            Waiting for builder preview…
+          </div>
+        ) : null}
+      </>
+    );
+  }
+
   return (
-    <div className={`${useLanding ? "cf-landing" : ""} flex flex-1 flex-col`}>
+    <div className="flex flex-1 flex-col">
       {isBuilderPreview ? <style id="cf-live-theme-vars" dangerouslySetInnerHTML={{ __html: liveThemeCss }} /> : null}
       {sections.find((s) => s.type === "hero")?.enabled !== false ? <Header content={resolved} /> : null}
       <main className="flex-1">
