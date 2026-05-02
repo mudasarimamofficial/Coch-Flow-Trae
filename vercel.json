@@ -1,4 +1,5 @@
 {
-  "framework": "nextjs"
+  "framework": "nextjs",
+  "rewrites": [{ "source": "/", "destination": "/coachflow-rebuilt-1.html" }]
 }
 
