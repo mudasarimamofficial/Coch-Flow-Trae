@@ -8,10 +8,13 @@ import type { Tab, Lead } from "@/components/admin/types";
 import { AdminLogin } from "@/components/admin/AdminLogin";
 import { AdminShell } from "@/components/admin/AdminShell";
 import { LeadsPanel } from "@/components/admin/LeadsPanel";
-import { CustomCodePanel } from "@/components/admin/CustomCodePanel";
 import { HomepagePanel } from "@/components/admin/HomepagePanel";
+import { CustomCodePanel } from "@/components/admin/CustomCodePanel";
 import { VisualBuilderPanel } from "@/components/admin/VisualBuilderPanel";
 import { SettingsPanel } from "@/components/admin/SettingsPanel";
+import { ThemePanel } from "@/components/admin/ThemePanel";
+import { MediaPanel } from "@/components/admin/MediaPanel";
+import { OverviewPanel } from "@/components/admin/OverviewPanel";
 import { PagesPanel } from "@/components/admin/pages/PagesPanel";
 import { resolveIsAdmin, BOOTSTRAP_ADMIN_EMAIL } from "@/utils/adminGate";
 import { homepageDefaults, type HomepageContent } from "@/content/homepage";
@@ -276,6 +279,7 @@ export function AdminPageClient() {
         setQuery("");
       }}
     >
+      {tab === "overview" ? <OverviewPanel onTabChange={setTab} /> : null}
       {tab === "builder" ? (
         <VisualBuilderPanel
           supabase={supabase}
@@ -287,9 +291,9 @@ export function AdminPageClient() {
             setQuery("");
           }}
         />
-      ) : tab === "pages" ? (
-        <PagesPanel supabase={supabase} />
-      ) : tab === "leads" ? (
+      ) : null}
+      {tab === "pages" ? <PagesPanel supabase={supabase} /> : null}
+      {tab === "leads" ? (
         <LeadsPanel
           leads={leads}
           leadsLoading={leadsLoading}
@@ -315,14 +319,14 @@ export function AdminPageClient() {
             );
           }}
         />
-      ) : tab === "homepage" ? (
-        <HomepagePanel supabase={supabase} />
-      ) : tab === "custom" ? (
-        <CustomCodePanel supabase={supabase} />
-      ) : (
-        <SettingsPanel supabase={supabase} />
-      )}
+      ) : null}
+      {tab === "media" ? <MediaPanel supabase={supabase} /> : null}
+      {tab === "theme" ? <ThemePanel supabase={supabase} /> : null}
+      {tab === "json" ? <HomepagePanel supabase={supabase} /> : null}
+      {tab === "custom" ? <CustomCodePanel supabase={supabase} /> : null}
+      {tab === "settings" ? <SettingsPanel supabase={supabase} /> : null}
     </AdminShell>
   );
 }
+
 

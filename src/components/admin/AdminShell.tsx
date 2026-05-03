@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/Button";
-import { Code2, FileJson, Files, LayoutDashboard, MoreHorizontal, PanelLeft, Settings, Users, X } from "lucide-react";
+import { Code2, FileJson, Files, LayoutDashboard, MoreHorizontal, PanelLeft, Settings, Users, X, Image as ImageIcon, PaintBucket, Home } from "lucide-react";
 import type { Tab } from "@/components/admin/types";
 import Image from "next/image";
 
@@ -21,13 +21,16 @@ export function AdminShell({ tab, onTabChange, sessionEmail, onSignOut, brandIco
   const [isMobile, setIsMobile] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileMoreOpen, setMobileMoreOpen] = useState(false);
-  const navItems: { tab: Tab; label: string; icon: ReactNode }[] = [
+  const navItems: { tab: Tab; label: string; icon: ReactNode; divider?: boolean }[] = [
+    { tab: "overview", label: "Overview", icon: <Home size={18} /> },
     { tab: "builder", label: "Builder", icon: <LayoutDashboard size={18} /> },
     { tab: "pages", label: "Pages", icon: <Files size={18} /> },
     { tab: "leads", label: "Leads", icon: <Users size={18} /> },
-    { tab: "homepage", label: "JSON", icon: <FileJson size={18} /> },
-    { tab: "custom", label: "Custom", icon: <Code2 size={18} /> },
+    { tab: "media", label: "Media", icon: <ImageIcon size={18} /> },
+    { tab: "theme", label: "Theme", icon: <PaintBucket size={18} />, divider: true },
     { tab: "settings", label: "Settings", icon: <Settings size={18} /> },
+    { tab: "json", label: "JSON Editor", icon: <FileJson size={18} /> },
+    { tab: "custom", label: "Custom Code", icon: <Code2 size={18} /> },
   ];
 
   const tabLabel = navItems.find((n) => n.tab === tab)?.label || "Admin";
@@ -121,24 +124,26 @@ export function AdminShell({ tab, onTabChange, sessionEmail, onSignOut, brandIco
 
           <nav className="flex flex-col gap-1">
             {navItems.map((i) => (
-              <button
-                key={i.tab}
-                type="button"
-                onClick={() => onTabChange(i.tab)}
-                title={sidebarCollapsed ? i.label : undefined}
-                className={
-                  tab === i.tab
-                    ? sidebarCollapsed
-                      ? "flex items-center justify-center rounded-2xl bg-white/10 p-3 text-white"
-                      : "flex items-center gap-3 rounded-2xl bg-white/10 px-3 py-2.5 text-left text-sm font-semibold text-white"
-                    : sidebarCollapsed
-                      ? "flex items-center justify-center rounded-2xl p-3 text-white/70 hover:bg-white/5 hover:text-white"
-                      : "flex items-center gap-3 rounded-2xl px-3 py-2.5 text-left text-sm text-white/70 hover:bg-white/5 hover:text-white"
-                }
-              >
-                <span className={sidebarCollapsed ? "inline-flex" : "inline-flex w-6 justify-center"}>{i.icon}</span>
-                {!sidebarCollapsed ? i.label : null}
-              </button>
+              <div key={i.tab}>
+                {i.divider && <div className="my-2 border-t border-white/10 mx-2" />}
+                <button
+                  type="button"
+                  onClick={() => onTabChange(i.tab)}
+                  title={sidebarCollapsed ? i.label : undefined}
+                  className={
+                    tab === i.tab
+                      ? sidebarCollapsed
+                        ? "flex w-full items-center justify-center rounded-2xl bg-white/10 p-3 text-white"
+                        : "flex w-full items-center gap-3 rounded-2xl bg-white/10 px-3 py-2.5 text-left text-sm font-semibold text-white"
+                      : sidebarCollapsed
+                        ? "flex w-full items-center justify-center rounded-2xl p-3 text-white/70 hover:bg-white/5 hover:text-white"
+                        : "flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-left text-sm text-white/70 hover:bg-white/5 hover:text-white"
+                  }
+                >
+                  <span className={sidebarCollapsed ? "inline-flex" : "inline-flex w-6 justify-center"}>{i.icon}</span>
+                  {!sidebarCollapsed ? i.label : null}
+                </button>
+              </div>
             ))}
           </nav>
 

@@ -63,16 +63,16 @@ export function LeadsPanel({
   }, [leads, query, datePreset]);
 
   return (
-    <div className="flex flex-1 flex-col gap-4 px-4 pb-8 lg:px-6">
-      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+    <div className="mx-auto flex w-full max-w-7xl flex-1 flex-col gap-6 px-4 pb-10 lg:px-8 lg:py-6">
+      <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-white">Leads</h1>
+          <h1 className="text-3xl font-bold tracking-tight text-white">Leads</h1>
           <p className="mt-1 text-sm text-white/60">
-            Newest first. Click a row to view details.
+            Manage incoming applications and prospect statuses.
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           <Input
             value={query}
             onChange={(e) => onQueryChange(e.target.value)}
@@ -81,15 +81,15 @@ export function LeadsPanel({
           <select
             value={datePreset}
             onChange={(e) => onDatePresetChange(e.target.value as Props["datePreset"])}
-            className="h-11 rounded-xl border border-white/10 bg-white/5 px-3 text-sm text-white outline-none focus:border-[var(--cf-accent)] focus:ring-2 focus:ring-[var(--cf-accent)]/20"
+            className="h-10 rounded-xl border border-white/10 bg-white/5 px-3 text-sm text-white outline-none focus:border-[var(--cf-accent)] focus:ring-2 focus:ring-[var(--cf-accent)]/20"
           >
             <option value="today">Today</option>
             <option value="last7">Last 7 days</option>
-            <option value="all">All</option>
+            <option value="all">All time</option>
           </select>
           <Button
             variant="secondary"
-            className="h-12"
+            className="h-10"
             onClick={onRefresh}
             disabled={leadsLoading}
           >
@@ -105,45 +105,36 @@ export function LeadsPanel({
         </div>
       ) : null}
 
-      <div className="grid flex-1 grid-cols-1 gap-4 lg:grid-cols-[1.2fr_0.8fr]">
-        <div className="overflow-hidden rounded-2xl border border-white/10 bg-white/5">
-          <div className="overflow-x-auto">
+      <div className="grid flex-1 grid-cols-1 gap-6 lg:grid-cols-[1.5fr_1fr] xl:grid-cols-[1fr_400px]">
+        <div className="flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-white/5 shadow-sm">
+          <div className="flex-1 overflow-x-auto">
             <table className="min-w-full text-left text-sm">
-              <thead className="border-b border-white/10 bg-white/5 text-xs uppercase tracking-wide text-white/50">
+              <thead className="border-b border-white/10 bg-black/20 text-[11px] font-semibold uppercase tracking-wider text-white/50">
                 <tr>
-                  <th className="px-4 py-3">Name</th>
-                  <th className="px-4 py-3">Email</th>
-                  <th className="px-4 py-3">Phone</th>
-                  <th className="px-4 py-3">Status</th>
-                  <th className="px-4 py-3">Date</th>
+                  <th className="px-5 py-3.5">Name</th>
+                  <th className="px-5 py-3.5">Email</th>
+                  <th className="px-5 py-3.5">Status</th>
+                  <th className="px-5 py-3.5">Date</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="divide-y divide-white/5">
                 {filtered.map((l) => (
                   <tr
                     key={l.id}
+                    onClick={() => onSelect(l.id)}
                     className={
                       selectedId === l.id
-                        ? "bg-[#0fa3a3]/5"
-                        : "hover:bg-slate-50 dark:hover:bg-white/5"
+                        ? "cursor-pointer bg-white/10 transition-colors"
+                        : "cursor-pointer transition-colors hover:bg-white/5"
                     }
                   >
-                    <td className="px-4 py-3">
-                      <button
-                        type="button"
-                        onClick={() => onSelect(l.id)}
-                        className="text-left font-semibold hover:underline"
-                      >
-                        {l.name}
-                      </button>
+                    <td className="px-5 py-4 font-semibold text-white">
+                      {l.name}
                     </td>
-                    <td className="px-4 py-3 text-slate-700 dark:text-slate-300">
+                    <td className="px-5 py-4 text-white/70">
                       {l.email}
                     </td>
-                    <td className="px-4 py-3 text-slate-700 dark:text-slate-300">
-                      {l.phone || "—"}
-                    </td>
-                    <td className="px-4 py-3">
+                    <td className="px-5 py-4" onClick={(e) => e.stopPropagation()}>
                       <select
                         value={l.status}
                         onChange={async (e) => {
@@ -152,14 +143,20 @@ export function LeadsPanel({
                             e.target.value as Lead["status"],
                           );
                         }}
-                        className="h-9 rounded-lg border border-slate-200 bg-white px-2 text-xs font-semibold text-slate-700 outline-none ring-[#0fa3a3]/30 focus:ring-4 dark:border-white/10 dark:bg-white/5 dark:text-slate-200"
+                        className={
+                          l.status === "new"
+                            ? "h-8 rounded-lg border border-sky-500/30 bg-sky-500/10 px-2 text-xs font-semibold text-sky-200 outline-none focus:ring-2 focus:ring-sky-500/20"
+                            : l.status === "contacted"
+                              ? "h-8 rounded-lg border border-amber-500/30 bg-amber-500/10 px-2 text-xs font-semibold text-amber-200 outline-none focus:ring-2 focus:ring-amber-500/20"
+                              : "h-8 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-2 text-xs font-semibold text-emerald-200 outline-none focus:ring-2 focus:ring-emerald-500/20"
+                        }
                       >
-                        <option value="new">new</option>
-                        <option value="contacted">contacted</option>
-                        <option value="closed">closed</option>
+                        <option value="new">New</option>
+                        <option value="contacted">Contacted</option>
+                        <option value="closed">Closed</option>
                       </select>
                     </td>
-                    <td className="px-4 py-3 text-slate-500 dark:text-slate-400">
+                    <td className="px-5 py-4 text-white/50">
                       {formatDate(l.created_at)}
                     </td>
                   </tr>
@@ -167,10 +164,10 @@ export function LeadsPanel({
                 {!leadsLoading && filtered.length === 0 ? (
                   <tr>
                     <td
-                      colSpan={5}
-                      className="px-4 py-10 text-center text-sm text-slate-500 dark:text-slate-400"
+                      colSpan={4}
+                      className="px-5 py-12 text-center text-sm text-white/50"
                     >
-                      No leads yet.
+                      No leads match your criteria.
                     </td>
                   </tr>
                 ) : null}
@@ -179,7 +176,9 @@ export function LeadsPanel({
           </div>
         </div>
 
-        <LeadDetails lead={selected} />
+        <div className="sticky top-6 flex flex-col">
+          <LeadDetails lead={selected} />
+        </div>
       </div>
     </div>
   );

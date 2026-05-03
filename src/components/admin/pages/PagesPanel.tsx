@@ -53,6 +53,8 @@ export function PagesPanel({ supabase }: Props) {
 
   const canPublish = !m.loading && m.title.trim().length > 0 && m.slug.trim().length > 0;
 
+  const [editorTab, setEditorTab] = useState<"content" | "settings" | "seo">("content");
+
   return (
     <div className="flex h-full min-h-0 w-full flex-col bg-[var(--cf-bg)]">
       {isMobile ? (
@@ -141,14 +143,14 @@ export function PagesPanel({ supabase }: Props) {
           </div>
 
           <div className="relative flex min-h-0 flex-1 flex-col gap-3 overflow-hidden">
-            <div className="rounded-2xl border border-white/10 bg-[var(--cf-surface-container)] px-4 py-3">
-              <div className="flex items-center justify-between gap-3">
+            <div className="rounded-2xl border border-white/10 bg-[var(--cf-surface-container)]">
+              <div className="flex items-center justify-between gap-3 border-b border-white/10 px-4 py-3">
                 <div className="min-w-0 flex-1">
                   <input
                     value={m.title}
                     onChange={(e) => m.setTitle(e.target.value)}
                     placeholder="Page title"
-                    className="w-full truncate bg-transparent text-lg font-semibold text-white outline-none placeholder:text-white/35"
+                    className="w-full truncate bg-transparent text-lg font-bold text-white outline-none placeholder:text-white/35"
                   />
                   <div className="mt-0.5 truncate text-xs text-white/50">/p/{m.slug || "your-slug"}</div>
                 </div>
@@ -183,41 +185,61 @@ export function PagesPanel({ supabase }: Props) {
                   </button>
                 </div>
               </div>
+              <div className="flex gap-4 px-4 py-2">
+                <button
+                  type="button"
+                  className={editorTab === "content" ? "border-b-2 border-[var(--cf-accent)] py-2 text-sm font-semibold text-white" : "border-b-2 border-transparent py-2 text-sm font-semibold text-white/50 hover:text-white"}
+                  onClick={() => setEditorTab("content")}
+                >
+                  Content
+                </button>
+                <button
+                  type="button"
+                  className={editorTab === "settings" ? "border-b-2 border-[var(--cf-accent)] py-2 text-sm font-semibold text-white" : "border-b-2 border-transparent py-2 text-sm font-semibold text-white/50 hover:text-white"}
+                  onClick={() => setEditorTab("settings")}
+                >
+                  Settings
+                </button>
+              </div>
             </div>
 
             <div className="min-h-0 flex-1 overflow-y-auto pb-6">
               <div className="flex flex-col gap-3">
-                <PageEditor
-                  slug={m.slug}
-                  navLabel={m.navLabel}
-                  metaTitle={m.metaTitle}
-                  metaDescription={m.metaDescription}
-                  showHeader={m.showHeader}
-                  showFooter={m.showFooter}
-                  status={m.status}
-                  onSlugChange={m.setSlug}
-                  onNavLabelChange={m.setNavLabel}
-                  onMetaTitleChange={m.setMetaTitle}
-                  onMetaDescriptionChange={m.setMetaDescription}
-                  onShowHeaderChange={m.setShowHeader}
-                  onShowFooterChange={m.setShowFooter}
-                  onStatusChange={m.setStatus}
-                />
+                {editorTab === "settings" || editorTab === "seo" ? (
+                  <PageEditor
+                    slug={m.slug}
+                    navLabel={m.navLabel}
+                    metaTitle={m.metaTitle}
+                    metaDescription={m.metaDescription}
+                    showHeader={m.showHeader}
+                    showFooter={m.showFooter}
+                    status={m.status}
+                    onSlugChange={m.setSlug}
+                    onNavLabelChange={m.setNavLabel}
+                    onMetaTitleChange={m.setMetaTitle}
+                    onMetaDescriptionChange={m.setMetaDescription}
+                    onShowHeaderChange={m.setShowHeader}
+                    onShowFooterChange={m.setShowFooter}
+                    onStatusChange={m.setStatus}
+                  />
+                ) : null}
 
-                <PageSectionsBlocks
-                  sections={m.sections}
-                  selectedSectionId={m.selectedSectionId}
-                  onSelect={(id) => {
-                    m.setSelectedSectionId(id);
-                  }}
-                  onToggleEnabled={(id) => {
-                    const s = m.sections.find((x) => x.id === id);
-                    if (!s) return;
-                    m.updateSection({ ...s, enabled: !s.enabled });
-                  }}
-                  onReorder={m.reorderSections}
-                  onAdd={m.addRichTextSection}
-                />
+                {editorTab === "content" ? (
+                  <PageSectionsBlocks
+                    sections={m.sections}
+                    selectedSectionId={m.selectedSectionId}
+                    onSelect={(id) => {
+                      m.setSelectedSectionId(id);
+                    }}
+                    onToggleEnabled={(id) => {
+                      const s = m.sections.find((x) => x.id === id);
+                      if (!s) return;
+                      m.updateSection({ ...s, enabled: !s.enabled });
+                    }}
+                    onReorder={m.reorderSections}
+                    onAdd={m.addRichTextSection}
+                  />
+                ) : null}
               </div>
             </div>
 
