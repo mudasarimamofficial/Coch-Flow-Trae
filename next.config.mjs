@@ -22,9 +22,6 @@ const nextConfig = {
       },
     ],
   },
-  async rewrites() {
-    return [{ source: '/', destination: '/coachflow-rebuilt-1.html' }]
-  },
 }
 
 export default nextConfig

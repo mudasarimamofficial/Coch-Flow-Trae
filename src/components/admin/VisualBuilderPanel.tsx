@@ -518,9 +518,43 @@ export function VisualBuilderPanel({ supabase, onNavigateTab, onSignOut }: Props
     return () => window.removeEventListener("mousedown", onDown);
   }, [backupsOpen]);
 
-  const loadLandingPreset = useCallback(() => {
-    const base = cloneContent(homepageDefaults);
+  const loadLandingPreset = useCallback(async () => {
     const current = cloneContent(contentRef.current);
+
+    let base: HomepageContent | null = null;
+    let source = "defaults";
+
+    const latest = await supabase
+      .from("homepage_content_versions")
+      .select("id, created_at, content")
+      .eq("homepage_id", 1)
+      .order("created_at", { ascending: false })
+      .limit(20);
+
+    if (!latest.error && Array.isArray(latest.data)) {
+      for (const row of latest.data as any[]) {
+        const c = mergeContent((row as any)?.content as Partial<HomepageContent>);
+        const preset = String((c.site as any)?.designPreset || "landing_html_v1");
+        if (preset !== "classic") {
+          base = c;
+          source = "latest version";
+          break;
+        }
+      }
+    }
+
+    if (!base) {
+      const preset = String((published.site as any)?.designPreset || "landing_html_v1");
+      if (preset !== "classic") {
+        base = cloneContent(published);
+        source = "published";
+      }
+    }
+
+    if (!base) {
+      base = cloneContent(homepageDefaults);
+      source = "defaults";
+    }
 
     base.site = {
       ...base.site,
@@ -536,8 +570,8 @@ export function VisualBuilderPanel({ supabase, onNavigateTab, onSignOut }: Props
     setSelectedId("hero");
     setSelectedBlockId(null);
     resetHistory();
-    setNotice("Landing preset loaded (not published). Save Draft to keep it.");
-  }, [cloneContent, resetHistory]);
+    setNotice(`Landing preset loaded from ${source} (not published). Save Draft to keep it.`);
+  }, [cloneContent, published, resetHistory, supabase]);
 
   const pageSections: PageSection[] = useMemo(() => {
     const list = content.page?.sections?.length ? content.page.sections : homepageDefaults.page!.sections;
@@ -1160,7 +1194,7 @@ export function VisualBuilderPanel({ supabase, onNavigateTab, onSignOut }: Props
               <button
                 type="button"
                 className="inline-flex h-9 items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 text-xs font-semibold text-white/80 hover:bg-white/10"
-                onClick={loadLandingPreset}
+                onClick={() => void loadLandingPreset()}
               >
                 Load landing preset
               </button>
@@ -3197,7 +3231,7 @@ export function VisualBuilderPanel({ supabase, onNavigateTab, onSignOut }: Props
                 <Redo2 className="mr-2 h-4 w-4" />
                 Redo
               </Button>
-              <Button variant="secondary" className="h-11" onClick={loadLandingPreset}>
+              <Button variant="secondary" className="h-11" onClick={() => void loadLandingPreset()}>
                 Load landing preset
               </Button>
               <Button

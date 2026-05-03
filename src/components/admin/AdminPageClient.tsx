@@ -13,16 +13,11 @@ import { HomepagePanel } from "@/components/admin/HomepagePanel";
 import { VisualBuilderPanel } from "@/components/admin/VisualBuilderPanel";
 import { SettingsPanel } from "@/components/admin/SettingsPanel";
 import { PagesPanel } from "@/components/admin/pages/PagesPanel";
-
-const BOOTSTRAP_ADMIN_EMAIL = "mudasarimamofficial@gmail.com";
+import { resolveIsAdmin, BOOTSTRAP_ADMIN_EMAIL } from "@/utils/adminGate";
+import { homepageDefaults, type HomepageContent } from "@/content/homepage";
 
 function normEmail(v: string | null | undefined) {
   return (v || "").trim().toLowerCase();
-}
-
-function isBootstrapAdmin(v: string | null | undefined) {
-  // Bootstrap gating is intentionally explicit until profiles/RLS admin roles are provisioned.
-  return normEmail(v) === BOOTSTRAP_ADMIN_EMAIL;
 }
 
 export function AdminPageClient() {
@@ -40,6 +35,8 @@ export function AdminPageClient() {
   >("loading");
 
   const [resendNotice, setResendNotice] = useState<string | null>(null);
+
+  const [brandIconUrl, setBrandIconUrl] = useState<string>(() => String(homepageDefaults.header.brandIcon?.url || ""));
 
   const [leads, setLeads] = useState<Lead[]>([]);
   const [leadsLoading, setLeadsLoading] = useState(false);
@@ -79,10 +76,16 @@ export function AdminPageClient() {
       setSessionUserId(initialUser?.id ?? null);
       if (!initialUser?.id) {
         setAuthStatus("signedOut");
-      } else if (isBootstrapAdmin(initialEmail)) {
-        setAuthStatus("signedInAdmin");
       } else {
-        setAuthStatus("signedInNonAdmin");
+        const ok = await resolveIsAdmin(client, { id: initialUser.id, email: initialEmail });
+        setAuthStatus(ok ? "signedInAdmin" : "signedInNonAdmin");
+      }
+
+      if (initialUser?.id) {
+        const { data: home } = await client.from("homepage_content").select("content").eq("id", 1).maybeSingle();
+        const c = (home?.content as HomepageContent | null) || null;
+        const url = String(c?.header?.brandIcon?.url || homepageDefaults.header.brandIcon?.url || "");
+        if (url) setBrandIconUrl(url);
       }
       subscription = client.auth.onAuthStateChange(async (_evt, s) => {
         const nextUser = s?.user ?? null;
@@ -91,10 +94,18 @@ export function AdminPageClient() {
         setSessionUserId(nextUser?.id ?? null);
         if (!nextUser?.id) {
           setAuthStatus("signedOut");
-        } else if (isBootstrapAdmin(nextEmail)) {
-          setAuthStatus("signedInAdmin");
         } else {
-          setAuthStatus("signedInNonAdmin");
+          const ok = await resolveIsAdmin(client, { id: nextUser.id, email: nextEmail });
+          setAuthStatus(ok ? "signedInAdmin" : "signedInNonAdmin");
+        }
+
+        if (nextUser?.id) {
+          const { data: home } = await client.from("homepage_content").select("content").eq("id", 1).maybeSingle();
+          const c = (home?.content as HomepageContent | null) || null;
+          const url = String(c?.header?.brandIcon?.url || homepageDefaults.header.brandIcon?.url || "");
+          if (url) setBrandIconUrl(url);
+        } else {
+          setBrandIconUrl(String(homepageDefaults.header.brandIcon?.url || ""));
         }
       }).data.subscription;
     })();
@@ -195,6 +206,7 @@ export function AdminPageClient() {
   if (authStatus === "signedOut") {
     return (
       <AdminLogin
+        brandIconUrl={brandIconUrl}
         email={email}
         password={password}
         error={authError}
@@ -252,6 +264,7 @@ export function AdminPageClient() {
 
   return (
     <AdminShell
+      brandIconUrl={brandIconUrl}
       tab={tab}
       onTabChange={setTab}
       sessionEmail={sessionEmail || ""}

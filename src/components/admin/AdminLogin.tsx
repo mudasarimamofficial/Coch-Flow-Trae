@@ -1,7 +1,9 @@
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
+import Image from "next/image";
 
 type Props = {
+  brandIconUrl?: string;
   email: string;
   password: string;
   error: string | null;
@@ -11,6 +13,7 @@ type Props = {
 };
 
 export function AdminLogin({
+  brandIconUrl,
   email,
   password,
   error,
@@ -22,6 +25,18 @@ export function AdminLogin({
     <div className="flex flex-1 items-center justify-center px-6 py-16">
       <div className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-8 shadow-xl shadow-black/5 dark:border-white/10 dark:bg-[#112121]">
         <div className="mb-6">
+          {brandIconUrl ? (
+            <div className="mb-5 flex justify-center">
+              <Image
+                src={brandIconUrl}
+                alt="CoachFlow"
+                width={56}
+                height={56}
+                className="h-14 w-14 rounded-2xl"
+                unoptimized
+              />
+            </div>
+          ) : null}
           <h1 className="text-xl font-bold">Admin sign in</h1>
           <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
             Sign in with your Supabase Auth admin email + password.

@@ -127,6 +127,7 @@ export function HomepageClient({ initialContent, isBuilderPreview }: Props) {
       <>
         {isBuilderPreview ? <style id="cf-live-theme-vars" dangerouslySetInnerHTML={{ __html: liveThemeCss }} /> : null}
         <LandingHtmlV1 content={resolved} />
+        <WhatsAppWidget content={resolved} />
         {isBuilderPreview && !hasPreviewOverride ? (
           <div className="fixed bottom-4 left-4 rounded-lg border border-slate-200 bg-white/90 px-3 py-2 text-xs text-slate-700 shadow-sm backdrop-blur dark:border-white/10 dark:bg-black/50 dark:text-slate-200">
             Waiting for builder preview…
