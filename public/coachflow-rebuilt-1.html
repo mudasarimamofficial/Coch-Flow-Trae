@@ -1427,12 +1427,47 @@ function closeMenu() {
 function handleSubmit() {
   const email = document.getElementById('email').value;
   const fname = document.getElementById('fname').value;
+  const lname = document.getElementById('lname') ? document.getElementById('lname').value : '';
+  const revenue = document.getElementById('revenue') ? document.getElementById('revenue').value : '';
+  const bottleneck = document.getElementById('bottleneck') ? document.getElementById('bottleneck').value : '';
   if (!fname || !email) {
     alert('Please fill in your name and email to apply.');
     return;
   }
-  document.getElementById('form-content').style.display = 'none';
-  document.getElementById('form-success').style.display = 'block';
+
+  const btn = document.querySelector('.form-submit');
+  if (btn) {
+    btn.disabled = true;
+    btn.dataset.prevText = btn.textContent || '';
+    btn.textContent = 'Submitting...';
+  }
+
+  fetch('/api/leads', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({
+      first_name: String(fname).trim(),
+      last_name: String(lname).trim() || '-',
+      email: String(email).trim(),
+      revenue: String(revenue).trim() || null,
+      message: String(bottleneck).trim() || null,
+    }),
+  })
+    .then((res) => {
+      if (!res.ok) throw new Error('bad_response');
+      document.getElementById('form-content').style.display = 'none';
+      document.getElementById('form-success').style.display = 'block';
+    })
+    .catch(() => {
+      alert('Something went wrong submitting your application. Please try again.');
+    })
+    .finally(() => {
+      if (btn) {
+        btn.disabled = false;
+        btn.textContent = btn.dataset.prevText || 'Submit Application →';
+        delete btn.dataset.prevText;
+      }
+    });
 }
 </script>
 
