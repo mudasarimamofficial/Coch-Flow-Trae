@@ -99,7 +99,6 @@ export function CustomCodePanel({ supabase }: Props) {
       ) : null}
 
       <div className="flex flex-col gap-6">
-        {/* Custom CSS */}
         <div className="flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-[var(--cf-secondary)]/60 shadow-xl">
           <div className="flex items-center gap-3 border-b border-white/10 bg-white/5 px-4 py-3">
             <Code2 className="h-4 w-4 text-white/50" />
@@ -122,7 +121,6 @@ export function CustomCodePanel({ supabase }: Props) {
           </div>
         </div>
 
-        {/* Custom JS */}
         <div className="flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-[var(--cf-secondary)]/60 shadow-xl">
           <div className="flex items-center gap-3 border-b border-white/10 bg-white/5 px-4 py-3">
             <Code2 className="h-4 w-4 text-white/50" />

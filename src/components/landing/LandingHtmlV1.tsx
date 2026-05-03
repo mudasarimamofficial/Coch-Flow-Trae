@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { HomepageContent } from "@/content/homepage";
+import { buildThemeCssVars } from "@/utils/themeCss";
 
 type Props = {
   content: HomepageContent;
@@ -67,11 +68,32 @@ type LandingPayload = {
     links: { label: string; href: string }[];
     copyright: string;
   };
+  features: {
+    tag: string;
+    heading: string;
+    subcopy: string;
+    cards: { title: string; copy: string }[];
+  };
+  testimonials: {
+    eyebrow: string;
+    heading: string;
+    subcopy: string;
+    stats: { value: string; label: string }[];
+  };
+  visibility: { selector: string; enabled: boolean; hideParent: boolean }[];
+  themeCssVars: string;
+  templateVarMapCss: string;
+  customCss: string;
+  customJs: string;
   backgrounds: LandingSectionBg[];
 };
 
 function safeJsonForInlineScript(value: unknown) {
   return JSON.stringify(value).replaceAll("<", "\\u003c");
+}
+
+function escapeInlineRawText(text: string) {
+  return String(text || "").replaceAll("</script", "<\\/script").replaceAll("</style", "<\\/style");
 }
 
 function resolveBackgrounds(content: HomepageContent): LandingSectionBg[] {
@@ -113,9 +135,38 @@ function resolveBackgrounds(content: HomepageContent): LandingSectionBg[] {
     { selector: "#promise", ...features },
     { selector: "#how", ...workflow },
     { selector: "#honest", ...testimonials },
-    { selector: "#pricing", ...pricing },
+    { selector: "#pricing .founding", ...pricing },
     { selector: "#apply", ...resolveApply },
     { selector: "footer", ...footer },
+  ];
+}
+
+function resolveVisibility(content: HomepageContent): { selector: string; enabled: boolean; hideParent: boolean }[] {
+  const sections = (content.page?.sections as any[]) || [];
+  const enabledByType = new Map<string, boolean>();
+  const presentByType = new Map<string, boolean>();
+  for (const s of sections) {
+    if (!s || typeof s !== "object") continue;
+    if (typeof s.type !== "string") continue;
+    presentByType.set(s.type, true);
+    enabledByType.set(s.type, Boolean((s as any).enabled !== false));
+  }
+
+  const isEnabled = (type: string, defaultWhenMissing: boolean) => {
+    if (!presentByType.has(type)) return defaultWhenMissing;
+    return Boolean(enabledByType.get(type));
+  };
+
+  return [
+    { selector: ".hero", enabled: isEnabled("hero", false), hideParent: false },
+    { selector: ".divider", enabled: isEnabled("hero", false), hideParent: false },
+    { selector: ".trust-strip", enabled: isEnabled("trust", true), hideParent: false },
+    { selector: "#promise", enabled: isEnabled("features", false), hideParent: false },
+    { selector: "#how", enabled: isEnabled("workflow", false), hideParent: true },
+    { selector: "#honest", enabled: isEnabled("testimonials", false), hideParent: false },
+    { selector: "#pricing", enabled: isEnabled("pricing", false), hideParent: false },
+    { selector: "#apply", enabled: isEnabled("application", false), hideParent: false },
+    { selector: "footer", enabled: isEnabled("footer", false), hideParent: false },
   ];
 }
 
@@ -125,6 +176,11 @@ function buildPayload(content: HomepageContent): LandingPayload {
     const s = sections.find((sec) => sec && typeof sec === "object" && String(sec.type) === type);
     const label = String((s as any)?.settings?.label || "").trim();
     return label || fallback;
+  };
+
+  const getSection = (type: string) => {
+    const sections = (content.page?.sections as any[]) || [];
+    return sections.find((sec) => sec && typeof sec === "object" && String(sec.type) === type) as any;
   };
 
   const trustItems =
@@ -141,6 +197,19 @@ function buildPayload(content: HomepageContent): LandingPayload {
   const workflowSteps = Array.isArray(content.workflow?.steps) ? content.workflow.steps : [];
   const pricingTiers = Array.isArray(content.pricing?.tiers) ? content.pricing.tiers : [];
   const navItems = Array.isArray(content.header?.nav) ? content.header.nav : [];
+
+  const themeEnabled = Boolean((content as any).branding?.enabled || (content as any).site?.theme?.enabled);
+  const themeCssVars = buildThemeCssVars(content);
+  const templateVarMapCss = themeEnabled
+    ? ":root{--black:var(--cf-bg);--white:var(--cf-text);--gold:var(--cf-gold);--gold-light:var(--cf-gold2);--gold-dim:var(--cf-gold3);--charcoal:var(--cf-surface);--mid:var(--cf-navy4);--muted:var(--cf-muted);--border:var(--cf-border-gold);--border-subtle:var(--cf-border2);}"
+    : "";
+
+  const testimonialsSection = getSection("testimonials");
+  const testimonialSettings = (testimonialsSection?.settings || {}) as any;
+  const statsRaw = Array.isArray(testimonialSettings?.stats) ? testimonialSettings.stats : [];
+  const stats = statsRaw
+    .map((s: any) => ({ value: String(s?.value || ""), label: String(s?.label || "") }))
+    .filter((s: any) => s.value || s.label);
 
   return {
     header: {
@@ -209,6 +278,25 @@ function buildPayload(content: HomepageContent): LandingPayload {
         : [],
       copyright: String(content.footer?.copyright || ""),
     },
+    features: {
+      tag: getSectionLabel("features", "What You're Actually Getting"),
+      heading: String((content as any).features?.heading || "What You're Actually Getting"),
+      subcopy: String((content as any).features?.subcopy || ""),
+      cards: Array.isArray((content as any).features?.cards)
+        ? (content as any).features.cards.map((c: any) => ({ title: String(c?.title || ""), copy: String(c?.copy || "") }))
+        : [],
+    },
+    testimonials: {
+      eyebrow: String(testimonialSettings?.eyebrow || "The Honest Part"),
+      heading: String(testimonialSettings?.heading || ""),
+      subcopy: String(testimonialSettings?.subcopy || ""),
+      stats,
+    },
+    visibility: resolveVisibility(content),
+    themeCssVars,
+    templateVarMapCss,
+    customCss: String((content as any).site?.customCss || ""),
+    customJs: String((content as any).site?.customJs || ""),
     backgrounds: resolveBackgrounds(content),
   };
 }
@@ -227,6 +315,9 @@ function buildDynamicCss(payload: LandingPayload) {
 function buildSrcDoc(templateHtml: string, payload: LandingPayload) {
   const css = buildDynamicCss(payload);
   const payloadJson = safeJsonForInlineScript(payload);
+  const themeCssVars = escapeInlineRawText(payload.themeCssVars || "");
+  const templateVarMapCss = escapeInlineRawText(payload.templateVarMapCss || "");
+  const customCss = escapeInlineRawText(payload.customCss || "");
 
   const bootstrapScript = `
 (function(){
@@ -235,6 +326,42 @@ function buildSrcDoc(templateHtml: string, payload: LandingPayload) {
   function setText(sel, text){var el=$(sel); if(!el) return; el.textContent=String(text||'');}
   function setHtml(sel, html){var el=$(sel); if(!el) return; el.innerHTML=String(html||'');}
   function ensureList(sel){var el=$(sel); if(!el) return null; while(el.firstChild) el.removeChild(el.firstChild); return el;}
+  function setStyle(id, css){
+    var el=document.getElementById(id);
+    if(!el){ el=document.createElement('style'); el.id=id; document.head.appendChild(el); }
+    el.textContent=String(css||'');
+  }
+  function setScript(id, code){
+    var next=String(code||'');
+    if(window.__CF_CUSTOM_JS__===next) return;
+    window.__CF_CUSTOM_JS__=next;
+    var old=document.getElementById(id);
+    if(old && old.parentNode) old.parentNode.removeChild(old);
+    if(!next) return;
+    var s=document.createElement('script');
+    s.id=id;
+    s.text=next;
+    document.body.appendChild(s);
+  }
+  function applyTheme(data){
+    setStyle('cf-theme-vars', data.themeCssVars||'');
+    setStyle('cf-template-var-map', data.templateVarMapCss||'');
+    setStyle('cf-site-custom-css', data.customCss||'');
+    setScript('cf-site-custom-js', data.customJs||'');
+  }
+  function applyVisibility(data){
+    var items=data.visibility||[];
+    for(var i=0;i<items.length;i++){
+      var v=items[i];
+      if(!v || !v.selector) continue;
+      var el=$(v.selector);
+      if(!el) continue;
+      var enabled = v.enabled !== false;
+      var parent = (v.hideParent && el.parentElement && el.parentElement.children.length===1) ? el.parentElement : null;
+      if(parent) parent.style.display = enabled ? '' : 'none';
+      el.style.display = enabled ? '' : 'none';
+    }
+  }
   function applyNav(data){
     setText('.nav-logo', data.header.brandText);
     var nav=ensureList('.nav-links');
@@ -272,6 +399,58 @@ function buildSrcDoc(templateHtml: string, payload: LandingPayload) {
       mcta.setAttribute('onclick','closeMenu()');
       mcta.textContent=data.header.primaryCta.text||'Apply Now';
       mob.appendChild(mcta);
+    }
+  }
+  function applyFeatures(data){
+    setText('#promise .section-tag', data.features.tag);
+    setText('#promise .section-title', data.features.heading);
+    setText('#promise .section-body', data.features.subcopy);
+    var cards=document.querySelectorAll('#promise .promise-card');
+    var items=(data.features.cards||[]);
+    for(var i=0;i<cards.length;i++){
+      var it=items[i];
+      if(!it) continue;
+      var title=cards[i].querySelector('.promise-title');
+      var body=cards[i].querySelector('.promise-body');
+      if(title) title.textContent=String(it.title||'');
+      if(body) body.textContent=String(it.copy||'');
+    }
+  }
+  function applyTestimonials(data){
+    if(data.testimonials.eyebrow) setText('#honest .section-tag', data.testimonials.eyebrow);
+    if(data.testimonials.heading){
+      var q=String(data.testimonials.heading||'');
+      if(q && q.indexOf('“')===-1 && q.indexOf('"')===-1) q='“' + q + '”';
+      setText('#honest .honest-quote', q);
+    }
+    if(data.testimonials.subcopy){
+      var bodyEl=document.querySelector('#honest .honest-body');
+      if(bodyEl){
+        while(bodyEl.firstChild) bodyEl.removeChild(bodyEl.firstChild);
+        var txt=String(data.testimonials.subcopy||'');
+        if(txt.indexOf('<')>=0){
+          setHtml('#honest .honest-body', txt);
+        } else {
+          var parts=txt.split(/\n\n+/);
+          for(var i=0;i<parts.length;i++){
+            var p=document.createElement('p');
+            p.textContent=String(parts[i]||'').trim();
+            if(p.textContent) bodyEl.appendChild(p);
+          }
+        }
+      }
+    }
+    var items=data.testimonials.stats||[];
+    var ul=document.querySelector('#honest .honest-pledge-items');
+    if(ul && items.length){
+      while(ul.firstChild) ul.removeChild(ul.firstChild);
+      for(var i=0;i<items.length;i++){
+        var li=document.createElement('li');
+        var v=String(items[i].value||'');
+        var l=String(items[i].label||'');
+        li.textContent=(v && l) ? (v + ' — ' + l) : (v || l);
+        ul.appendChild(li);
+      }
     }
   }
   function applyHero(data){
@@ -427,9 +606,13 @@ function buildSrcDoc(templateHtml: string, payload: LandingPayload) {
     }catch(e){}
   }
   function applyAll(data){
+    try{applyTheme(data);}catch(e){}
+    try{applyVisibility(data);}catch(e){}
     try{applyNav(data);}catch(e){}
     try{applyHero(data);}catch(e){}
+    try{applyFeatures(data);}catch(e){}
     try{applyWorkflow(data);}catch(e){}
+    try{applyTestimonials(data);}catch(e){}
     try{applyPricing(data);}catch(e){}
     try{applyApplication(data);}catch(e){}
     try{applyFooter(data);}catch(e){}
@@ -468,7 +651,7 @@ function buildSrcDoc(templateHtml: string, payload: LandingPayload) {
   let out = templateHtml;
   out = out.replace(
     "</head>",
-    `<style id="cf-dynamic-bg">${css}</style></head>`,
+    `<style id="cf-theme-vars">${themeCssVars}</style><style id="cf-template-var-map">${templateVarMapCss}</style><style id="cf-site-custom-css">${customCss}</style><style id="cf-dynamic-bg">${css}</style></head>`,
   );
   out = out.replace("</body>", `<script>${bootstrapScript}</script></body>`);
   return out;
@@ -497,7 +680,7 @@ export function LandingHtmlV1({ content }: Props) {
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      const res = await fetch("/coachflow-rebuilt-1.html", { cache: "force-cache" });
+      const res = await fetch("/coachflow-rebuilt-1.html", { cache: "no-store" });
       if (!res.ok) return;
       const html = await res.text();
       if (cancelled) return;
