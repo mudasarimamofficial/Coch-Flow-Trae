@@ -1,8 +1,4 @@
-import type { HomepageContent } from "@/content/homepage";
-
-type Props = { content: HomepageContent };
-
-export function LandingHtmlV1Hero(_: Props) {
+export function LandingHtmlV1Hero() {
   const trustItems = [
     "Fit-first — we turn away wrong clients",
     "Human outreach — no bots, no spam",
