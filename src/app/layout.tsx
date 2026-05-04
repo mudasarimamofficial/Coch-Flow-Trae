@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import { DM_Sans, Inter, Playfair_Display } from "next/font/google";
 import "./globals.css";
+import { ThemeScript } from "@/components/theme/ThemeScript";
+import { getHomepageContent } from "@/utils/homepageContent";
+import { buildThemeCssVars } from "@/utils/themeCss";
 
 const headingFont = Playfair_Display({
   subsets: ["latin"],
@@ -26,23 +29,74 @@ const adminFont = Inter({
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-export const metadata: Metadata = {
-  metadataBase: new URL("https://coachflow-a1.vercel.app"),
-  title: "CoachFlow AI | Stop Guessing. Closing.",
-  description: "CoachFlow AI helps premium coaches build predictable client acquisition systems.",
-  robots: { index: true, follow: true },
-  icons: {
-    icon: [{ url: "/favicon.ico" }],
-    shortcut: [{ url: "/favicon.ico" }],
-    apple: [{ url: "/favicon.ico" }],
-  },
-};
+function compactText(value: unknown) {
+  return typeof value === "string" ? value.replace(/\s+/g, " ").trim() : "";
+}
+
+function escapeInlineRawText(value: string) {
+  return value.replace(/<\/(script|style)/gi, "<\\/$1");
+}
+
+export async function generateMetadata(): Promise<Metadata> {
+  const content = await getHomepageContent();
+  const brand = compactText(content.header?.brandText) || "CoachFlow AI";
+  const promise = compactText(`${content.hero?.heading?.prefix || ""} ${content.hero?.heading?.highlight || ""}`);
+  const title = promise ? `${brand} | ${promise}` : brand;
+  const description =
+    compactText(content.hero?.subcopy) ||
+    compactText(content.application?.subcopy) ||
+    "CoachFlow AI helps premium coaches build predictable client acquisition systems.";
+  const faviconHref =
+    content.site?.favicon?.url ||
+    "https://ekwydksbprxebgmhbmtj.supabase.co/storage/v1/object/public/assets/coch%20flow%20favicon.png";
+
+  return {
+    metadataBase: new URL("https://coachflow-a1.vercel.app"),
+    title,
+    description,
+    icons: {
+      icon: [{ url: faviconHref }],
+      shortcut: [{ url: faviconHref }],
+      apple: [{ url: faviconHref }],
+    },
+    openGraph: {
+      title,
+      description,
+      url: "https://coachflow-a1.vercel.app",
+      siteName: brand,
+      type: "website",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+    },
+  };
+}
 
 export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const content = await getHomepageContent();
+  const cssVars = buildThemeCssVars(content);
+  const faviconHref =
+    content.site?.favicon?.url ||
+    "https://ekwydksbprxebgmhbmtj.supabase.co/storage/v1/object/public/assets/coch%20flow%20favicon.png";
+  const appleTouchHref = faviconHref;
+  const customCss = content.site?.customCss?.trim() || "";
+  const customJs = content.site?.customJs?.trim() || "";
+  const customCssId = "cf-public-custom-css";
+  const lower = faviconHref.toLowerCase();
+  const type =
+    lower.endsWith(".png")
+      ? "image/png"
+      : lower.endsWith(".svg")
+        ? "image/svg+xml"
+        : lower.endsWith(".ico")
+          ? "image/x-icon"
+          : undefined;
   return (
     <html
       lang="en"
@@ -50,6 +104,26 @@ export default async function RootLayout({
       className={`${headingFont.variable} ${bodyFont.variable} ${adminFont.variable} h-full antialiased`}
     >
       <head>
+        <link rel="icon" href={faviconHref} type={type} sizes="any" />
+        <link rel="shortcut icon" href={faviconHref} type={type} />
+        <link rel="apple-touch-icon" href={appleTouchHref} />
+        <style dangerouslySetInnerHTML={{ __html: cssVars }} />
+        {customCss.length ? (
+          <>
+            <style
+              id={customCssId}
+              media="not all"
+              dangerouslySetInnerHTML={{ __html: escapeInlineRawText(customCss) }}
+            />
+            <script
+              dangerouslySetInnerHTML={{
+                __html:
+                  `;(() => { const el = document.getElementById(${JSON.stringify(customCssId)});` +
+                  ` if (!el) return; if (location.pathname.startsWith("/admin")) { el.remove(); return; } el.media = "all"; })();`,
+              }}
+            />
+          </>
+        ) : null}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
         <link
@@ -60,9 +134,17 @@ export default async function RootLayout({
           href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
           rel="stylesheet"
         />
+        <ThemeScript />
       </head>
       <body className="min-h-full flex flex-col bg-[var(--cf-bg)] text-[var(--cf-text)]">
         {children}
+        {customJs.length ? (
+          <script
+            dangerouslySetInnerHTML={{
+              __html: `;(() => { if (location.pathname.startsWith("/admin")) return;\n${escapeInlineRawText(customJs)}\n})();`,
+            }}
+          />
+        ) : null}
       </body>
     </html>
   );
