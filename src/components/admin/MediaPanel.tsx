@@ -131,6 +131,27 @@ export function MediaPanel({ supabase }: Props) {
     [prefix, supabase, load, loadUsage],
   );
 
+  const replace = useCallback(
+    async (asset: MediaAsset, file: File) => {
+      setLoading(true);
+      setError(null);
+      try {
+        const { error } = await supabase.storage
+          .from("homepage")
+          .upload(asset.path, file, { upsert: true, contentType: file.type });
+        if (error) {
+          setError(error.message);
+          return;
+        }
+        await load();
+        await loadUsage();
+      } finally {
+        setLoading(false);
+      }
+    },
+    [load, loadUsage, supabase],
+  );
+
   useEffect(() => {
     load();
     loadUsage();
@@ -291,6 +312,22 @@ export function MediaPanel({ supabase }: Props) {
                     >
                       Copy URL
                     </Button>
+                  <label
+                    className="inline-flex h-8 items-center justify-center rounded-lg border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-700 hover:bg-slate-50 dark:border-white/10 dark:bg-white/5 dark:text-white/80 dark:hover:bg-white/10"
+                    title="Replace this file (keeps same URL/path)"
+                  >
+                    Replace
+                    <input
+                      type="file"
+                      className="hidden"
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+                        await replace(a, file);
+                        e.target.value = "";
+                      }}
+                    />
+                  </label>
                     <button
                       type="button"
                       className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-1.5 text-xs font-semibold text-rose-600 hover:bg-rose-100 dark:border-rose-500/20 dark:bg-rose-500/10 dark:text-rose-400 dark:hover:bg-rose-500/20"
@@ -309,7 +346,6 @@ export function MediaPanel({ supabase }: Props) {
                   </div>
                 </div>
               </div>
-            ))}
             {filtered.length === 0 && !loading ? (
               <div className="col-span-full py-10 text-center text-sm text-slate-500">No assets found.</div>
             ) : null}

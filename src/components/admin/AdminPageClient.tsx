@@ -23,7 +23,7 @@ export function AdminPageClient() {
   const router = useRouter();
   const [supabase, setSupabase] = useState<SupabaseClient | null>(null);
   const [configError, setConfigError] = useState<string | null>(null);
-  const [tab, setTab] = useState<Tab>("builder");
+  const [tab, setTab] = useState<Tab>("overview");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [authError, setAuthError] = useState<string | null>(null);
@@ -275,18 +275,9 @@ export function AdminPageClient() {
         setQuery("");
       }}
     >
-      {tab === "overview" ? <OverviewPanel onTabChange={setTab} /> : null}
+      {tab === "overview" ? <OverviewPanel supabase={supabase} onTabChange={setTab} /> : null}
       {tab === "builder" ? (
-        <VisualBuilderPanel
-          supabase={supabase}
-          onNavigateTab={setTab}
-          onSignOut={async () => {
-            await supabase.auth.signOut();
-            setLeads([]);
-            setSelectedId(null);
-            setQuery("");
-          }}
-        />
+        <VisualBuilderPanel supabase={supabase} />
       ) : null}
       {tab === "pages" ? <PagesPanel supabase={supabase} /> : null}
       {tab === "leads" ? (

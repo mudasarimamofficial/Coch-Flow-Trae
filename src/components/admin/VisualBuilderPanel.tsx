@@ -48,8 +48,6 @@ import {
 
 type Props = {
   supabase: SupabaseClient;
-  onNavigateTab?: (tab: Tab) => void;
-  onSignOut?: () => Promise<void>;
 };
 
 type PreviewMode = "desktop" | "tablet" | "mobile";
@@ -1105,15 +1103,6 @@ export function VisualBuilderPanel({ supabase, onNavigateTab, onSignOut }: Props
   const statusTone = draft ? "draft" : "published";
   const statusText = draft ? "Draft" : "Published";
 
-  const navItems: { tab: Tab; label: string }[] = [
-    { tab: "leads", label: "Leads" },
-    { tab: "builder", label: "Builder" },
-    { tab: "pages", label: "Pages" },
-    { tab: "homepage", label: "JSON" },
-    { tab: "custom", label: "Custom" },
-    { tab: "settings", label: "Settings" },
-  ];
-
   const sectionMeta = (id: string) => {
     const s = pageSections.find((x) => x.id === id);
     const t = String(s?.type || "");
@@ -1155,186 +1144,128 @@ export function VisualBuilderPanel({ supabase, onNavigateTab, onSignOut }: Props
 
   return (
     <div className="flex h-full flex-col overflow-hidden bg-[var(--cf-bg)]">
-      <div className="hidden lg:block">
-        <div className="sticky top-0 z-30 border-b border-white/10 bg-[var(--cf-secondary)]/80 px-6 py-3 backdrop-blur">
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-3">
-              <div className="text-xs text-white/60">/admin</div>
-              <div className="text-sm font-semibold text-white/90">Visual Builder</div>
-              {pill(statusText, statusTone)}
-            </div>
-
-            <div className="flex flex-1 items-center justify-center">
-              <div className="flex items-center gap-1 rounded-xl border border-white/10 bg-white/5 p-1">
-                {deviceButton(mode === "desktop", () => setMode("desktop"), <Monitor className="h-4 w-4" />, "Desktop")}
-                {deviceButton(mode === "tablet", () => setMode("tablet"), <TabletIcon className="h-4 w-4" />, "Tablet")}
-                {deviceButton(mode === "mobile", () => setMode("mobile"), <Smartphone className="h-4 w-4" />, "Mobile")}
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                className="inline-flex h-9 items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 text-xs font-semibold text-white/80 hover:bg-white/10 disabled:opacity-50"
-                disabled={historySize === 0}
-                onClick={undo}
-              >
-                <Undo2 className="h-4 w-4" />
-                Undo
-              </button>
-              <button
-                type="button"
-                className="inline-flex h-9 items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 text-xs font-semibold text-white/80 hover:bg-white/10 disabled:opacity-50"
-                disabled={futureSize === 0}
-                onClick={redo}
-              >
-                <Redo2 className="h-4 w-4" />
-                Redo
-              </button>
-              <button
-                type="button"
-                className="inline-flex h-9 items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 text-xs font-semibold text-white/80 hover:bg-white/10"
-                onClick={() => void loadLandingPreset()}
-              >
-                Load landing preset
-              </button>
-
-              <div ref={backupsRef} className="relative">
-                <button
-                  type="button"
-                  className="inline-flex h-9 items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 text-xs font-semibold text-white/80 hover:bg-white/10"
-                  onClick={async () => {
-                    const next = !backupsOpen;
-                    setBackupsOpen(next);
-                    if (next) await loadBackups();
-                  }}
-                >
-                  Backups
-                </button>
-
-                {backupsOpen ? (
-                  <div className="absolute right-0 top-full mt-2 w-[360px] rounded-2xl border border-white/10 bg-[var(--cf-secondary)] p-3 shadow-2xl">
-                    <div className="flex items-center justify-between px-1 pb-2">
-                      <div className="text-xs font-bold uppercase tracking-wide text-white/60">Latest backups (5)</div>
-                      <button
-                        type="button"
-                        className="text-xs font-semibold text-white/70 hover:text-white"
-                        onClick={async () => {
-                          await loadBackups();
-                        }}
-                      >
-                        Refresh
-                      </button>
-                    </div>
-                    <div className="flex flex-col gap-2">
-                      {!backups.length ? (
-                        <div className="rounded-xl border border-white/10 bg-white/5 px-3 py-3 text-sm text-white/70">
-                          No backups yet. Use Save Draft or Publish to create one.
-                        </div>
-                      ) : null}
-                      {backups.map((b) => (
-                        <div
-                          key={b.id}
-                          className="flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-white/5 px-3 py-3"
-                        >
-                          <div className="min-w-0">
-                            <div className="truncate text-sm font-semibold text-white">{formatTimestamp(b.createdAt)}</div>
-                            <div className="text-xs text-white/50">Backup #{b.id}</div>
-                          </div>
-                          <button
-                            type="button"
-                            className="inline-flex h-9 items-center justify-center rounded-xl bg-[var(--cf-accent)] px-3 text-xs font-bold text-[#0A0F1E] hover:brightness-95"
-                            onClick={() => {
-                              setDraft(b.content);
-                              setSelectedId("hero");
-                              setSelectedBlockId(null);
-                              resetHistory();
-                              setBackupsOpen(false);
-                              setNotice(`Restored backup from ${formatTimestamp(b.createdAt)}`);
-                            }}
-                          >
-                            Restore
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                ) : null}
-              </div>
-
-              <button
-                type="button"
-                className="inline-flex h-9 items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 text-xs font-semibold text-white/80 hover:bg-white/10 disabled:opacity-50"
-                disabled={saving}
-                onClick={async () => {
-                  const ok = await saveDraft(content);
-                  if (!ok) return;
-                  await createBackupSnapshot(content);
-                  setNotice("Draft saved (backup created)");
-                }}
-              >
-                Save Draft
-              </button>
-              <button
-                type="button"
-                className="inline-flex h-9 items-center gap-2 rounded-xl bg-[var(--cf-accent)] px-3 text-xs font-bold text-[#0A0F1E] hover:brightness-95 disabled:opacity-50"
-                disabled={!draft || publishing}
-                onClick={publishNow}
-              >
-                Publish
-              </button>
-              <button
-                type="button"
-                className="inline-flex h-9 items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 text-xs font-semibold text-white/80 hover:bg-white/10"
-                onClick={async () => {
-                  await supabase.from("homepage_content_drafts").upsert({ id: 1, content: {} }, { onConflict: "id" });
-                  setDraft(null);
-                  resetHistory();
-                  setNotice("Reverted to published");
-                }}
-              >
-                Revert
-              </button>
-
-              <button
-                type="button"
-                className="ml-2 inline-flex h-9 items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 text-xs font-semibold text-white/80 hover:bg-white/10"
-                onClick={async () => {
-                  if (onSignOut) await onSignOut();
-                  else await supabase.auth.signOut();
-                  router.refresh();
-                }}
-              >
-                <LogOut className="h-4 w-4" />
-                Sign out
-              </button>
-            </div>
+      <div className="border-b border-white/10 bg-[var(--cf-secondary)]/70 px-4 py-3 backdrop-blur lg:px-6">
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="text-sm font-semibold text-white">Homepage Builder</div>
+            {pill(statusText, statusTone)}
+            <div className="hidden text-xs text-white/45 lg:block">Preview + publish controls are synced to the live landing page.</div>
           </div>
-        </div>
-      </div>
 
-      <div className="lg:hidden">
-        <div className="sticky top-0 z-30 border-b border-white/10 bg-[var(--cf-secondary)]/85 px-4 py-3 backdrop-blur">
-          <div className="flex items-center justify-between gap-3">
+          <div className="flex flex-wrap items-center gap-2 lg:ml-auto lg:justify-end">
+            <div className="flex items-center gap-1 rounded-xl border border-white/10 bg-white/5 p-1">
+              {deviceButton(mode === "desktop", () => setMode("desktop"), <Monitor className="h-4 w-4" />, "Desktop")}
+              {deviceButton(mode === "tablet", () => setMode("tablet"), <TabletIcon className="h-4 w-4" />, "Tablet")}
+              {deviceButton(mode === "mobile", () => setMode("mobile"), <Smartphone className="h-4 w-4" />, "Mobile")}
+            </div>
+
             <button
               type="button"
-              className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-white/90"
-              onClick={() => setMobileMenuOpen(true)}
-              aria-label="Open menu"
+              className="hidden h-10 items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 text-xs font-semibold text-white/80 hover:bg-white/10 disabled:opacity-50 lg:inline-flex"
+              disabled={historySize === 0}
+              onClick={undo}
             >
-              <PanelLeft className="h-4 w-4" />
+              <Undo2 className="h-4 w-4" />
+              Undo
+            </button>
+            <button
+              type="button"
+              className="hidden h-10 items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 text-xs font-semibold text-white/80 hover:bg-white/10 disabled:opacity-50 lg:inline-flex"
+              disabled={futureSize === 0}
+              onClick={redo}
+            >
+              <Redo2 className="h-4 w-4" />
+              Redo
             </button>
 
-            <div className="flex min-w-0 flex-1 items-center gap-2">
-              <span className="inline-flex h-2 w-2 rounded-full bg-[var(--cf-accent)]" />
-              <div className="truncate text-sm font-semibold text-white">
-                CoachFlow <span className="text-[var(--cf-accent)]">AI</span>
-              </div>
+            <button
+              type="button"
+              className="hidden h-10 items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 text-xs font-semibold text-white/80 hover:bg-white/10 lg:inline-flex"
+              onClick={() => void loadLandingPreset()}
+            >
+              Load landing preset
+            </button>
+
+            <div ref={backupsRef} className="relative hidden lg:block">
+              <button
+                type="button"
+                className="inline-flex h-10 items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 text-xs font-semibold text-white/80 hover:bg-white/10"
+                onClick={async () => {
+                  const next = !backupsOpen;
+                  setBackupsOpen(next);
+                  if (next) await loadBackups();
+                }}
+              >
+                Backups
+              </button>
+
+              {backupsOpen ? (
+                <div className="absolute right-0 top-full mt-2 w-[360px] rounded-2xl border border-white/10 bg-[var(--cf-secondary)] p-3 shadow-2xl">
+                  <div className="flex items-center justify-between px-1 pb-2">
+                    <div className="text-xs font-bold uppercase tracking-wide text-white/60">Latest backups (5)</div>
+                    <button
+                      type="button"
+                      className="text-xs font-semibold text-white/70 hover:text-white"
+                      onClick={async () => {
+                        await loadBackups();
+                      }}
+                    >
+                      Refresh
+                    </button>
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    {!backups.length ? (
+                      <div className="rounded-xl border border-white/10 bg-white/5 px-3 py-3 text-sm text-white/70">
+                        No backups yet. Use Save Draft or Publish to create one.
+                      </div>
+                    ) : null}
+                    {backups.map((b) => (
+                      <div
+                        key={b.id}
+                        className="flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-white/5 px-3 py-3"
+                      >
+                        <div className="min-w-0">
+                          <div className="truncate text-sm font-semibold text-white">{formatTimestamp(b.createdAt)}</div>
+                          <div className="text-xs text-white/50">Backup #{b.id}</div>
+                        </div>
+                        <button
+                          type="button"
+                          className="inline-flex h-9 items-center justify-center rounded-xl bg-[var(--cf-accent)] px-3 text-xs font-bold text-[#0A0F1E] hover:brightness-95"
+                          onClick={() => {
+                            setDraft(b.content);
+                            setSelectedId("hero");
+                            setSelectedBlockId(null);
+                            resetHistory();
+                            setBackupsOpen(false);
+                            setNotice(`Restored backup from ${formatTimestamp(b.createdAt)}`);
+                          }}
+                        >
+                          Restore
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
             </div>
 
             <button
               type="button"
-              className="inline-flex h-10 items-center justify-center rounded-xl bg-[var(--cf-accent)] px-4 text-sm font-bold text-[#0A0F1E] disabled:opacity-50"
+              className="hidden h-10 items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 text-xs font-semibold text-white/80 hover:bg-white/10 disabled:opacity-50 lg:inline-flex"
+              disabled={saving}
+              onClick={async () => {
+                const ok = await saveDraft(content);
+                if (!ok) return;
+                await createBackupSnapshot(content);
+                setNotice("Draft saved (backup created)");
+              }}
+            >
+              Save Draft
+            </button>
+
+            <button
+              type="button"
+              className="inline-flex h-10 items-center gap-2 rounded-xl bg-[var(--cf-accent)] px-4 text-sm font-bold text-[#0A0F1E] hover:brightness-95 disabled:opacity-50"
               disabled={!draft || publishing}
               onClick={publishNow}
             >
@@ -1343,17 +1274,25 @@ export function VisualBuilderPanel({ supabase, onNavigateTab, onSignOut }: Props
 
             <button
               type="button"
-              className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-white/90"
+              className="hidden h-10 items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 text-xs font-semibold text-white/80 hover:bg-white/10 lg:inline-flex"
+              onClick={async () => {
+                await supabase.from("homepage_content_drafts").upsert({ id: 1, content: {} }, { onConflict: "id" });
+                setDraft(null);
+                resetHistory();
+                setNotice("Reverted to published");
+              }}
+            >
+              Revert
+            </button>
+
+            <button
+              type="button"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-white/80 hover:bg-white/10 hover:text-white lg:hidden"
               onClick={() => setMobileActionsOpen(true)}
               aria-label="More"
             >
               <MoreHorizontal className="h-5 w-5" />
             </button>
-          </div>
-
-          <div className="mt-3 flex items-center justify-between">
-            <div className="text-xs text-white/60">/admin – Visual Builder</div>
-            {pill(statusText, statusTone)}
           </div>
         </div>
       </div>
@@ -3152,63 +3091,6 @@ export function VisualBuilderPanel({ supabase, onNavigateTab, onSignOut }: Props
         </div>
       </div>
 
-      {mobileMenuOpen ? (
-        <div className="fixed inset-0 z-50 bg-black/60 p-4 lg:hidden" onClick={() => setMobileMenuOpen(false)}>
-          <div
-            className="w-full max-w-sm rounded-2xl border border-white/10 bg-[var(--cf-secondary)] p-3 shadow-2xl"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-center justify-between px-2 py-2">
-              <div className="text-sm font-bold text-white">Menu</div>
-              <button
-                type="button"
-                className="admin-mobile-menu-close inline-flex h-9 w-9 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-white/90"
-                onClick={() => setMobileMenuOpen(false)}
-                aria-label="Close menu"
-              >
-                ×
-              </button>
-            </div>
-            <div className="mt-2 flex flex-col gap-1">
-              {navItems.map((i) => (
-                <button
-                  key={i.tab}
-                  type="button"
-                  className={
-                    i.tab === "builder"
-                      ? "admin-mobile-menu-item flex items-center gap-3 rounded-xl bg-white/10 px-3 py-3 text-sm font-bold text-white"
-                      : "admin-mobile-menu-item flex items-center gap-3 rounded-xl px-3 py-3 text-sm text-white/80 hover:bg-white/5"
-                  }
-                  onClick={() => {
-                    if (onNavigateTab) onNavigateTab(i.tab);
-                    setMobileMenuOpen(false);
-                  }}
-                >
-                  <span className="inline-flex w-6 justify-center">•</span>
-                  {i.label}
-                </button>
-              ))}
-
-              <div className="mt-2 border-t border-white/10 pt-2">
-                <Button
-                  variant="secondary"
-                  className="h-11 w-full"
-                  onClick={async () => {
-                    if (onSignOut) await onSignOut();
-                    else await supabase.auth.signOut();
-                    setMobileMenuOpen(false);
-                    router.refresh();
-                  }}
-                >
-                  <LogOut className="mr-2 h-4 w-4" />
-                  Sign out
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
-      ) : null}
-
       {mobileActionsOpen ? (
         <div className="fixed inset-0 z-50 bg-black/60 p-4 lg:hidden" onClick={() => setMobileActionsOpen(false)}>
           <div
@@ -3228,6 +3110,9 @@ export function VisualBuilderPanel({ supabase, onNavigateTab, onSignOut }: Props
             </div>
 
             <div className="mt-2 grid grid-cols-1 gap-2">
+              <Button variant="secondary" className="h-11" onClick={() => void loadBackups()}>
+                Refresh backups
+              </Button>
               <Button variant="secondary" className="h-11" disabled={historySize === 0} onClick={undo}>
                 <Undo2 className="mr-2 h-4 w-4" />
                 Undo
@@ -3239,6 +3124,52 @@ export function VisualBuilderPanel({ supabase, onNavigateTab, onSignOut }: Props
               <Button variant="secondary" className="h-11" onClick={() => void loadLandingPreset()}>
                 Load landing preset
               </Button>
+              <Button
+                variant="secondary"
+                className="h-11"
+                onClick={async () => {
+                  const next = !backupsOpen;
+                  setBackupsOpen(next);
+                  if (next) await loadBackups();
+                }}
+              >
+                {backupsOpen ? "Hide backups" : "Show backups"}
+              </Button>
+              {backupsOpen ? (
+                <div className="mt-2 rounded-2xl border border-white/10 bg-white/5 p-2">
+                  <div className="px-2 py-1 text-[11px] font-semibold uppercase tracking-wide text-white/50">Latest backups</div>
+                  <div className="mt-1 flex max-h-[240px] flex-col gap-2 overflow-y-auto px-1 pb-1">
+                    {!backups.length ? (
+                      <div className="rounded-xl border border-white/10 bg-black/20 px-3 py-3 text-sm text-white/70">
+                        No backups yet.
+                      </div>
+                    ) : null}
+                    {backups.map((b) => (
+                      <div key={b.id} className="flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-black/20 px-3 py-3">
+                        <div className="min-w-0">
+                          <div className="truncate text-sm font-semibold text-white">{formatTimestamp(b.createdAt)}</div>
+                          <div className="text-xs text-white/50">Backup #{b.id}</div>
+                        </div>
+                        <button
+                          type="button"
+                          className="inline-flex h-9 items-center justify-center rounded-xl bg-[var(--cf-accent)] px-3 text-xs font-bold text-[#0A0F1E] hover:brightness-95"
+                          onClick={() => {
+                            setDraft(b.content);
+                            setSelectedId("hero");
+                            setSelectedBlockId(null);
+                            resetHistory();
+                            setBackupsOpen(false);
+                            setMobileActionsOpen(false);
+                            setNotice(`Restored backup from ${formatTimestamp(b.createdAt)}`);
+                          }}
+                        >
+                          Restore
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
               <Button
                 variant="secondary"
                 className="h-11"

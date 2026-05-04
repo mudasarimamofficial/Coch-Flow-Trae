@@ -56,6 +56,8 @@ export function ThemePanel({ supabase }: Props) {
   const [theme, setTheme] = useState<HomepageContent["site"]["theme"]>(defaultTheme);
   const [designPreset, setDesignPreset] = useState<"landing_html_v1" | "classic">("landing_html_v1");
   const [brandIconUrl, setBrandIconUrl] = useState<string>("");
+  const [footerBrandIconUrl, setFooterBrandIconUrl] = useState<string>("");
+  const [faviconUrl, setFaviconUrl] = useState<string>("");
 
   const load = useCallback(async () => {
     setSaved(null);
@@ -77,6 +79,8 @@ export function ThemePanel({ supabase }: Props) {
         setTheme(mergeTheme(defaultTheme, c.site?.theme));
         setDesignPreset(((c.site as any)?.designPreset as any) === "classic" ? "classic" : "landing_html_v1");
         setBrandIconUrl(String(c.header?.brandIcon?.url || homepageDefaults.header.brandIcon?.url || ""));
+        setFooterBrandIconUrl(String(c.footer?.brandIcon?.url || homepageDefaults.footer.brandIcon?.url || ""));
+        setFaviconUrl(String((c.site as any)?.favicon?.url || (homepageDefaults.site as any)?.favicon?.url || ""));
       }
     } finally {
       setLoading(false);
@@ -115,6 +119,7 @@ export function ThemePanel({ supabase }: Props) {
         site: {
           ...current.site,
           designPreset,
+          favicon: faviconUrl.trim().length ? { type: "image", url: faviconUrl.trim() } : current.site?.favicon,
           theme: themeWithDefaults,
         },
         header: {
@@ -123,6 +128,13 @@ export function ThemePanel({ supabase }: Props) {
             ...current.header?.brandIcon,
             url: brandIconUrl,
           }
+        },
+        footer: {
+          ...current.footer,
+          brandIcon: {
+            ...current.footer?.brandIcon,
+            url: footerBrandIconUrl,
+          },
         },
         branding: {
           ...currentBranding,
@@ -216,6 +228,18 @@ export function ThemePanel({ supabase }: Props) {
                 label="Brand Icon URL (Used in header & admin)"
                 value={brandIconUrl}
                 onChange={(e) => setBrandIconUrl(e.target.value)}
+                placeholder="https://..."
+              />
+              <Input
+                label="Footer Logo URL"
+                value={footerBrandIconUrl}
+                onChange={(e) => setFooterBrandIconUrl(e.target.value)}
+                placeholder="https://..."
+              />
+              <Input
+                label="Favicon URL"
+                value={faviconUrl}
+                onChange={(e) => setFaviconUrl(e.target.value)}
                 placeholder="https://..."
               />
               {brandIconUrl && (
