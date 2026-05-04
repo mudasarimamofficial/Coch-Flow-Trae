@@ -26,6 +26,10 @@ export type AdminGateFail = {
 export type AdminGateResult = AdminGateOk | AdminGateFail;
 
 export async function requireAdmin(req: Request): Promise<AdminGateResult> {
+  const adminEnabled = process.env.CF_ADMIN_ENABLED === "true";
+  const isProd = process.env.VERCEL_ENV === "production" || process.env.NODE_ENV === "production";
+  if (isProd && !adminEnabled) return { ok: false, status: 404, message: "Not found" };
+
   const header = req.headers.get("authorization") || "";
   const token = header.toLowerCase().startsWith("bearer ") ? header.slice(7).trim() : "";
   if (!token) return { ok: false, status: 401, message: "Missing auth token" };
