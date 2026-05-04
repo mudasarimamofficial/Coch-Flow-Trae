@@ -19,10 +19,6 @@ import { PagesPanel } from "@/components/admin/pages/PagesPanel";
 import { resolveIsAdmin, BOOTSTRAP_ADMIN_EMAIL } from "@/utils/adminGate";
 import { homepageDefaults, type HomepageContent } from "@/content/homepage";
 
-function normEmail(v: string | null | undefined) {
-  return (v || "").trim().toLowerCase();
-}
-
 export function AdminPageClient() {
   const router = useRouter();
   const [supabase, setSupabase] = useState<SupabaseClient | null>(null);

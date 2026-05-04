@@ -144,28 +144,26 @@ function resolveBackgrounds(content: HomepageContent): LandingSectionBg[] {
 function resolveVisibility(content: HomepageContent): { selector: string; enabled: boolean; hideParent: boolean }[] {
   const sections = (content.page?.sections as any[]) || [];
   const enabledByType = new Map<string, boolean>();
-  const presentByType = new Map<string, boolean>();
   for (const s of sections) {
     if (!s || typeof s !== "object") continue;
     if (typeof s.type !== "string") continue;
-    presentByType.set(s.type, true);
     enabledByType.set(s.type, Boolean((s as any).enabled !== false));
   }
 
-  const isEnabled = (type: string, defaultWhenMissing: boolean) => {
-    if (!presentByType.has(type)) return defaultWhenMissing;
+  const isEnabled = (type: string, fallbackWhenMissing: boolean) => {
+    if (!enabledByType.has(type)) return fallbackWhenMissing;
     return Boolean(enabledByType.get(type));
   };
 
   return [
     { selector: ".hero", enabled: isEnabled("hero", false), hideParent: false },
     { selector: ".divider", enabled: isEnabled("hero", false), hideParent: false },
-    { selector: ".trust-strip", enabled: isEnabled("trust", true), hideParent: false },
+    { selector: ".trust-strip", enabled: Boolean((content as any).trust?.enabled !== false), hideParent: false },
     { selector: "#promise", enabled: isEnabled("features", false), hideParent: false },
     { selector: "#how", enabled: isEnabled("workflow", false), hideParent: true },
     { selector: "#honest", enabled: isEnabled("testimonials", false), hideParent: false },
     { selector: "#pricing", enabled: isEnabled("pricing", false), hideParent: false },
-    { selector: "#apply", enabled: isEnabled("application", false), hideParent: false },
+    { selector: "#apply", enabled: isEnabled("application", false) || isEnabled("audit_bridge", false), hideParent: false },
     { selector: "footer", enabled: isEnabled("footer", false), hideParent: false },
   ];
 }
@@ -358,8 +356,12 @@ function buildSrcDoc(templateHtml: string, payload: LandingPayload) {
       if(!el) continue;
       var enabled = v.enabled !== false;
       var parent = (v.hideParent && el.parentElement && el.parentElement.children.length===1) ? el.parentElement : null;
-      if(parent) parent.style.display = enabled ? '' : 'none';
-      el.style.display = enabled ? '' : 'none';
+      if(parent){
+        if(enabled) parent.style.removeProperty('display');
+        else parent.style.setProperty('display','none','important');
+      }
+      if(enabled) el.style.removeProperty('display');
+      else el.style.setProperty('display','none','important');
     }
   }
   function applyNav(data){

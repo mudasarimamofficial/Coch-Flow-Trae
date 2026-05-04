@@ -1603,6 +1603,11 @@ export function VisualBuilderPanel({ supabase, onNavigateTab, onSignOut }: Props
                 variant="secondary"
                 className="h-9"
                 onClick={() => {
+                  if (selectedSection.type === "testimonials" || selectedSection.id === "proof") {
+                    updateSection(selectedSection.id, (s) => ({ ...s, enabled: false }));
+                    setNotice("Testimonials section hidden. Use Enabled to restore it.");
+                    return;
+                  }
                   updateSections(pageSections.filter((s) => s.id !== selectedSection.id));
                   setSelectedId("hero");
                 }}
