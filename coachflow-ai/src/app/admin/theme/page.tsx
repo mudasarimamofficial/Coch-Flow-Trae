@@ -5,6 +5,15 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { useAdminFetch } from "@/hooks/useAdminFetch";
+import {
+  TYPOGRAPHY_TIERS,
+  TYPOGRAPHY_TOKENS,
+  defaultTypographyScale,
+  mergeTypographyScale,
+  type TypographyScale,
+  type TypographyTier,
+  type TypographyToken,
+} from "@/utils/typographyScale";
 
 type Theme = {
   gold: string;
@@ -44,6 +53,7 @@ export default function ThemePage() {
   const adminFetch = useAdminFetch();
   const [theme, setTheme] = useState<Theme>(defaults);
   const [fonts, setFonts] = useState<Fonts>(defaultFonts);
+  const [scale, setScale] = useState<TypographyScale>(defaultTypographyScale);
   const [baseContent, setBaseContent] = useState<any>({});
   const [publishedUpdatedAt, setPublishedUpdatedAt] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -60,6 +70,8 @@ export default function ThemePage() {
         setTheme({ ...defaults, ...(typeof t === "object" && t ? t : {}) });
         const f = (content as any)?.landingFonts;
         setFonts({ ...defaultFonts, ...(typeof f === "object" && f ? f : {}) });
+        const s = (content as any)?.landingTypographyScale;
+        setScale(mergeTypographyScale(s, defaultTypographyScale));
         setPublishedUpdatedAt(j.draft?.published_updated_at ?? j.published?.updated_at ?? null);
       });
     return () => {
@@ -70,7 +82,7 @@ export default function ThemePage() {
   async function saveDraft() {
     setSaving(true);
     try {
-      const next = { ...baseContent, landingTheme: theme, landingFonts: fonts };
+      const next = { ...baseContent, landingTheme: theme, landingFonts: fonts, landingTypographyScale: scale };
       const res = await adminFetch("/api/admin/homepage", {
         method: "PUT",
         headers: { "content-type": "application/json" },
@@ -88,6 +100,14 @@ export default function ThemePage() {
 
   const set = (k: keyof Theme) => (v: string) => setTheme((p) => ({ ...p, [k]: v }));
   const setFont = (k: keyof Fonts) => (v: string) => setFonts((p) => ({ ...p, [k]: v }));
+  const setScaleToken = (tier: TypographyTier, token: TypographyToken) => (v: string) =>
+    setScale((p) => ({
+      ...p,
+      [tier]: {
+        ...p[tier],
+        [token]: v,
+      },
+    }));
 
   return (
     <div className="space-y-6">
@@ -164,6 +184,39 @@ export default function ThemePage() {
         <CardFooter className="border-t border-surface-800 bg-surface-900/20 pt-6">
           <Button variant="primary" onClick={saveDraft} disabled={saving}>
             {saving ? "Saving..." : "Save Fonts to Draft"}
+          </Button>
+        </CardFooter>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Typography Scale</CardTitle>
+          <CardDescription>Responsive font-size tokens used across the landing page.</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {TYPOGRAPHY_TIERS.map((tier) => (
+            <div key={tier.key} className="space-y-3">
+              <div className="text-sm font-medium text-surface-200">
+                {tier.label}
+                {tier.minWidth ? <span className="text-surface-500"> &middot; {tier.minWidth}px+</span> : null}
+              </div>
+              <div className="grid gap-3 md:grid-cols-4">
+                {TYPOGRAPHY_TOKENS.map((token) => (
+                  <div key={token.key} className="space-y-1">
+                    <label className="text-xs text-surface-400">{token.label}</label>
+                    <Input value={scale[tier.key][token.key]} onChange={(e) => setScaleToken(tier.key, token.key)(e.target.value)} />
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </CardContent>
+        <CardFooter className="border-t border-surface-800 bg-surface-900/20 pt-6 flex gap-3">
+          <Button variant="secondary" onClick={() => setScale(defaultTypographyScale)} disabled={saving}>
+            Reset Scale
+          </Button>
+          <Button variant="primary" onClick={saveDraft} disabled={saving}>
+            {saving ? "Saving..." : "Save Typography to Draft"}
           </Button>
         </CardFooter>
       </Card>

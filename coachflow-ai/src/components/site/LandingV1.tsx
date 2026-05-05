@@ -21,6 +21,7 @@ import {
 import { CustomHtmlSection } from "@/components/site/landingV1/CustomHtmlSection";
 import { WhatsAppFloat } from "@/components/site/landingV1/WhatsAppFloat";
 import { CtaBlockSection } from "@/components/site/landingV1/CtaBlockSection";
+import { buildTypographyScaleCss } from "@/utils/typographyScale";
 
 export function LandingV1({
   content,
@@ -40,7 +41,6 @@ export function LandingV1({
   const themeCss = useMemo(() => {
     const root = (content && typeof content === "object" ? (content as any) : null) as any;
     const t = root?.landingTheme;
-    if (!t || typeof t !== "object") return "";
     const lines: string[] = [];
     const set = (key: string, v: unknown) => {
       if (typeof v !== "string") return;
@@ -48,22 +48,26 @@ export function LandingV1({
       if (!s) return;
       lines.push(`${key}: ${s};`);
     };
-    set("--gold", t.gold);
-    set("--gold-light", t.goldLight);
-    set("--gold-dim", t.goldDim);
-    set("--black", t.black);
-    set("--white", t.white);
-    set("--charcoal", t.charcoal);
-    set("--mid", t.mid);
-    set("--muted", t.muted);
+    if (t && typeof t === "object") {
+      set("--gold", t.gold);
+      set("--gold-light", t.goldLight);
+      set("--gold-dim", t.goldDim);
+      set("--black", t.black);
+      set("--white", t.white);
+      set("--charcoal", t.charcoal);
+      set("--mid", t.mid);
+      set("--muted", t.muted);
+    }
     const f = root?.landingFonts;
     if (f && typeof f === "object") {
       set("--font-body", (f as any).body);
       set("--font-heading", (f as any).heading);
       set("--font-serif", (f as any).serif);
     }
-    if (!lines.length) return "";
-    return `:root{${lines.join("")}}`;
+    const scale = root?.landingTypographyScale;
+    const typographyCss = scale ? buildTypographyScaleCss(scale) : "";
+    const varsCss = lines.length ? `:root{${lines.join("")}}` : "";
+    return `${varsCss}${typographyCss}`;
   }, [content]);
 
   return (
