@@ -168,6 +168,54 @@ function mergeContent(c: Partial<HomepageContent> | null): HomepageContent {
       headerColorHex: c.whatsapp?.headerColorHex ?? (homepageDefaults.whatsapp?.headerColorHex || "#25D366"),
       avatar: c.whatsapp?.avatar || homepageDefaults.whatsapp?.avatar,
     },
+    rebuilt: {
+      ...(homepageDefaults.rebuilt || {}),
+      ...((c as any).rebuilt || {}),
+      hero: {
+        ...((homepageDefaults.rebuilt as any)?.hero || {}),
+        ...(((c as any).rebuilt as any)?.hero || {}),
+      },
+      trustStrip: {
+        ...((homepageDefaults.rebuilt as any)?.trustStrip || {}),
+        ...(((c as any).rebuilt as any)?.trustStrip || {}),
+      },
+      founder: {
+        ...((homepageDefaults.rebuilt as any)?.founder || {}),
+        ...(((c as any).rebuilt as any)?.founder || {}),
+        paragraphs:
+          (((c as any).rebuilt as any)?.founder?.paragraphs as any) ||
+          ((homepageDefaults.rebuilt as any)?.founder?.paragraphs as any) ||
+          [],
+      },
+      promise: {
+        ...((homepageDefaults.rebuilt as any)?.promise || {}),
+        ...(((c as any).rebuilt as any)?.promise || {}),
+        cards:
+          (((c as any).rebuilt as any)?.promise?.cards as any) ||
+          ((homepageDefaults.rebuilt as any)?.promise?.cards as any) ||
+          [],
+      },
+      how: {
+        ...((homepageDefaults.rebuilt as any)?.how || {}),
+        ...(((c as any).rebuilt as any)?.how || {}),
+        steps:
+          (((c as any).rebuilt as any)?.how?.steps as any) ||
+          ((homepageDefaults.rebuilt as any)?.how?.steps as any) ||
+          [],
+      },
+      honest: {
+        ...((homepageDefaults.rebuilt as any)?.honest || {}),
+        ...(((c as any).rebuilt as any)?.honest || {}),
+        paragraphs:
+          (((c as any).rebuilt as any)?.honest?.paragraphs as any) ||
+          ((homepageDefaults.rebuilt as any)?.honest?.paragraphs as any) ||
+          [],
+        pledgeItems:
+          (((c as any).rebuilt as any)?.honest?.pledgeItems as any) ||
+          ((homepageDefaults.rebuilt as any)?.honest?.pledgeItems as any) ||
+          [],
+      },
+    },
     page: { sections: c.page?.sections || homepageDefaults.page?.sections || [] },
     customSections: c.customSections || homepageDefaults.customSections,
   });

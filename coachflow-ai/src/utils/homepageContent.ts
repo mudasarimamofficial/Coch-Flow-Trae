@@ -116,7 +116,49 @@ export async function getHomepageContent(): Promise<HomepageContent> {
       };
     };
 
-    return neutralizeLegacyProofContent(sanitizeContentStrings({
+    const normalizeRebuiltAnchors = (value: HomepageContent): HomepageContent => {
+      const preset = String((value.site as any)?.designPreset || homepageDefaults.site.designPreset || "landing_html_v1");
+      if (preset === "classic") return value;
+
+      const nav = Array.isArray(value.header?.nav) ? value.header.nav : [];
+      const isLegacyNav =
+        nav.length === 3 &&
+        String(nav[0]?.href || "") === "#workflow" &&
+        String(nav[1]?.href || "") === "#features" &&
+        String(nav[2]?.href || "") === "#pricing";
+
+      const primaryHref = String(value.header?.primaryCta?.href || "");
+      const isLegacyPrimary = primaryHref === "#lead-form";
+
+      const heroPrimaryHref = String(value.hero?.primaryCta?.href || "");
+      const heroSecondaryHref = String(value.hero?.secondaryCta?.href || "");
+      const isLegacyHeroPrimary = heroPrimaryHref === "#lead-form";
+      const isLegacyHeroSecondary = heroSecondaryHref === "#workflow";
+
+      if (!isLegacyNav && !isLegacyPrimary && !isLegacyHeroPrimary && !isLegacyHeroSecondary) return value;
+
+      return {
+        ...value,
+        header: {
+          ...value.header,
+          nav: isLegacyNav ? homepageDefaults.header.nav : value.header.nav,
+          primaryCta: isLegacyPrimary
+            ? { ...value.header.primaryCta, href: homepageDefaults.header.primaryCta.href }
+            : value.header.primaryCta,
+        },
+        hero: {
+          ...value.hero,
+          primaryCta: isLegacyHeroPrimary
+            ? { ...value.hero.primaryCta, href: homepageDefaults.hero.primaryCta.href }
+            : value.hero.primaryCta,
+          secondaryCta: isLegacyHeroSecondary
+            ? { ...value.hero.secondaryCta, href: homepageDefaults.hero.secondaryCta.href }
+            : value.hero.secondaryCta,
+        },
+      };
+    };
+
+    return normalizeRebuiltAnchors(neutralizeLegacyProofContent(sanitizeContentStrings({
       ...homepageDefaults,
       ...c,
       site: {
@@ -225,7 +267,55 @@ export async function getHomepageContent(): Promise<HomepageContent> {
         headerColorHex: c.whatsapp?.headerColorHex ?? (homepageDefaults.whatsapp?.headerColorHex || "#25D366"),
         avatar: c.whatsapp?.avatar || homepageDefaults.whatsapp?.avatar,
       },
-    }));
+      rebuilt: {
+        ...(homepageDefaults.rebuilt || {}),
+        ...((c as any).rebuilt || {}),
+        hero: {
+          ...((homepageDefaults.rebuilt as any)?.hero || {}),
+          ...(((c as any).rebuilt as any)?.hero || {}),
+        },
+        trustStrip: {
+          ...((homepageDefaults.rebuilt as any)?.trustStrip || {}),
+          ...(((c as any).rebuilt as any)?.trustStrip || {}),
+        },
+        founder: {
+          ...((homepageDefaults.rebuilt as any)?.founder || {}),
+          ...(((c as any).rebuilt as any)?.founder || {}),
+          paragraphs:
+            (((c as any).rebuilt as any)?.founder?.paragraphs as any) ||
+            ((homepageDefaults.rebuilt as any)?.founder?.paragraphs as any) ||
+            [],
+        },
+        promise: {
+          ...((homepageDefaults.rebuilt as any)?.promise || {}),
+          ...(((c as any).rebuilt as any)?.promise || {}),
+          cards:
+            (((c as any).rebuilt as any)?.promise?.cards as any) ||
+            ((homepageDefaults.rebuilt as any)?.promise?.cards as any) ||
+            [],
+        },
+        how: {
+          ...((homepageDefaults.rebuilt as any)?.how || {}),
+          ...(((c as any).rebuilt as any)?.how || {}),
+          steps:
+            (((c as any).rebuilt as any)?.how?.steps as any) ||
+            ((homepageDefaults.rebuilt as any)?.how?.steps as any) ||
+            [],
+        },
+        honest: {
+          ...((homepageDefaults.rebuilt as any)?.honest || {}),
+          ...(((c as any).rebuilt as any)?.honest || {}),
+          paragraphs:
+            (((c as any).rebuilt as any)?.honest?.paragraphs as any) ||
+            ((homepageDefaults.rebuilt as any)?.honest?.paragraphs as any) ||
+            [],
+          pledgeItems:
+            (((c as any).rebuilt as any)?.honest?.pledgeItems as any) ||
+            ((homepageDefaults.rebuilt as any)?.honest?.pledgeItems as any) ||
+            [],
+        },
+      },
+    })));
   } catch {
     return homepageDefaults;
   }

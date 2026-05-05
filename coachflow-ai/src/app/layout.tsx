@@ -119,7 +119,7 @@ export default async function RootLayout({
               dangerouslySetInnerHTML={{
                 __html:
                   `;(() => { const el = document.getElementById(${JSON.stringify(customCssId)});` +
-                  ` if (!el) return; if (location.pathname.startsWith("/admin")) { el.remove(); return; } el.media = "all"; })();`,
+                  ` if (!el) return; if (location.pathname.startsWith("/admin") || location.pathname === "/") { el.remove(); return; } el.media = "all"; })();`,
               }}
             />
           </>
@@ -137,7 +137,7 @@ export default async function RootLayout({
         {customJs.length ? (
           <script
             dangerouslySetInnerHTML={{
-              __html: `;(() => { if (location.pathname.startsWith("/admin")) return;\n${escapeInlineRawText(customJs)}\n})();`,
+              __html: `;(() => { if (location.pathname.startsWith("/admin") || location.pathname === "/") return;\n${escapeInlineRawText(customJs)}\n})();`,
             }}
           />
         ) : null}

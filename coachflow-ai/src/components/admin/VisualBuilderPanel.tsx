@@ -31,6 +31,7 @@ import { mergePageSectionsWithDefaults } from "@/utils/homepageSections";
 import { neutralizeLegacyProofContent } from "@/utils/homepageMerge";
 import { requestAdminRevalidate } from "@/utils/adminRevalidate";
 import { mergeTypographyScale } from "@/utils/typographyScale";
+import { RebuiltLandingFrame } from "@/components/landing/RebuiltLandingFrame";
 import type { Tab } from "@/components/admin/types";
 import {
   Monitor,
@@ -454,12 +455,12 @@ export function VisualBuilderPanel({ supabase, onNavigateTab, onSignOut }: Props
 
   const content = draft || published;
   const resolved = applyBuilderOverrides(content);
+  const isRebuiltTemplate = String((content.site as any)?.designPreset || "landing_html_v1") !== "classic";
   const contentRef = useRef<HomepageContent>(content);
   useEffect(() => {
     contentRef.current = content;
   }, [content]);
   const draftSaveTimer = useRef<number | null>(null);
-  const iframeRef = useRef<HTMLIFrameElement | null>(null);
 
   const formatTimestamp = useCallback((value: string) => {
     try {
@@ -848,12 +849,6 @@ export function VisualBuilderPanel({ supabase, onNavigateTab, onSignOut }: Props
     mode === "mobile" ? "w-[375px]" : mode === "tablet" ? "w-[768px]" : "w-full";
   const previewPx = mode === "mobile" ? 375 : mode === "tablet" ? 768 : null;
 
-  useEffect(() => {
-    const win = iframeRef.current?.contentWindow;
-    if (!win) return;
-    win.postMessage({ type: "coachflow_builder_preview", content: resolved }, window.location.origin);
-  }, [resolved]);
-
   const selectedSection = useMemo(
     () => pageSections.find((s) => s.id === selectedId) || null,
     [pageSections, selectedId],
@@ -996,9 +991,11 @@ export function VisualBuilderPanel({ supabase, onNavigateTab, onSignOut }: Props
           id: `tier_${idx + 1}`,
           type: "tier",
           content: {
+            badge: (t as any).badge || "",
             name: t.name,
             tagline: t.tagline,
             price: t.price,
+            priceWas: (t as any).priceWas || "",
             priceSuffix: t.priceSuffix || "",
             outcome: (t as any).outcome || "",
             ctaText: t.ctaText,
@@ -1447,17 +1444,32 @@ export function VisualBuilderPanel({ supabase, onNavigateTab, onSignOut }: Props
                 label="Add section"
                 value={addType}
                 onChange={(e) => setAddType(e.target.value)}
-                options={[
-                  { value: "hero", label: "Hero" },
-                  { value: "features", label: "Features" },
-                  { value: "workflow", label: "Workflow" },
-                  { value: "pricing", label: "Pricing" },
-                  { value: "audit_bridge", label: "Audit Bridge" },
-                  { value: "application", label: "Lead Form" },
-                  { value: "footer", label: "Footer" },
-                  { value: "testimonials", label: "Proof / Testimonials" },
-                  { value: "custom_html", label: "Custom HTML" },
-                ]}
+                options={
+                  isRebuiltTemplate
+                    ? [
+                        { value: "hero", label: "Hero" },
+                        { value: "trust_strip", label: "Trust Strip" },
+                        { value: "founder", label: "Founder" },
+                        { value: "promise", label: "Promise" },
+                        { value: "how", label: "How It Works" },
+                        { value: "honest", label: "Honest" },
+                        { value: "pricing", label: "Pricing" },
+                        { value: "application", label: "Application" },
+                        { value: "footer", label: "Footer" },
+                        { value: "custom_html", label: "Custom HTML" },
+                      ]
+                    : [
+                        { value: "hero", label: "Hero" },
+                        { value: "features", label: "Features" },
+                        { value: "workflow", label: "Workflow" },
+                        { value: "pricing", label: "Pricing" },
+                        { value: "audit_bridge", label: "Audit Bridge" },
+                        { value: "application", label: "Lead Form" },
+                        { value: "footer", label: "Footer" },
+                        { value: "testimonials", label: "Proof / Testimonials" },
+                        { value: "custom_html", label: "Custom HTML" },
+                      ]
+                }
               />
               <Button
                 variant="secondary"
@@ -1476,7 +1488,7 @@ export function VisualBuilderPanel({ supabase, onNavigateTab, onSignOut }: Props
                             heading: "",
                             subcopy: "",
                             ctaText: "",
-                            ctaHref: "#lead-form",
+                            ctaHref: isRebuiltTemplate ? "#apply" : "#lead-form",
                           }
                         : undefined,
                   blocks:
@@ -1485,7 +1497,13 @@ export function VisualBuilderPanel({ supabase, onNavigateTab, onSignOut }: Props
                       : addType === "workflow"
                         ? [{ id: `step_${Date.now()}`, type: "step", content: { title: "", copy: "" } }]
                       : addType === "pricing"
-                        ? [{ id: `tier_${Date.now()}`, type: "tier", content: { name: "", tagline: "", price: "", bullets: [], ctaText: "Select", ctaHref: "#lead-form" } }]
+                        ? [
+                            {
+                              id: `tier_${Date.now()}`,
+                              type: "tier",
+                              content: { name: "", tagline: "", price: "", bullets: [], ctaText: "Select", ctaHref: isRebuiltTemplate ? "#apply" : "#lead-form" },
+                            },
+                          ]
                         : addType === "testimonials"
                           ? [
                               {
@@ -1526,17 +1544,11 @@ export function VisualBuilderPanel({ supabase, onNavigateTab, onSignOut }: Props
         >
           <div className="flex h-full min-h-0 w-full items-center justify-center overflow-hidden p-3 lg:p-5">
             <div className={`h-full ${previewWidth} overflow-hidden rounded-2xl border border-white/10 bg-[#0A0F1E] shadow-[0_18px_50px_rgba(0,0,0,0.55)]`}>
-              <iframe
-                ref={iframeRef}
-                title="Homepage preview"
-                src={`/?builderPreview=true&device=${mode}`}
-                style={{ width: previewPx ? `${previewPx}px` : "100%", height: "100%", border: "none" }}
-                onLoad={() => {
-                  iframeRef.current?.contentWindow?.postMessage(
-                    { type: "coachflow_builder_preview", content: resolved },
-                    window.location.origin,
-                  );
-                }}
+              <RebuiltLandingFrame
+                content={resolved}
+                device={mode}
+                height="100%"
+                className="h-full w-full"
               />
             </div>
           </div>
@@ -1806,6 +1818,108 @@ export function VisualBuilderPanel({ supabase, onNavigateTab, onSignOut }: Props
 
           {selectedId === "hero" ? (
             <div className="flex flex-col gap-3">
+              {isRebuiltTemplate ? (
+                <InspectorGroup title="Rebuilt Hero">
+                  <Input
+                    label={labelRow("Tag", `${String((content.rebuilt as any)?.hero?.tag || "").length} chars`)}
+                    value={String((content.rebuilt as any)?.hero?.tag || "")}
+                    onChange={(e) =>
+                      setContent({
+                        ...content,
+                        rebuilt: { ...(content.rebuilt || {}), hero: { ...((content.rebuilt as any)?.hero || {}), tag: e.target.value } } as any,
+                      })
+                    }
+                  />
+                  <Input
+                    label={labelRow("Headline line 1", `${String((content.rebuilt as any)?.hero?.headlineLine1 || "").length} chars`)}
+                    value={String((content.rebuilt as any)?.hero?.headlineLine1 || "")}
+                    onChange={(e) =>
+                      setContent({
+                        ...content,
+                        rebuilt: {
+                          ...(content.rebuilt || {}),
+                          hero: { ...((content.rebuilt as any)?.hero || {}), headlineLine1: e.target.value },
+                        } as any,
+                      })
+                    }
+                  />
+                  <Input
+                    label={labelRow("Headline line 2 prefix", `${String((content.rebuilt as any)?.hero?.headlineLine2Prefix || "").length} chars`)}
+                    value={String((content.rebuilt as any)?.hero?.headlineLine2Prefix || "")}
+                    onChange={(e) =>
+                      setContent({
+                        ...content,
+                        rebuilt: {
+                          ...(content.rebuilt || {}),
+                          hero: { ...((content.rebuilt as any)?.hero || {}), headlineLine2Prefix: e.target.value },
+                        } as any,
+                      })
+                    }
+                  />
+                  <Input
+                    label={labelRow("Headline highlight", `${String((content.rebuilt as any)?.hero?.headlineHighlight || "").length} chars`)}
+                    value={String((content.rebuilt as any)?.hero?.headlineHighlight || "")}
+                    onChange={(e) =>
+                      setContent({
+                        ...content,
+                        rebuilt: {
+                          ...(content.rebuilt || {}),
+                          hero: { ...((content.rebuilt as any)?.hero || {}), headlineHighlight: e.target.value },
+                        } as any,
+                      })
+                    }
+                  />
+                  <Textarea
+                    label={labelRow("Subcopy (before strong)", `${String((content.rebuilt as any)?.hero?.subcopyBeforeStrong || "").length} chars`)}
+                    value={String((content.rebuilt as any)?.hero?.subcopyBeforeStrong || "")}
+                    onChange={(e) =>
+                      setContent({
+                        ...content,
+                        rebuilt: {
+                          ...(content.rebuilt || {}),
+                          hero: { ...((content.rebuilt as any)?.hero || {}), subcopyBeforeStrong: e.target.value },
+                        } as any,
+                      })
+                    }
+                    rows={2}
+                  />
+                  <Textarea
+                    label={labelRow("Subcopy (strong)", `${String((content.rebuilt as any)?.hero?.subcopyStrong || "").length} chars`)}
+                    value={String((content.rebuilt as any)?.hero?.subcopyStrong || "")}
+                    onChange={(e) =>
+                      setContent({
+                        ...content,
+                        rebuilt: { ...(content.rebuilt || {}), hero: { ...((content.rebuilt as any)?.hero || {}), subcopyStrong: e.target.value } } as any,
+                      })
+                    }
+                    rows={2}
+                  />
+                  <Textarea
+                    label={labelRow("Subcopy (after strong)", `${String((content.rebuilt as any)?.hero?.subcopyAfterStrong || "").length} chars`)}
+                    value={String((content.rebuilt as any)?.hero?.subcopyAfterStrong || "")}
+                    onChange={(e) =>
+                      setContent({
+                        ...content,
+                        rebuilt: {
+                          ...(content.rebuilt || {}),
+                          hero: { ...((content.rebuilt as any)?.hero || {}), subcopyAfterStrong: e.target.value },
+                        } as any,
+                      })
+                    }
+                    rows={2}
+                  />
+                  <Input
+                    label={labelRow("Note", `${String((content.rebuilt as any)?.hero?.note || "").length} chars`)}
+                    value={String((content.rebuilt as any)?.hero?.note || "")}
+                    onChange={(e) =>
+                      setContent({
+                        ...content,
+                        rebuilt: { ...(content.rebuilt || {}), hero: { ...((content.rebuilt as any)?.hero || {}), note: e.target.value } } as any,
+                      })
+                    }
+                  />
+                </InspectorGroup>
+              ) : null}
               <InspectorGroup title="Hero Background">
                 <Select
                   label={labelRow("Hero background")}
@@ -2010,6 +2124,11 @@ export function VisualBuilderPanel({ supabase, onNavigateTab, onSignOut }: Props
             <div className="flex flex-col gap-3">
               <InspectorGroup title="Content">
                 <Input
+                  label={labelRow("Section tag", `${String((content.pricing as any).tag || "").length} chars`)}
+                  value={String((content.pricing as any).tag || "")}
+                  onChange={(e) => setContent({ ...content, pricing: { ...content.pricing, tag: e.target.value } as any })}
+                />
+                <Input
                   label={labelRow("Section heading", `${content.pricing.heading.length} chars`)}
                   value={content.pricing.heading}
                   onChange={(e) => setContent({ ...content, pricing: { ...content.pricing, heading: e.target.value } })}
@@ -2084,7 +2203,17 @@ export function VisualBuilderPanel({ supabase, onNavigateTab, onSignOut }: Props
                       {
                         id: `tier_${Date.now()}`,
                         type: "tier",
-                        content: { name: "", tagline: "", price: "", bullets: [], ctaText: "Select", ctaHref: "#lead-form" },
+                        content: {
+                          badge: "",
+                          name: "",
+                          tagline: "",
+                          price: "",
+                          priceWas: "",
+                          priceSuffix: "",
+                          bullets: [],
+                          ctaText: "Select",
+                          ctaHref: isRebuiltTemplate ? "#apply" : "#lead-form",
+                        },
                       },
                     ],
                   }));
@@ -2097,6 +2226,18 @@ export function VisualBuilderPanel({ supabase, onNavigateTab, onSignOut }: Props
                 .map((b) => (
                   <div key={b.id} className="rounded-xl border border-slate-200 p-3 dark:border-white/10">
                     <div className="mb-2 text-xs font-bold uppercase tracking-wide text-slate-500">Tier</div>
+                    <Input
+                      label="Badge"
+                      value={String(b.content?.badge || "")}
+                      onChange={(e) =>
+                        updateSection("pricing", (s) => ({
+                          ...s,
+                          blocks: (s.blocks || []).map((x) =>
+                            x.id === b.id ? { ...x, content: { ...x.content, badge: e.target.value } } : x,
+                          ),
+                        }))
+                      }
+                    />
                     <Input
                       label="Name"
                       value={String(b.content?.name || "")}
@@ -2117,6 +2258,30 @@ export function VisualBuilderPanel({ supabase, onNavigateTab, onSignOut }: Props
                           ...s,
                           blocks: (s.blocks || []).map((x) =>
                             x.id === b.id ? { ...x, content: { ...x.content, price: e.target.value } } : x,
+                          ),
+                        }))
+                      }
+                    />
+                    <Input
+                      label="Price was"
+                      value={String(b.content?.priceWas || "")}
+                      onChange={(e) =>
+                        updateSection("pricing", (s) => ({
+                          ...s,
+                          blocks: (s.blocks || []).map((x) =>
+                            x.id === b.id ? { ...x, content: { ...x.content, priceWas: e.target.value } } : x,
+                          ),
+                        }))
+                      }
+                    />
+                    <Input
+                      label="Price suffix"
+                      value={String(b.content?.priceSuffix || "")}
+                      onChange={(e) =>
+                        updateSection("pricing", (s) => ({
+                          ...s,
+                          blocks: (s.blocks || []).map((x) =>
+                            x.id === b.id ? { ...x, content: { ...x.content, priceSuffix: e.target.value } } : x,
                           ),
                         }))
                       }
@@ -2163,6 +2328,30 @@ export function VisualBuilderPanel({ supabase, onNavigateTab, onSignOut }: Props
                         { value: "no", label: "No" },
                         { value: "yes", label: "Yes" },
                       ]}
+                    />
+                    <Input
+                      label="CTA text"
+                      value={String(b.content?.ctaText || "")}
+                      onChange={(e) =>
+                        updateSection("pricing", (s) => ({
+                          ...s,
+                          blocks: (s.blocks || []).map((x) =>
+                            x.id === b.id ? { ...x, content: { ...x.content, ctaText: e.target.value } } : x,
+                          ),
+                        }))
+                      }
+                    />
+                    <Input
+                      label="CTA href"
+                      value={String(b.content?.ctaHref || "")}
+                      onChange={(e) =>
+                        updateSection("pricing", (s) => ({
+                          ...s,
+                          blocks: (s.blocks || []).map((x) =>
+                            x.id === b.id ? { ...x, content: { ...x.content, ctaHref: e.target.value } } : x,
+                          ),
+                        }))
+                      }
                     />
                     <Textarea
                       label="Bullets (one per line)"
@@ -2899,9 +3088,240 @@ export function VisualBuilderPanel({ supabase, onNavigateTab, onSignOut }: Props
                 }
               />
             </div>
+          ) : selectedSection?.type === "trust_strip" ? (
+            <div className="flex flex-col gap-3">
+              <InspectorGroup title="Trust Strip">
+                <Textarea
+                  label={labelRow("Items (one per line)")}
+                  value={Array.isArray((content.rebuilt as any)?.trustStrip?.items)
+                    ? String(((content.rebuilt as any).trustStrip.items as any[]).map((x) => String(x || "")).join("\n"))
+                    : ""}
+                  onChange={(e) => {
+                    const items = e.target.value
+                      .split("\n")
+                      .map((x) => x.trim())
+                      .filter(Boolean);
+                    setContent({ ...content, rebuilt: { ...(content.rebuilt || {}), trustStrip: { ...((content.rebuilt as any)?.trustStrip || {}), items } } as any });
+                  }}
+                  rows={6}
+                />
+              </InspectorGroup>
+            </div>
+          ) : selectedSection?.type === "founder" ? (
+            <div className="flex flex-col gap-3">
+              <InspectorGroup title="Founder">
+                <Input
+                  label={labelRow("Label")}
+                  value={String((content.rebuilt as any)?.founder?.label || "")}
+                  onChange={(e) =>
+                    setContent({ ...content, rebuilt: { ...(content.rebuilt || {}), founder: { ...((content.rebuilt as any)?.founder || {}), label: e.target.value } } as any })
+                  }
+                />
+                <Input
+                  label={labelRow("Avatar text")}
+                  value={String((content.rebuilt as any)?.founder?.avatarText || "")}
+                  onChange={(e) =>
+                    setContent({
+                      ...content,
+                      rebuilt: { ...(content.rebuilt || {}), founder: { ...((content.rebuilt as any)?.founder || {}), avatarText: e.target.value } } as any,
+                    })
+                  }
+                />
+                <Input
+                  label={labelRow("Name")}
+                  value={String((content.rebuilt as any)?.founder?.name || "")}
+                  onChange={(e) =>
+                    setContent({ ...content, rebuilt: { ...(content.rebuilt || {}), founder: { ...((content.rebuilt as any)?.founder || {}), name: e.target.value } } as any })
+                  }
+                />
+                <Input
+                  label={labelRow("Title")}
+                  value={String((content.rebuilt as any)?.founder?.title || "")}
+                  onChange={(e) =>
+                    setContent({ ...content, rebuilt: { ...(content.rebuilt || {}), founder: { ...((content.rebuilt as any)?.founder || {}), title: e.target.value } } as any })
+                  }
+                />
+                <Textarea
+                  label={labelRow("Quote")}
+                  value={String((content.rebuilt as any)?.founder?.quote || "")}
+                  onChange={(e) =>
+                    setContent({ ...content, rebuilt: { ...(content.rebuilt || {}), founder: { ...((content.rebuilt as any)?.founder || {}), quote: e.target.value } } as any })
+                  }
+                  rows={2}
+                />
+                <Textarea
+                  label={labelRow("Paragraphs (one per line)", "Supports <strong>, <em>, <br>")}
+                  value={Array.isArray((content.rebuilt as any)?.founder?.paragraphs)
+                    ? ((content.rebuilt as any).founder.paragraphs as any[]).map((x) => String(x || "")).join("\n")
+                    : ""}
+                  onChange={(e) => {
+                    const paragraphs = e.target.value
+                      .split("\n")
+                      .map((x) => x.trim())
+                      .filter(Boolean);
+                    setContent({ ...content, rebuilt: { ...(content.rebuilt || {}), founder: { ...((content.rebuilt as any)?.founder || {}), paragraphs } } as any });
+                  }}
+                  rows={6}
+                />
+              </InspectorGroup>
+            </div>
+          ) : selectedSection?.type === "promise" ? (
+            <div className="flex flex-col gap-3">
+              <InspectorGroup title="Promise">
+                <Input
+                  label={labelRow("Tag")}
+                  value={String((content.rebuilt as any)?.promise?.tag || "")}
+                  onChange={(e) =>
+                    setContent({ ...content, rebuilt: { ...(content.rebuilt || {}), promise: { ...((content.rebuilt as any)?.promise || {}), tag: e.target.value } } as any })
+                  }
+                />
+                <Input
+                  label={labelRow("Heading")}
+                  value={String((content.rebuilt as any)?.promise?.heading || "")}
+                  onChange={(e) =>
+                    setContent({ ...content, rebuilt: { ...(content.rebuilt || {}), promise: { ...((content.rebuilt as any)?.promise || {}), heading: e.target.value } } as any })
+                  }
+                />
+                <Textarea
+                  label={labelRow("Subcopy")}
+                  value={String((content.rebuilt as any)?.promise?.subcopy || "")}
+                  onChange={(e) =>
+                    setContent({ ...content, rebuilt: { ...(content.rebuilt || {}), promise: { ...((content.rebuilt as any)?.promise || {}), subcopy: e.target.value } } as any })
+                  }
+                  rows={3}
+                />
+                <Textarea
+                  label={labelRow("Cards", "title | body")}
+                  value={Array.isArray((content.rebuilt as any)?.promise?.cards)
+                    ? ((content.rebuilt as any).promise.cards as any[])
+                        .map((x) => `${String(x?.title || "")} | ${String(x?.body || "")}`.trim())
+                        .join("\n")
+                    : ""}
+                  onChange={(e) => {
+                    const cards = e.target.value
+                      .split("\n")
+                      .map((line) => line.trim())
+                      .filter(Boolean)
+                      .map((line) => {
+                        const idx = line.indexOf("|");
+                        if (idx < 0) return { title: line.trim(), body: "" };
+                        return { title: line.slice(0, idx).trim(), body: line.slice(idx + 1).trim() };
+                      });
+                    setContent({ ...content, rebuilt: { ...(content.rebuilt || {}), promise: { ...((content.rebuilt as any)?.promise || {}), cards } } as any });
+                  }}
+                  rows={6}
+                />
+              </InspectorGroup>
+            </div>
+          ) : selectedSection?.type === "how" ? (
+            <div className="flex flex-col gap-3">
+              <InspectorGroup title="How It Works">
+                <Input
+                  label={labelRow("Tag")}
+                  value={String((content.rebuilt as any)?.how?.tag || "")}
+                  onChange={(e) => setContent({ ...content, rebuilt: { ...(content.rebuilt || {}), how: { ...((content.rebuilt as any)?.how || {}), tag: e.target.value } } as any })}
+                />
+                <Input
+                  label={labelRow("Heading")}
+                  value={String((content.rebuilt as any)?.how?.heading || "")}
+                  onChange={(e) =>
+                    setContent({ ...content, rebuilt: { ...(content.rebuilt || {}), how: { ...((content.rebuilt as any)?.how || {}), heading: e.target.value } } as any })
+                  }
+                />
+                <Textarea
+                  label={labelRow("Subcopy")}
+                  value={String((content.rebuilt as any)?.how?.subcopy || "")}
+                  onChange={(e) =>
+                    setContent({ ...content, rebuilt: { ...(content.rebuilt || {}), how: { ...((content.rebuilt as any)?.how || {}), subcopy: e.target.value } } as any })
+                  }
+                  rows={3}
+                />
+                <Textarea
+                  label={labelRow("Steps", "title | body")}
+                  value={Array.isArray((content.rebuilt as any)?.how?.steps)
+                    ? ((content.rebuilt as any).how.steps as any[])
+                        .map((x) => `${String(x?.title || "")} | ${String(x?.body || "")}`.trim())
+                        .join("\n")
+                    : ""}
+                  onChange={(e) => {
+                    const steps = e.target.value
+                      .split("\n")
+                      .map((line) => line.trim())
+                      .filter(Boolean)
+                      .map((line) => {
+                        const idx = line.indexOf("|");
+                        if (idx < 0) return { title: line.trim(), body: "" };
+                        return { title: line.slice(0, idx).trim(), body: line.slice(idx + 1).trim() };
+                      });
+                    setContent({ ...content, rebuilt: { ...(content.rebuilt || {}), how: { ...((content.rebuilt as any)?.how || {}), steps } } as any });
+                  }}
+                  rows={8}
+                />
+              </InspectorGroup>
+            </div>
+          ) : selectedSection?.type === "honest" ? (
+            <div className="flex flex-col gap-3">
+              <InspectorGroup title="Honest">
+                <Input
+                  label={labelRow("Tag")}
+                  value={String((content.rebuilt as any)?.honest?.tag || "")}
+                  onChange={(e) =>
+                    setContent({ ...content, rebuilt: { ...(content.rebuilt || {}), honest: { ...((content.rebuilt as any)?.honest || {}), tag: e.target.value } } as any })
+                  }
+                />
+                <Textarea
+                  label={labelRow("Quote")}
+                  value={String((content.rebuilt as any)?.honest?.quote || "")}
+                  onChange={(e) =>
+                    setContent({ ...content, rebuilt: { ...(content.rebuilt || {}), honest: { ...((content.rebuilt as any)?.honest || {}), quote: e.target.value } } as any })
+                  }
+                  rows={2}
+                />
+                <Textarea
+                  label={labelRow("Paragraphs (one per line)")}
+                  value={Array.isArray((content.rebuilt as any)?.honest?.paragraphs)
+                    ? ((content.rebuilt as any).honest.paragraphs as any[]).map((x) => String(x || "")).join("\n")
+                    : ""}
+                  onChange={(e) => {
+                    const paragraphs = e.target.value
+                      .split("\n")
+                      .map((x) => x.trim())
+                      .filter(Boolean);
+                    setContent({ ...content, rebuilt: { ...(content.rebuilt || {}), honest: { ...((content.rebuilt as any)?.honest || {}), paragraphs } } as any });
+                  }}
+                  rows={6}
+                />
+                <Input
+                  label={labelRow("Pledge title")}
+                  value={String((content.rebuilt as any)?.honest?.pledgeTitle || "")}
+                  onChange={(e) =>
+                    setContent({ ...content, rebuilt: { ...(content.rebuilt || {}), honest: { ...((content.rebuilt as any)?.honest || {}), pledgeTitle: e.target.value } } as any })
+                  }
+                />
+                <Textarea
+                  label={labelRow("Pledge items (one per line)")}
+                  value={Array.isArray((content.rebuilt as any)?.honest?.pledgeItems)
+                    ? ((content.rebuilt as any).honest.pledgeItems as any[]).map((x) => String(x || "")).join("\n")
+                    : ""}
+                  onChange={(e) => {
+                    const pledgeItems = e.target.value
+                      .split("\n")
+                      .map((x) => x.trim())
+                      .filter(Boolean);
+                    setContent({ ...content, rebuilt: { ...(content.rebuilt || {}), honest: { ...((content.rebuilt as any)?.honest || {}), pledgeItems } } as any });
+                  }}
+                  rows={4}
+                />
+              </InspectorGroup>
+            </div>
           ) : selectedId === "application" ? (
             <div className="flex flex-col gap-3">
               <InspectorGroup title="Content">
+                <Input
+                  label={labelRow("Section tag", `${String((content.application as any).headingTag || "").length} chars`)}
+                  value={String((content.application as any).headingTag || "")}
+                  onChange={(e) => setContent({ ...content, application: { ...content.application, headingTag: e.target.value } as any })}
+                />
                 <Input
                   label={labelRow("Form heading", `${content.application.heading.length} chars`)}
                   value={content.application.heading}
@@ -2911,6 +3331,191 @@ export function VisualBuilderPanel({ supabase, onNavigateTab, onSignOut }: Props
                   label={labelRow("Form subcopy", `${content.application.subcopy.length} chars`)}
                   value={content.application.subcopy}
                   onChange={(e) => setContent({ ...content, application: { ...content.application, subcopy: e.target.value } })}
+                  rows={3}
+                />
+                <Input
+                  label={labelRow("Form title", `${String((content.application as any).formTitle || "").length} chars`)}
+                  value={String((content.application as any).formTitle || "")}
+                  onChange={(e) => setContent({ ...content, application: { ...content.application, formTitle: e.target.value } as any })}
+                />
+                <Textarea
+                  label={labelRow("Form subtitle", `${String((content.application as any).formSubtitle || "").length} chars`)}
+                  value={String((content.application as any).formSubtitle || "")}
+                  onChange={(e) => setContent({ ...content, application: { ...content.application, formSubtitle: e.target.value } as any })}
+                  rows={2}
+                />
+              </InspectorGroup>
+
+              <InspectorGroup title="Left Promise Items">
+                <Textarea
+                  label={labelRow("Items (one per line)", "title | body")}
+                  value={Array.isArray((content.application as any).promiseItems)
+                    ? ((content.application as any).promiseItems as any[])
+                        .map((x) => `${String(x?.title || "")} | ${String(x?.body || "")}`.trim())
+                        .join("\n")
+                    : ""}
+                  onChange={(e) => {
+                    const next = e.target.value
+                      .split("\n")
+                      .map((line) => line.trim())
+                      .filter(Boolean)
+                      .map((line) => {
+                        const idx = line.indexOf("|");
+                        if (idx < 0) return { title: line.trim(), body: "" };
+                        return { title: line.slice(0, idx).trim(), body: line.slice(idx + 1).trim() };
+                      });
+                    setContent({ ...content, application: { ...content.application, promiseItems: next } as any });
+                  }}
+                  rows={4}
+                />
+              </InspectorGroup>
+
+              <InspectorGroup title="Form Fields">
+                <Input
+                  label={labelRow("First name label")}
+                  value={content.application.fields.firstNameLabel}
+                  onChange={(e) =>
+                    setContent({
+                      ...content,
+                      application: { ...content.application, fields: { ...content.application.fields, firstNameLabel: e.target.value } },
+                    })
+                  }
+                />
+                <Input
+                  label={labelRow("First name placeholder")}
+                  value={content.application.fields.firstNamePlaceholder || ""}
+                  onChange={(e) =>
+                    setContent({
+                      ...content,
+                      application: { ...content.application, fields: { ...content.application.fields, firstNamePlaceholder: e.target.value } },
+                    })
+                  }
+                />
+                <Input
+                  label={labelRow("Last name label")}
+                  value={content.application.fields.lastNameLabel}
+                  onChange={(e) =>
+                    setContent({
+                      ...content,
+                      application: { ...content.application, fields: { ...content.application.fields, lastNameLabel: e.target.value } },
+                    })
+                  }
+                />
+                <Input
+                  label={labelRow("Last name placeholder")}
+                  value={content.application.fields.lastNamePlaceholder || ""}
+                  onChange={(e) =>
+                    setContent({
+                      ...content,
+                      application: { ...content.application, fields: { ...content.application.fields, lastNamePlaceholder: e.target.value } },
+                    })
+                  }
+                />
+                <Input
+                  label={labelRow("Email label")}
+                  value={content.application.fields.emailLabel}
+                  onChange={(e) =>
+                    setContent({
+                      ...content,
+                      application: { ...content.application, fields: { ...content.application.fields, emailLabel: e.target.value } },
+                    })
+                  }
+                />
+                <Input
+                  label={labelRow("Email placeholder")}
+                  value={content.application.fields.emailPlaceholder || ""}
+                  onChange={(e) =>
+                    setContent({
+                      ...content,
+                      application: { ...content.application, fields: { ...content.application.fields, emailPlaceholder: e.target.value } },
+                    })
+                  }
+                />
+                <Input
+                  label={labelRow("Revenue label")}
+                  value={content.application.fields.revenueLabel}
+                  onChange={(e) =>
+                    setContent({
+                      ...content,
+                      application: { ...content.application, fields: { ...content.application.fields, revenueLabel: e.target.value } },
+                    })
+                  }
+                />
+                <Input
+                  label={labelRow("Revenue placeholder")}
+                  value={content.application.fields.revenuePlaceholder || ""}
+                  onChange={(e) =>
+                    setContent({
+                      ...content,
+                      application: { ...content.application, fields: { ...content.application.fields, revenuePlaceholder: e.target.value } },
+                    })
+                  }
+                />
+                <Textarea
+                  label={labelRow("Revenue options (one per line)")}
+                  value={Array.isArray(content.application.fields.revenueOptions)
+                    ? content.application.fields.revenueOptions.map((o) => String(o.label || "")).join("\n")
+                    : ""}
+                  onChange={(e) => {
+                    const lines = e.target.value
+                      .split("\n")
+                      .map((x) => x.trim())
+                      .filter(Boolean);
+                    const revenueOptions = lines.map((label) => ({ value: label, label }));
+                    setContent({
+                      ...content,
+                      application: { ...content.application, fields: { ...content.application.fields, revenueOptions } },
+                    });
+                  }}
+                  rows={4}
+                />
+                <Input
+                  label={labelRow("Bottleneck label")}
+                  value={content.application.fields.bottleneckLabel}
+                  onChange={(e) =>
+                    setContent({
+                      ...content,
+                      application: { ...content.application, fields: { ...content.application.fields, bottleneckLabel: e.target.value } },
+                    })
+                  }
+                />
+                <Textarea
+                  label={labelRow("Bottleneck placeholder")}
+                  value={content.application.fields.bottleneckPlaceholder}
+                  onChange={(e) =>
+                    setContent({
+                      ...content,
+                      application: {
+                        ...content.application,
+                        fields: { ...content.application.fields, bottleneckPlaceholder: e.target.value },
+                      },
+                    })
+                  }
+                  rows={2}
+                />
+              </InspectorGroup>
+
+              <InspectorGroup title="Submit + Success">
+                <Input
+                  label={labelRow("Submit text")}
+                  value={content.application.submitText}
+                  onChange={(e) => setContent({ ...content, application: { ...content.application, submitText: e.target.value } })}
+                />
+                <Textarea
+                  label={labelRow("Disclaimer / footnote")}
+                  value={content.application.footnote || ""}
+                  onChange={(e) => setContent({ ...content, application: { ...content.application, footnote: e.target.value } })}
+                  rows={2}
+                />
+                <Input
+                  label={labelRow("Success title")}
+                  value={content.application.successTitle}
+                  onChange={(e) => setContent({ ...content, application: { ...content.application, successTitle: e.target.value } })}
+                />
+                <Textarea
+                  label={labelRow("Success body")}
+                  value={content.application.successBody}
+                  onChange={(e) => setContent({ ...content, application: { ...content.application, successBody: e.target.value } })}
                   rows={3}
                 />
               </InspectorGroup>

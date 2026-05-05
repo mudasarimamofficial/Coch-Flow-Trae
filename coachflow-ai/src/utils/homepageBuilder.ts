@@ -150,25 +150,29 @@ export function applyBuilderOverrides(input: HomepageContent): HomepageContent {
         tiers: tierBlocks
           .map((b) => {
             const c = b.content || {};
+            const tierBadge = asString(c.badge);
             const name = asString(c.name);
             const tagline = asString(c.tagline);
             const price = asString(c.price);
+            const priceWas = asString(c.priceWas);
             const priceSuffix = asString(c.priceSuffix);
             const outcome = asString(c.outcome);
             const ctaText = asString(c.ctaText);
             const ctaHref = asString(c.ctaHref);
             const isHighlighted = asBool(c.highlighted);
-            const badge = asString(c.highlightBadge);
+            const highlightBadge = asString(c.highlightBadge);
             const accentHex = asString(c.highlightAccentHex);
             const bullets = Array.isArray(c.bullets) ? (c.bullets as unknown[]).map(asString).filter(Boolean) : [];
             return {
+              badge: tierBadge || undefined,
               name,
               tagline,
               price,
+              priceWas: priceWas || undefined,
               priceSuffix: priceSuffix || undefined,
               outcome: outcome || undefined,
               highlight: isHighlighted
-                ? { badge: badge || "Most Popular", accentHex: accentHex || "#b58a2f" }
+                ? { badge: highlightBadge || tierBadge || "Most Popular", accentHex: accentHex || "#b58a2f" }
                 : undefined,
               bullets,
               ctaText: ctaText || "Select",

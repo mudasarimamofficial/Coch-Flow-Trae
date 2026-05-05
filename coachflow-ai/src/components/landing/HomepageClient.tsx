@@ -15,15 +15,18 @@ import { mergePageSectionsWithDefaults } from "@/utils/homepageSections";
 import { neutralizeLegacyProofContent } from "@/utils/homepageMerge";
 import { buildThemeCssVars } from "@/utils/themeCss";
 import { mergeTypographyScale } from "@/utils/typographyScale";
+import { RebuiltLandingFrame } from "@/components/landing/RebuiltLandingFrame";
 
 type Props = {
   initialContent: HomepageContent;
   isBuilderPreview?: boolean;
+  templateHtml?: string;
 };
 
-export function HomepageClient({ initialContent, isBuilderPreview }: Props) {
+export function HomepageClient({ initialContent, isBuilderPreview, templateHtml }: Props) {
   const [content, setContent] = useState<HomepageContent>(() => mergeClientContent(initialContent));
   const [hasPreviewOverride, setHasPreviewOverride] = useState(false);
+  const [previewDevice, setPreviewDevice] = useState<"desktop" | "tablet" | "mobile">("desktop");
 
   useEffect(() => {
     if (isBuilderPreview) return;
@@ -56,6 +59,7 @@ export function HomepageClient({ initialContent, isBuilderPreview }: Props) {
     const device = new URLSearchParams(window.location.search).get("device");
     const d = device === "mobile" || device === "tablet" || device === "desktop" ? device : "desktop";
     document.documentElement.dataset.device = d;
+    setPreviewDevice(d);
     function onMessage(e: MessageEvent) {
       if (e.origin !== window.location.origin) return;
       const data = e.data as any;
@@ -110,6 +114,25 @@ export function HomepageClient({ initialContent, isBuilderPreview }: Props) {
 
   const preset = ((resolved.site as any)?.designPreset as string | undefined) || "landing_html_v1";
   const useLanding = preset !== "classic";
+  const shouldUseRebuiltTemplate = useLanding;
+
+  if (shouldUseRebuiltTemplate) {
+    return (
+      <div className="flex flex-1 flex-col">
+        <RebuiltLandingFrame
+          content={resolved}
+          templateHtml={templateHtml}
+          device={isBuilderPreview ? previewDevice : "desktop"}
+        />
+        <WhatsAppWidget content={resolved} />
+        {isBuilderPreview && !hasPreviewOverride ? (
+          <div className="fixed bottom-4 left-4 rounded-lg border border-slate-200 bg-white/90 px-3 py-2 text-xs text-slate-700 shadow-sm backdrop-blur dark:border-white/10 dark:bg-black/50 dark:text-slate-200">
+            Waiting for builder preview…
+          </div>
+        ) : null}
+      </div>
+    );
+  }
 
   return (
     <div className={`${useLanding ? "cf-landing" : ""} flex flex-1 flex-col`}>
@@ -283,6 +306,46 @@ function mergeClientContent(c: Partial<HomepageContent> | null): HomepageContent
     whatsapp: {
       ...(homepageDefaults.whatsapp as any),
       ...((c as any).whatsapp || {}),
+    },
+    rebuilt: {
+      ...(homepageDefaults.rebuilt || {}),
+      ...(((c as any).rebuilt as any) || {}),
+      hero: {
+        ...((homepageDefaults.rebuilt as any)?.hero || {}),
+        ...(((c as any).rebuilt as any)?.hero || {}),
+      },
+      trustStrip: {
+        ...((homepageDefaults.rebuilt as any)?.trustStrip || {}),
+        ...(((c as any).rebuilt as any)?.trustStrip || {}),
+      },
+      founder: {
+        ...((homepageDefaults.rebuilt as any)?.founder || {}),
+        ...(((c as any).rebuilt as any)?.founder || {}),
+      },
+      promise: {
+        ...((homepageDefaults.rebuilt as any)?.promise || {}),
+        ...(((c as any).rebuilt as any)?.promise || {}),
+        cards:
+          (((c as any).rebuilt as any)?.promise?.cards as any) ||
+          ((homepageDefaults.rebuilt as any)?.promise?.cards as any) ||
+          [],
+      },
+      how: {
+        ...((homepageDefaults.rebuilt as any)?.how || {}),
+        ...(((c as any).rebuilt as any)?.how || {}),
+        steps:
+          (((c as any).rebuilt as any)?.how?.steps as any) ||
+          ((homepageDefaults.rebuilt as any)?.how?.steps as any) ||
+          [],
+      },
+      honest: {
+        ...((homepageDefaults.rebuilt as any)?.honest || {}),
+        ...(((c as any).rebuilt as any)?.honest || {}),
+        pledgeItems:
+          (((c as any).rebuilt as any)?.honest?.pledgeItems as any) ||
+          ((homepageDefaults.rebuilt as any)?.honest?.pledgeItems as any) ||
+          [],
+      },
     },
   }));
 }

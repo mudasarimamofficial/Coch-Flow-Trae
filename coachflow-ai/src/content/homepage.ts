@@ -91,11 +91,58 @@ export type HomepageContent = {
     delayMs?: number;
     autoOpen?: boolean;
   };
+  rebuilt?: {
+    hero?: {
+      tag: string;
+      headlineLine1: string;
+      headlineLine2Prefix: string;
+      headlineHighlight: string;
+      subcopyBeforeStrong: string;
+      subcopyStrong: string;
+      subcopyAfterStrong: string;
+      note: string;
+    };
+    trustStrip?: {
+      items: string[];
+    };
+    founder?: {
+      label: string;
+      avatarText: string;
+      name: string;
+      title: string;
+      quote: string;
+      paragraphs: string[];
+    };
+    promise?: {
+      tag: string;
+      heading: string;
+      subcopy: string;
+      cards: { title: string; body: string }[];
+    };
+    how?: {
+      tag: string;
+      heading: string;
+      subcopy: string;
+      steps: { title: string; body: string }[];
+    };
+    honest?: {
+      tag: string;
+      quote: string;
+      paragraphs: string[];
+      pledgeTitle: string;
+      pledgeItems: string[];
+    };
+  };
   page?: {
     sections: {
       id: string;
       type:
         | "hero"
+        | "trust_strip"
+        | "founder"
+        | "promise"
+        | "how"
+        | "honest"
         | "trust"
         | "features"
         | "workflow"
@@ -176,14 +223,17 @@ export type HomepageContent = {
   };
   pricing: {
     id: string;
+    tag?: string;
     heading: string;
     subcopy: string;
     note?: string;
     bulletIcon: string;
     tiers: {
+      badge?: string;
       name: string;
       tagline: string;
       price: string;
+      priceWas?: string;
       priceSuffix?: string;
       highlight?: { badge: string; accentHex: string };
       outcome?: string;
@@ -195,8 +245,12 @@ export type HomepageContent = {
   };
   application: {
     id: string;
+    headingTag?: string;
     heading: string;
     subcopy: string;
+    formTitle?: string;
+    formSubtitle?: string;
+    promiseItems?: { title: string; body: string }[];
     fields: {
       firstNameLabel: string;
       lastNameLabel: string;
@@ -395,109 +449,117 @@ export const homepageDefaults: HomepageContent = {
     delayMs: 1200,
     autoOpen: false,
   },
+  rebuilt: {
+    hero: {
+      tag: "Client Acquisition For Masculinity Coaches",
+      headlineLine1: "Stop Guessing.",
+      headlineLine2Prefix: "Start ",
+      headlineHighlight: "Closing.",
+      subcopyBeforeStrong: "You've built a real coaching business. ",
+      subcopyStrong: "Your calendar shouldn't depend on content going viral or a referral showing up.",
+      subcopyAfterStrong: " We install a system that fills it — month after month, without ads.",
+      note: "Applications reviewed personally. No automated responses.",
+    },
+    trustStrip: {
+      items: [
+        "Fit-first — we turn away wrong clients",
+        "Human outreach — no bots, no spam",
+        "Brand-safe — your reputation is protected",
+        "Weekly optimisation — the system improves every month",
+        "No lock-in contracts",
+      ],
+    },
+    founder: {
+      label: "Who Is Behind This",
+      avatarText: "H",
+      name: "Hamza",
+      title: "Founder, CoachFlow AI · Masculinity Coach",
+      quote: `"I didn't build this for coaches. I built it because I was one."`,
+      paragraphs: [
+        "I spent years in the masculinity coaching space — developing men, running programmes, trying to figure out how to fill my calendar without becoming a content machine. I know the frustration of having a life-changing offer and not being able to get it in front of the right men consistently.",
+        "Most client acquisition agencies <strong>have never coached anyone.</strong> They sell outreach systems built for SaaS companies and slap them onto coaches. It doesn't work — because they don't understand the buyer, the conversation, or what it takes to earn trust with men who are already sceptical.",
+        "CoachFlow is built differently. Every system, every message, every piece of outreach is designed specifically for masculinity coaches — because I know your world from the inside.",
+        "<strong>That's not a marketing line. That's why this works.</strong>",
+      ],
+    },
+    promise: {
+      tag: "What You're Actually Getting",
+      heading: "Four Things We Stand Behind",
+      subcopy: "Not features. Not deliverables. Commitments — the things that make working with us feel different from day one.",
+      cards: [
+        {
+          title: "We protect your brand like it's ours",
+          body: "Every message we send goes out under your name. We write with your voice, your standards, and your reputation on the line. We would never send anything we wouldn't be proud to sign ourselves.",
+        },
+        {
+          title: "No vanity metrics. Booked calls or nothing.",
+          body: "We don't report follower growth, impressions, or reply rates. The only number that matters is qualified calls booked onto your calendar. That's the only thing we optimise for.",
+        },
+        {
+          title: "You'll know exactly what's happening, always",
+          body: "Real-time pipeline visibility. Weekly reporting. No black boxes. If something isn't working, we tell you before you ask — and we show you what we're changing.",
+        },
+        {
+          title: "We only work with coaches we can genuinely help",
+          body: "Every application is reviewed personally. If your offer, audience, or stage isn't right for our system, we'll tell you honestly — and point you toward what will actually work for you right now.",
+        },
+      ],
+    },
+    how: {
+      tag: "The Framework",
+      heading: "How We Fill Your Calendar",
+      subcopy: "Five steps. No shortcuts. Built to compound — the longer you run it, the stronger it gets.",
+      steps: [
+        {
+          title: "Offer and niche calibration",
+          body: "We start by deeply auditing your offer and defining exactly who you're for. Not a broad ICA exercise — a precise, signal-based definition of the man your programme transforms. Every message we write for you starts here.",
+        },
+        {
+          title: "Targeted prospect database build",
+          body: "We build a hyper-targeted list using behavioural and interest signals — men who are actively searching for the transformation you provide. Quality over volume at every stage. A smaller, better list outperforms a large, cold one every time.",
+        },
+        {
+          title: "Strategic multi-channel outreach",
+          body: "Personalised outreach across Instagram, LinkedIn, and email — starting real conversations, not spray-and-pray sequences. We handle every reply, every objection, every follow-up. You never touch the cold side of the conversation.",
+        },
+        {
+          title: "Qualified call delivery to your calendar",
+          body: "Prospects are qualified, pre-framed, and booked directly. You show up to calls with men who already understand your offer and are ready to invest — not cold strangers who need convincing of the basics.",
+        },
+        {
+          title: "Weekly optimisation and scaling",
+          body: "Every campaign is analysed weekly. Scripts are tested. Targeting is refined. The system compounds — what works in month one is better in month three. We don't set it and leave it.",
+        },
+      ],
+    },
+    honest: {
+      tag: "The Honest Part",
+      quote: `"We're not the biggest agency. We're building something serious — and we want the right coaches to build it with."`,
+      paragraphs: [
+        "CoachFlow is new. We don't have a wall of client logos or ten years of case studies to show you. What we do have is a founder who has lived your problem, a system built specifically for your world, and a commitment to prove ourselves through results — not through looking established on a website.",
+        "That's why we're offering our first founding cohort a different arrangement: you get a reduced rate, we get to build the proof together. Full transparency. Weekly reporting. And if we don't deliver qualified conversations within the first 60 days, you don't pay for the second month.",
+        "That's the deal. No fine print.",
+      ],
+      pledgeTitle: "Our Founding Partner Guarantee",
+      pledgeItems: [
+        "Qualified conversations started within 14 days of launch",
+        "Weekly reporting — full visibility, no black boxes",
+        "If no results in 60 days — month two is free",
+        "Only 3 founding partner spots available",
+      ],
+    },
+  },
   page: {
     sections: [
-      { id: "hero", type: "hero", enabled: true, settings: { heroBackground: true, heroPanel: true } },
-      { id: "features", type: "features", enabled: true, settings: { label: "What we do" } },
-      {
-        id: "workflow",
-        type: "workflow",
-        enabled: true,
-        settings: { label: "The CoachFlow framework", variant: "landing" },
-      },
-      {
-        id: "proof",
-        type: "testimonials",
-        enabled: true,
-        settings: {
-          eyebrow: "Proof of pipeline",
-          heading: "Built for coaches who need booked calls, not vanity metrics",
-          subcopy:
-            "A credibility layer before pricing: concrete pipeline indicators, client-style proof, and reassurance that the system is built around qualified conversations.",
-          stats: [
-            { value: "Fit-first", label: "no-pressure" },
-            { value: "Structured", label: "weekly iteration" },
-            { value: "Brand-safe", label: "human outreach" },
-          ],
-        },
-        blocks: [
-          {
-            id: "proof_1",
-            type: "proof_card",
-            content: {
-              name: "Qualified conversations",
-              role: "System proof point",
-              body: "Campaign activity is measured around qualified conversations, booked calls, and follow-up discipline instead of vanity reach.",
-              metric: "Intent",
-            },
-          },
-          {
-            id: "proof_2",
-            type: "proof_card",
-            content: {
-              name: "Audience fit",
-              role: "System proof point",
-              body: "Prospects are segmented before outreach, so the system can prioritize fit, intent, and high-ticket readiness.",
-              metric: "Fit",
-            },
-          },
-          {
-            id: "proof_3",
-            type: "proof_card",
-            content: {
-              name: "Pipeline visibility",
-              role: "System proof point",
-              body: "Pipeline visibility keeps the coach focused on the highest-leverage conversations and the next optimization lever.",
-              metric: "Clarity",
-            },
-          },
-          {
-            id: "proof_4",
-            type: "proof_card",
-            content: {
-              name: "Follow-up discipline",
-              role: "System proof point",
-              body: "Follow-up windows are tracked tightly so warm leads do not disappear during busy delivery weeks.",
-              metric: "Speed",
-            },
-          },
-          {
-            id: "proof_5",
-            type: "proof_card",
-            content: {
-              name: "Weekly optimization",
-              role: "System proof point",
-              body: "The operating rhythm is built for weekly optimization, not one-off campaign guessing.",
-              metric: "Iteration",
-            },
-          },
-          {
-            id: "proof_6",
-            type: "proof_card",
-            content: {
-              name: "Brand-safe outreach",
-              role: "System proof point",
-              body: "Every stage is designed to protect brand authority while increasing sales-call consistency.",
-              metric: "Authority",
-            },
-          },
-        ],
-      },
-      { id: "pricing", type: "pricing", enabled: true, settings: { label: "Partnership tiers" } },
-      {
-        id: "audit-bridge",
-        type: "audit_bridge",
-        enabled: true,
-        settings: {
-          heading: "Not sure which tier is right for you?",
-          subcopy:
-            "Take the client acquisition fit audit. Answer a few questions and we will show you where your lead generation may be leaking - and which tier fits your current stage.",
-          ctaText: "Take the free audit",
-          ctaHref: "#lead-form",
-        },
-      },
-      { id: "application", type: "application", enabled: true, settings: { label: "Apply for partnership" } },
-      { id: "footer", type: "footer", enabled: true, settings: { showSocial: false } },
+      { id: "hero", type: "hero", enabled: true },
+      { id: "trust-strip", type: "trust_strip", enabled: true },
+      { id: "founder", type: "founder", enabled: true },
+      { id: "promise", type: "promise", enabled: true },
+      { id: "how", type: "how", enabled: true },
+      { id: "honest", type: "honest", enabled: true },
+      { id: "pricing", type: "pricing", enabled: true },
+      { id: "application", type: "application", enabled: true },
+      { id: "footer", type: "footer", enabled: true },
     ],
   },
   customSections: [],
@@ -508,11 +570,11 @@ export const homepageDefaults: HomepageContent = {
       url: "https://ekwydksbprxebgmhbmtj.supabase.co/storage/v1/object/public/assets/header%20icon.png",
     },
     nav: [
-      { label: "How It Works", href: "#workflow" },
-      { label: "What We Do", href: "#features" },
+      { label: "Our Story", href: "#founder" },
+      { label: "How It Works", href: "#how" },
       { label: "Pricing", href: "#pricing" },
     ],
-    primaryCta: { text: "Apply Now", href: "#lead-form" },
+    primaryCta: { text: "Apply Now", href: "#apply" },
   },
   hero: {
     badge: { icon: "auto_awesome", text: "Client Acquisition Infrastructure" },
@@ -541,8 +603,8 @@ export const homepageDefaults: HomepageContent = {
       value: "",
       label: "Pipeline visibility",
     },
-    primaryCta: { text: "Apply for Partnership", href: "#lead-form", icon: "arrow_forward" },
-    secondaryCta: { text: "See How It Works", href: "#workflow" },
+    primaryCta: { text: "Apply for Partnership", href: "#apply", icon: "arrow_forward" },
+    secondaryCta: { text: "See How It Works", href: "#how" },
   },
   trust: {
     eyebrow: "Built exclusively for masculinity coaches selling $1k–$5k programmes.",
@@ -609,90 +671,104 @@ export const homepageDefaults: HomepageContent = {
   },
   pricing: {
     id: "pricing",
-    heading: "Transparent pricing for serious coaches",
-    subcopy: "Three tiers built around where you are right now and where you want to go. No hidden fees. No long-term lock-in.",
-    note: "Applications are reviewed for fit before onboarding begins.",
+    tag: "Partnership Tiers",
+    heading: "Transparent Pricing",
+    subcopy: "Applications are reviewed for fit before onboarding begins. We say no when it's not the right match.",
+    note: "Not sure which tier is right? Apply anyway — we'll recommend the right fit after reviewing your business.",
     bulletIcon: "check_circle",
     tiers: [
       {
+        badge: "Founding Partner",
         name: "Starter",
-        tagline: "For coaches building their first consistent lead flow.",
-        price: "$900",
-        priceSuffix: "/mo",
-        outcome: "Built to establish a consistent qualified-conversation workflow.",
+        tagline: "For coaches building their first consistent lead flow. Founding rate — 3 spots only.",
+        price: "$600",
+        priceWas: "$900",
+        priceSuffix: "per month · founding rate",
         bullets: [
           "Targeted prospect identification",
           "Instagram + email outreach",
           "Lead qualification",
           "Appointment setting",
+          "Weekly reporting",
+          "60-day results guarantee",
         ],
         ctaText: "Apply for Starter",
-        ctaHref: "#lead-form",
+        ctaHref: "#apply",
       },
       {
+        badge: "Most Selected",
         name: "Growth",
-        tagline: "For coaches ready to scale beyond ad hoc lead flow.",
+        tagline: "For coaches ready to scale beyond inconsistent lead flow into a proper acquisition machine.",
         price: "$1,400",
-        priceSuffix: "/mo",
-        highlight: { badge: "Most Popular", accentHex: "#b58a2f" },
-        outcome: "Built to scale multi-channel booked-call delivery with weekly optimization.",
+        priceSuffix: "per month",
+        highlight: { badge: "Most Selected", accentHex: "#C9A84C" },
         bullets: [
           "Everything in Starter",
-          "Multi-channel outreach",
+          "Multi-channel outreach (Instagram, LinkedIn, Email)",
           "CRM setup and management",
           "Weekly campaign optimisation",
           "Dedicated account manager",
+          "Monthly strategy call",
         ],
         ctaText: "Apply for Growth",
-        ctaHref: "#lead-form",
+        ctaHref: "#apply",
       },
       {
+        badge: "For Established Coaches",
         name: "Scale",
-        tagline: "For established coaches scaling aggressively.",
+        tagline: "For coaches with an established offer scaling their pipeline aggressively.",
         price: "$2,000",
-        priceSuffix: "/mo",
-        outcome: "Built for full pipeline visibility and priority optimization.",
+        priceSuffix: "per month",
         bullets: [
           "Everything in Growth",
           "Full funnel automation",
           "Sales pipeline optimisation",
           "Priority support and strategy calls",
+          "Quarterly audit and scale review",
         ],
         ctaText: "Apply for Scale",
-        ctaHref: "#lead-form",
+        ctaHref: "#apply",
       },
     ],
   },
   application: {
     id: "lead-form",
-    heading: "Let's build your system",
+    headingTag: "Apply for Partnership",
+    heading: "Let's Build\nYour System",
     subcopy:
-      "Tell us about your business and we will review fit before the next step.",
+      "Tell us where you are and where you want to go. We review every application personally and only move forward when we're confident we can deliver results for you.",
+    formTitle: "Your Application",
+    formSubtitle: "Takes 2 minutes. No pressure, no pitch call unless it's a clear fit.",
+    promiseItems: [
+      { title: "Personal review", body: "Hamza reviews every application himself. No VA, no automation." },
+      { title: "Honest fit assessment", body: "If we can't help you, we'll tell you directly — and explain why." },
+      { title: "Response within 48 hours", body: "No ghosting. No automated drip sequence. A real reply." },
+    ],
     fields: {
-      firstNameLabel: "First name",
-      lastNameLabel: "Last name",
-      emailLabel: "Email address",
+      firstNameLabel: "First Name",
+      lastNameLabel: "Last Name",
+      emailLabel: "Email Address",
       firstNamePlaceholder: "Hamza",
-      lastNamePlaceholder: "Mukhtar",
-      emailPlaceholder: "you@example.com",
-      revenueLabel: "Current monthly revenue",
+      lastNamePlaceholder: "Khan",
+      emailPlaceholder: "you@yourcoaching.com",
+      revenueLabel: "Current Monthly Revenue",
       revenuePlaceholder: "Select your range",
-      bottleneckLabel: "What is your biggest bottleneck right now?",
-      bottleneckPlaceholder: "e.g. I get engagement on my content but no one books a call...",
+      bottleneckLabel: "What's your biggest bottleneck right now?",
+      bottleneckPlaceholder: "Be honest — the more specific you are, the better we can assess fit.",
       revenueOptions: [
         { value: "Under $3k/mo", label: "Under $3k/mo" },
-        { value: "$3k–$8k/mo", label: "$3k–$8k/mo" },
-        { value: "$8k–$20k/mo", label: "$8k–$20k/mo" },
-        { value: "$20k–$50k/mo", label: "$20k–$50k/mo" },
+        { value: "$3k – $8k/mo", label: "$3k – $8k/mo" },
+        { value: "$8k – $20k/mo", label: "$8k – $20k/mo" },
+        { value: "$20k – $50k/mo", label: "$20k – $50k/mo" },
         { value: "$50k+/mo", label: "$50k+/mo" },
       ],
     },
-    submitText: "Submit Application",
-    successTitle: "Application received.",
+    submitText: "Submit Application →",
+    successTitle: "Application Received",
     successBody:
-      "We review every application personally and will be in touch if it is a fit. Check your email, including your spam folder.",
+      "Hamza reviews every application personally. You'll hear back within 48 hours — check your inbox, including spam.",
     submitAnotherText: "Submit another",
-    footnote: "We review every application personally.",
+    footnote: "No newsletter. No automated sales blast. Just a personal fit review from Hamza.",
   },
   footer: {
     brandText: "CoachFlow AI",
