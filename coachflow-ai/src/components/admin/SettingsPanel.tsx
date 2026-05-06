@@ -279,10 +279,9 @@ export function SettingsPanel({ supabase }: Props) {
           <Select
             label="Design preset"
             value={designPreset}
-            onChange={(e) => setDesignPreset(e.target.value === "classic" ? "classic" : "landing_html_v1")}
+            onChange={(e) => setDesignPreset("landing_html_v1")}
             options={[
-              { value: "landing_html_v1", label: "Landing (HTML v1)" },
-              { value: "classic", label: "Classic" },
+              { value: "landing_html_v1", label: "Landing (HTML v1)" }
             ]}
           />
           <Select

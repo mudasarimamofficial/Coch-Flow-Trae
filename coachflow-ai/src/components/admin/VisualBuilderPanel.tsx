@@ -1443,84 +1443,51 @@ export function VisualBuilderPanel({ supabase, onNavigateTab, onSignOut }: Props
                 label="Add section"
                 value={addType}
                 onChange={(e) => setAddType(e.target.value)}
-                options={
-                  isRebuiltTemplate
-                    ? [
-                        { value: "hero", label: "Hero" },
-                        { value: "trust_strip", label: "Trust Strip" },
-                        { value: "founder", label: "Founder" },
-                        { value: "promise", label: "Promise" },
-                        { value: "how", label: "How It Works" },
-                        { value: "honest", label: "Honest" },
-                        { value: "pricing", label: "Pricing" },
-                        { value: "application", label: "Application" },
-                        { value: "footer", label: "Footer" },
-                        { value: "custom_html", label: "Custom HTML" },
-                      ]
-                    : [
-                        { value: "hero", label: "Hero" },
-                        { value: "features", label: "Features" },
-                        { value: "workflow", label: "Workflow" },
-                        { value: "pricing", label: "Pricing" },
-                        { value: "audit_bridge", label: "Audit Bridge" },
-                        { value: "application", label: "Lead Form" },
-                        { value: "footer", label: "Footer" },
-                        { value: "testimonials", label: "Proof / Testimonials" },
-                        { value: "custom_html", label: "Custom HTML" },
-                      ]
-                }
+                options={[
+                  { value: "hero", label: "Hero" },
+                  { value: "trust_strip", label: "Trust Strip" },
+                  { value: "founder", label: "Founder" },
+                  { value: "promise", label: "Promise" },
+                  { value: "how", label: "How It Works" },
+                  { value: "honest", label: "Honest" },
+                  { value: "pricing", label: "Pricing" },
+                  { value: "application", label: "Application" },
+                  { value: "footer", label: "Footer" },
+                  { value: "custom_html", label: "Custom HTML" },
+                ]}
               />
               <Button
                 variant="secondary"
                 className="h-11 px-4"
                 onClick={() => {
-                const id = `${addType}_${Date.now()}`;
-                const next: PageSection = {
-                  id,
-                  type: addType as any,
-                  enabled: true,
-                  settings:
-                    addType === "custom_html"
-                      ? { html: "<div></div>", css: "", js: "" }
-                      : addType === "audit_bridge"
-                        ? {
-                            heading: "",
-                            subcopy: "",
-                            ctaText: "",
-                            ctaHref: isRebuiltTemplate ? "#apply" : "#lead-form",
-                          }
+                  const id = `${addType}_${Date.now()}`;
+                  const next: PageSection = {
+                    id,
+                    type: addType as any,
+                    enabled: true,
+                    settings:
+                      addType === "custom_html"
+                        ? { html: "<div></div>", css: "", js: "" }
                         : undefined,
-                  blocks:
-                    addType === "features"
-                      ? [{ id: `feature_${Date.now()}`, type: "feature", content: { title: "", description: "", icon: { type: "library", value: "website" } } }]
-                      : addType === "workflow"
-                        ? [{ id: `step_${Date.now()}`, type: "step", content: { title: "", copy: "" } }]
-                      : addType === "pricing"
+                    blocks:
+                      addType === "pricing"
                         ? [
                             {
                               id: `tier_${Date.now()}`,
                               type: "tier",
-                              content: { name: "", tagline: "", price: "", bullets: [], ctaText: "Select", ctaHref: isRebuiltTemplate ? "#apply" : "#lead-form" },
+                              content: { name: "", tagline: "", price: "", bullets: [], ctaText: "Select", ctaHref: "#apply" },
                             },
                           ]
-                        : addType === "testimonials"
-                          ? [
-                              {
-                                id: `proof_${Date.now()}`,
-                                type: "proof_card",
-                                content: { name: "Pipeline signal", title: "System proof point", body: "" },
-                              },
-                            ]
-                          : addType === "footer"
-                            ? [{ id: `social_${Date.now()}`, type: "social_link", content: { platform: "instagram", url: "", enabled: true, icon: { type: "library", value: "instagram" } } }]
-                            : [],
-                };
-                updateSections([...pageSections, next]);
-                setSelectedId(id);
-              }}
-            >
-              Add
-            </Button>
+                        : addType === "footer"
+                          ? [{ id: `social_${Date.now()}`, type: "social_link", content: { platform: "instagram", url: "", enabled: true, icon: { type: "library", value: "instagram" } } }]
+                          : [],
+                  };
+                  updateSections([...pageSections, next]);
+                  setSelectedId(id);
+                }}
+              >
+                Add
+              </Button>
             </div>
             <Button
               variant="secondary"
