@@ -5,6 +5,6 @@ export const revalidate = 0;
 export const runtime = "nodejs";
 
 export default function AdminPage() {
-  return <AdminPageClient />;
+  return <AdminPageClient initialTab="builder" />;
 }
 

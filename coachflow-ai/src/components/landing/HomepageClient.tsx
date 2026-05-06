@@ -21,12 +21,13 @@ type Props = {
   initialContent: HomepageContent;
   isBuilderPreview?: boolean;
   templateHtml?: string;
+  initialPreviewDevice?: "desktop" | "tablet" | "mobile";
 };
 
-export function HomepageClient({ initialContent, isBuilderPreview, templateHtml }: Props) {
+export function HomepageClient({ initialContent, isBuilderPreview, templateHtml, initialPreviewDevice }: Props) {
   const [content, setContent] = useState<HomepageContent>(() => mergeClientContent(initialContent));
   const [hasPreviewOverride, setHasPreviewOverride] = useState(false);
-  const [previewDevice, setPreviewDevice] = useState<"desktop" | "tablet" | "mobile">("desktop");
+  const [previewDevice, setPreviewDevice] = useState<"desktop" | "tablet" | "mobile">(initialPreviewDevice || "desktop");
 
   useEffect(() => {
     if (isBuilderPreview) return;
@@ -57,7 +58,7 @@ export function HomepageClient({ initialContent, isBuilderPreview, templateHtml 
   useEffect(() => {
     if (!isBuilderPreview) return;
     const device = new URLSearchParams(window.location.search).get("device");
-    const d = device === "mobile" || device === "tablet" || device === "desktop" ? device : "desktop";
+    const d = device === "mobile" || device === "tablet" || device === "desktop" ? device : initialPreviewDevice || "desktop";
     document.documentElement.dataset.device = d;
     setPreviewDevice(d);
     function onMessage(e: MessageEvent) {
@@ -72,7 +73,7 @@ export function HomepageClient({ initialContent, isBuilderPreview, templateHtml 
     return () => {
       window.removeEventListener("message", onMessage);
     };
-  }, [isBuilderPreview]);
+  }, [initialPreviewDevice, isBuilderPreview]);
 
   useEffect(() => {
     const items = Array.from(document.querySelectorAll<HTMLElement>("[data-reveal]"));

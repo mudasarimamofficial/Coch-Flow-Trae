@@ -847,7 +847,6 @@ export function VisualBuilderPanel({ supabase, onNavigateTab, onSignOut }: Props
 
   const previewWidth =
     mode === "mobile" ? "w-[375px]" : mode === "tablet" ? "w-[768px]" : "w-full";
-  const previewPx = mode === "mobile" ? 375 : mode === "tablet" ? 768 : null;
 
   const selectedSection = useMemo(
     () => pageSections.find((s) => s.id === selectedId) || null,

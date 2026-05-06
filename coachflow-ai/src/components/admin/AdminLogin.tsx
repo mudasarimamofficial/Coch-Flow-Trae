@@ -20,10 +20,10 @@ export function AdminLogin({
 }: Props) {
   return (
     <div className="flex flex-1 items-center justify-center px-6 py-16">
-      <div className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-8 shadow-xl shadow-black/5 dark:border-white/10 dark:bg-[#112121]">
+      <div className="w-full max-w-md rounded-2xl border border-white/10 bg-[#112121] p-8 text-white shadow-xl shadow-black/20">
         <div className="mb-6">
           <h1 className="text-xl font-bold">Admin sign in</h1>
-          <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
+          <p className="mt-1 text-sm text-white/60">
             Sign in with your Supabase Auth admin email + password.
           </p>
         </div>

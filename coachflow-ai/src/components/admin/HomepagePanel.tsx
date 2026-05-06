@@ -8,6 +8,7 @@ import { homepageDefaults, type HomepageContent } from "@/content/homepage";
 import { requestAdminRevalidate } from "@/utils/adminRevalidate";
 import { neutralizeLegacyProofContent } from "@/utils/homepageMerge";
 import { mergeTypographyScale } from "@/utils/typographyScale";
+import { MEDIA_BUCKET } from "@/utils/mediaBucket";
 
 type Props = {
   supabase: SupabaseClient;
@@ -260,16 +261,16 @@ export function HomepagePanel({ supabase }: Props) {
     const path = `${folder}/${Date.now()}-${safeName || "file"}`;
 
     const { error: uploadError } = await supabase.storage
-      .from("homepage")
+      .from(MEDIA_BUCKET)
       .upload(path, file, { upsert: true, contentType: file.type });
 
     if (uploadError) throw uploadError;
 
     if (previousPath) {
-      await supabase.storage.from("homepage").remove([previousPath]);
+      await supabase.storage.from(MEDIA_BUCKET).remove([previousPath]);
     }
 
-    const { data } = supabase.storage.from("homepage").getPublicUrl(path);
+    const { data } = supabase.storage.from(MEDIA_BUCKET).getPublicUrl(path);
     return { url: data.publicUrl, path } satisfies UploadTarget;
   }
 

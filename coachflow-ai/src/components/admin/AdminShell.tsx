@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/Button";
-import { Code2, FileJson, Files, LayoutDashboard, MoreHorizontal, PanelLeft, Settings, Users, X } from "lucide-react";
+import { Code2, FileJson, Files, ImageIcon, LayoutDashboard, MoreHorizontal, PanelLeft, Settings, Users, X } from "lucide-react";
 import type { Tab } from "@/components/admin/types";
 import Image from "next/image";
 
@@ -24,6 +24,7 @@ export function AdminShell({ tab, onTabChange, sessionEmail, onSignOut, topNotic
     { tab: "builder", label: "Builder", icon: <LayoutDashboard size={18} /> },
     { tab: "pages", label: "Pages", icon: <Files size={18} /> },
     { tab: "leads", label: "Leads", icon: <Users size={18} /> },
+    { tab: "media", label: "Media", icon: <ImageIcon size={18} /> },
     { tab: "homepage", label: "JSON", icon: <FileJson size={18} /> },
     { tab: "custom", label: "Custom", icon: <Code2 size={18} /> },
     { tab: "settings", label: "Settings", icon: <Settings size={18} /> },
@@ -259,14 +260,14 @@ export function AdminShell({ tab, onTabChange, sessionEmail, onSignOut, topNotic
             <button
               type="button"
               className={
-                tab === "settings"
+                tab === "media"
                   ? "flex h-12 flex-col items-center justify-center rounded-xl bg-white/10 text-white"
                   : "flex h-12 flex-col items-center justify-center rounded-xl text-white/70 hover:bg-white/5 hover:text-white"
               }
-              onClick={() => onTabChange("settings")}
+              onClick={() => onTabChange("media")}
             >
-              <Settings size={18} />
-              <div className="mt-1 text-[11px] font-semibold">Settings</div>
+              <ImageIcon size={18} />
+              <div className="mt-1 text-[11px] font-semibold">Media</div>
             </button>
             <button
               type="button"
@@ -298,6 +299,17 @@ export function AdminShell({ tab, onTabChange, sessionEmail, onSignOut, topNotic
               </button>
             </div>
             <div className="p-3">
+              <button
+                type="button"
+                className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-sm text-white/80 hover:bg-white/5"
+                onClick={() => {
+                  onTabChange("settings");
+                  setMobileMoreOpen(false);
+                }}
+              >
+                <Settings size={18} />
+                Settings
+              </button>
               <button
                 type="button"
                 className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-sm text-white/80 hover:bg-white/5"

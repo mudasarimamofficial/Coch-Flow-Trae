@@ -21,10 +21,6 @@ function safeText(value: unknown) {
   return typeof value === "string" ? value : "";
 }
 
-function safeItems(value: unknown) {
-  return Array.isArray(value) ? value.map((v) => (typeof v === "string" ? v : "")).filter(Boolean) : [];
-}
-
 function jsonForInline(value: unknown) {
   return escapeInlineRawText(JSON.stringify(value ?? null));
 }

@@ -7,8 +7,8 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 type Props = {
-  params: { slug: string };
-  searchParams?: Record<string, string | string[] | undefined>;
+  params: Promise<{ slug: string }>;
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
 };
 
 function nonEmpty(v: string | null | undefined) {
@@ -26,8 +26,12 @@ function toPageContent(v: unknown): CmsPageContent {
 }
 
 export default async function CmsPage({ params, searchParams }: Props) {
-  const slug = (params.slug || "").trim();
-  const isBuilderPreview = String((searchParams as any)?.builderPreview || "") === "true";
+  const [{ slug: rawSlug }, resolvedSearchParams] = await Promise.all([
+    params,
+    searchParams || Promise.resolve({}),
+  ]);
+  const slug = (rawSlug || "").trim();
+  const isBuilderPreview = String((resolvedSearchParams as any)?.builderPreview || "") === "true";
   const globalContent = await getHomepageContent();
 
   const url = nonEmpty(process.env.NEXT_PUBLIC_SUPABASE_URL);

@@ -13,6 +13,7 @@ import { HomepagePanel } from "@/components/admin/HomepagePanel";
 import { VisualBuilderPanel } from "@/components/admin/VisualBuilderPanel";
 import { SettingsPanel } from "@/components/admin/SettingsPanel";
 import { PagesPanel } from "@/components/admin/pages/PagesPanel";
+import { MediaPanel } from "@/components/admin/MediaPanel";
 
 const BOOTSTRAP_ADMIN_EMAIL = "mudasarimamofficial@gmail.com";
 
@@ -25,11 +26,15 @@ function isBootstrapAdmin(v: string | null | undefined) {
   return normEmail(v) === BOOTSTRAP_ADMIN_EMAIL;
 }
 
-export function AdminPageClient() {
+type Props = {
+  initialTab?: Tab;
+};
+
+export function AdminPageClient({ initialTab = "builder" }: Props) {
   const router = useRouter();
   const [supabase, setSupabase] = useState<SupabaseClient | null>(null);
   const [configError, setConfigError] = useState<string | null>(null);
-  const [tab, setTab] = useState<Tab>("builder");
+  const [tab, setTab] = useState<Tab>(initialTab);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [authError, setAuthError] = useState<string | null>(null);
@@ -52,6 +57,13 @@ export function AdminPageClient() {
     if (maybeEmail && maybeEmail.trim().length) return maybeEmail;
     const { data } = await client.auth.getUser();
     return data.user?.email ?? null;
+  }
+
+  async function resolveAdminStatus(client: SupabaseClient, userId: string | null | undefined, userEmail: string | null) {
+    if (!userId) return false;
+    if (isBootstrapAdmin(userEmail)) return true;
+    const { data } = await client.from("profiles").select("is_admin").eq("id", userId).maybeSingle();
+    return Boolean((data as any)?.is_admin);
   }
 
   useEffect(() => {
@@ -77,9 +89,10 @@ export function AdminPageClient() {
       const initialEmail = await resolveSessionEmail(client, initialUser?.email ?? null);
       setSessionEmail(initialEmail);
       setSessionUserId(initialUser?.id ?? null);
+      const initialIsAdmin = await resolveAdminStatus(client, initialUser?.id, initialEmail);
       if (!initialUser?.id) {
         setAuthStatus("signedOut");
-      } else if (isBootstrapAdmin(initialEmail)) {
+      } else if (initialIsAdmin) {
         setAuthStatus("signedInAdmin");
       } else {
         setAuthStatus("signedInNonAdmin");
@@ -87,11 +100,12 @@ export function AdminPageClient() {
       subscription = client.auth.onAuthStateChange(async (_evt, s) => {
         const nextUser = s?.user ?? null;
         const nextEmail = await resolveSessionEmail(client, nextUser?.email ?? null);
+        const nextIsAdmin = await resolveAdminStatus(client, nextUser?.id, nextEmail);
         setSessionEmail(nextEmail);
         setSessionUserId(nextUser?.id ?? null);
         if (!nextUser?.id) {
           setAuthStatus("signedOut");
-        } else if (isBootstrapAdmin(nextEmail)) {
+        } else if (nextIsAdmin) {
           setAuthStatus("signedInAdmin");
         } else {
           setAuthStatus("signedInNonAdmin");
@@ -302,6 +316,8 @@ export function AdminPageClient() {
             );
           }}
         />
+      ) : tab === "media" ? (
+        <MediaPanel supabase={supabase} />
       ) : tab === "homepage" ? (
         <HomepagePanel supabase={supabase} />
       ) : tab === "custom" ? (

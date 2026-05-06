@@ -5,6 +5,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import Image from "next/image";
+import { MEDIA_BUCKET } from "@/utils/mediaBucket";
 
 type MediaAsset = {
   name: string;
@@ -40,7 +41,7 @@ export function MediaPickerModal({ supabase, open, title, accept, onClose, onPic
     setLoading(true);
     setError(null);
     try {
-      const { data, error } = await supabase.storage.from("homepage").list(prefix, {
+      const { data, error } = await supabase.storage.from(MEDIA_BUCKET).list(prefix, {
         limit: 200,
         sortBy: { column: "created_at", order: "desc" },
       });
@@ -52,7 +53,7 @@ export function MediaPickerModal({ supabase, open, title, accept, onClose, onPic
       const rows = (data || []).filter((x) => x.name && !x.name.endsWith("/"));
       const next = rows.map((x) => {
         const path = `${prefix}/${x.name}`;
-        const { data } = supabase.storage.from("homepage").getPublicUrl(path);
+        const { data } = supabase.storage.from(MEDIA_BUCKET).getPublicUrl(path);
         return { name: x.name, path, url: data.publicUrl };
       });
       setAssets(next);
@@ -68,13 +69,13 @@ export function MediaPickerModal({ supabase, open, title, accept, onClose, onPic
       const safeName = sanitizePathSegment(file.name);
       const path = `${prefix}/${Date.now()}-${safeName || "file"}`;
       const { error } = await supabase.storage
-        .from("homepage")
+        .from(MEDIA_BUCKET)
         .upload(path, file, { upsert: true, contentType: file.type });
       if (error) {
         setError(error.message);
         return;
       }
-      const { data } = supabase.storage.from("homepage").getPublicUrl(path);
+      const { data } = supabase.storage.from(MEDIA_BUCKET).getPublicUrl(path);
       onPick({ url: data.publicUrl, path });
       onClose();
     } finally {
