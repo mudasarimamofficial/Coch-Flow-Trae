@@ -19,6 +19,11 @@ export const SECTION_REGISTRY: Record<
   (args: { content: HomepageContent; section: PageSection }) => ReactNode
 > = {
   hero: ({ content, section }) => <Hero content={content} section={section} />,
+  trust_strip: () => null,
+  founder: () => null,
+  promise: () => null,
+  how: () => null,
+  honest: () => null,
   trust: ({ content }) => <Trust content={content} />,
   features: ({ content, section }) => <Features content={content} section={section} />,
   workflow: ({ content, section }) => <Workflow content={content} section={section} />,
