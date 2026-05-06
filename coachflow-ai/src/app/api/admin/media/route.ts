@@ -18,6 +18,55 @@ function cleanPrefix(v: string | null) {
   return (v || "media").trim().replace(/^\/+|\/+$/g, "") || "media";
 }
 
+function findPathReferences(paths: string[], label: string, content: unknown, refs: Map<string, Set<string>>) {
+  const haystack = JSON.stringify(content || "");
+  if (!haystack) return;
+  for (const path of paths) {
+    const fileName = path.split("/").pop() || path;
+    if (!haystack.includes(path) && !haystack.includes(encodeURIComponent(path)) && !haystack.includes(fileName)) {
+      continue;
+    }
+    if (!refs.has(path)) refs.set(path, new Set());
+    refs.get(path)?.add(label);
+  }
+}
+
+async function findInUseMedia(supabase: any, paths: string[]) {
+  const refs = new Map<string, Set<string>>();
+
+  const { data: homepage, error: homepageError } = await supabase
+    .from("homepage_content")
+    .select("content")
+    .eq("id", 1)
+    .maybeSingle();
+  if (homepageError) throw homepageError;
+  findPathReferences(paths, "published homepage", homepage?.content, refs);
+
+  const { data: draft, error: draftError } = await supabase
+    .from("homepage_content_drafts")
+    .select("content")
+    .eq("id", 1)
+    .maybeSingle();
+  if (draftError) throw draftError;
+  findPathReferences(paths, "homepage draft", draft?.content, refs);
+
+  const { data: pages, error: pagesError } = await supabase
+    .from("site_pages")
+    .select("slug, draft_content, published_content");
+  if (pagesError) throw pagesError;
+
+  for (const page of pages || []) {
+    const slug = String((page as any).slug || "page");
+    findPathReferences(paths, `page draft:${slug}`, (page as any).draft_content, refs);
+    findPathReferences(paths, `page published:${slug}`, (page as any).published_content, refs);
+  }
+
+  return Array.from(refs.entries()).map(([path, locations]) => ({
+    path,
+    locations: Array.from(locations),
+  }));
+}
+
 export async function GET(req: Request) {
   const gate = await requireAdmin(req);
   if (!gate.ok) return adminJsonError(gate);
@@ -75,11 +124,27 @@ export async function DELETE(req: Request) {
     return NextResponse.json({ ok: false, message: "Invalid JSON body" }, { status: 400 });
   }
 
-  const parsed = z.object({ paths: z.array(z.string().min(1)).min(1).max(50) }).safeParse(json);
+  const parsed = z
+    .object({ paths: z.array(z.string().min(1)).min(1).max(50), force: z.boolean().optional() })
+    .safeParse(json);
   if (!parsed.success) return NextResponse.json({ ok: false, message: "Invalid input" }, { status: 400 });
+
+  try {
+    const inUse = await findInUseMedia(gate.supabase, parsed.data.paths);
+    if (inUse.length && !parsed.data.force) {
+      return NextResponse.json(
+        { ok: false, message: "Media is still in use", inUse },
+        { status: 409 },
+      );
+    }
+  } catch (error) {
+    return NextResponse.json(
+      { ok: false, message: error instanceof Error ? error.message : "Failed to check media usage" },
+      { status: 500 },
+    );
+  }
 
   const { data, error } = await gate.supabase.storage.from(MEDIA_BUCKET).remove(parsed.data.paths);
   if (error) return NextResponse.json({ ok: false, message: error.message }, { status: 500 });
   return NextResponse.json({ ok: true, removed: data || [] }, { status: 200 });
 }
-
