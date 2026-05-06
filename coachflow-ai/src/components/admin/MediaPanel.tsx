@@ -113,18 +113,37 @@ export function MediaPanel({ supabase }: Props) {
     setNotice(null);
     try {
       const cleanPrefix = prefix.trim().replace(/^\/+|\/+$/g, "") || "media";
-      const safeName = sanitizePathSegment(file.name);
-      const path = `${cleanPrefix}/${Date.now()}-${safeName || "file"}`;
-      const { error } = await supabase.storage
-        .from(MEDIA_BUCKET)
-        .upload(path, file, { upsert: true, contentType: file.type || undefined });
-      if (error) {
-        setError(error.message);
+      
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData.session?.access_token || "";
+      if (!token) {
+        setError("Missing auth session");
         return;
       }
+
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("prefix", cleanPrefix);
+
+      const res = await fetch("/api/admin/media", {
+        method: "POST",
+        headers: {
+          authorization: `Bearer ${token}`,
+        },
+        body: formData,
+      });
+
+      if (!res.ok) {
+        const json = await res.json().catch(() => null);
+        setError(json?.message || "Failed to upload file");
+        return;
+      }
+
       setPrefix(cleanPrefix);
       setNotice("Uploaded");
       await load();
+    } catch (e: any) {
+      setError(e.message || "An unexpected error occurred");
     } finally {
       setUploading(false);
     }
