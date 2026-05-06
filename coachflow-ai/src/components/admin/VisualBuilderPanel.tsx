@@ -852,6 +852,12 @@ export function VisualBuilderPanel({ supabase, onNavigateTab, onSignOut }: Props
     () => pageSections.find((s) => s.id === selectedId) || null,
     [pageSections, selectedId],
   );
+  const supportsBackgroundMedia = useMemo(() => {
+    if (!selectedSection) return false;
+    const rebuiltSupported = new Set(["hero", "founder", "promise", "how", "honest", "pricing", "application"]);
+    const classicSupported = new Set(["hero", "trust", "features", "workflow", "pricing", "application", "testimonials", "custom", "custom_html", "rich_text"]);
+    return isRebuiltTemplate ? rebuiltSupported.has(selectedSection.type) : classicSupported.has(selectedSection.type);
+  }, [isRebuiltTemplate, selectedSection]);
 
   const updateSections = useCallback((next: PageSection[], opts?: { recordHistory?: boolean }) => {
     setContent({ ...content, page: { sections: next } }, opts);
@@ -1571,22 +1577,26 @@ export function VisualBuilderPanel({ supabase, onNavigateTab, onSignOut }: Props
                     { value: "no", label: "No" },
                   ]}
                 />
-                <Select
-                  label="Background type"
-                  value={String((selectedSection.settings as any)?.backgroundType || "none")}
-                  onChange={(e) =>
-                    updateSection(selectedSection.id, (s) => ({
-                      ...s,
-                      settings: { ...(s.settings || {}), backgroundType: e.target.value === "none" ? undefined : e.target.value },
-                    }))
-                  }
-                  options={[
-                    { value: "none", label: "None" },
-                    { value: "color", label: "Color" },
-                    { value: "image", label: "Image" },
-                    { value: "video", label: "Video" },
-                  ]}
-                />
+                {supportsBackgroundMedia ? (
+                  <Select
+                    label="Background type"
+                    value={String((selectedSection.settings as any)?.backgroundType || "none")}
+                    onChange={(e) =>
+                      updateSection(selectedSection.id, (s) => ({
+                        ...s,
+                        settings: { ...(s.settings || {}), backgroundType: e.target.value === "none" ? undefined : e.target.value },
+                      }))
+                    }
+                    options={[
+                      { value: "none", label: "None" },
+                      { value: "color", label: "Color" },
+                      { value: "image", label: "Image" },
+                      { value: "video", label: "Video" },
+                    ]}
+                  />
+                ) : (
+                  <Input label="Background media" value="Not supported for this section" readOnly />
+                )}
               </div>
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <Input
@@ -1667,35 +1677,37 @@ export function VisualBuilderPanel({ supabase, onNavigateTab, onSignOut }: Props
                 />
               ) : null}
 
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                <Input
-                  label="Background color"
-                  value={String((selectedSection.settings as any)?.backgroundColor ?? (selectedSection.settings as any)?.backgroundColorHex ?? "")}
-                  onChange={(e) =>
-                    updateSection(selectedSection.id, (s) => ({
-                      ...s,
-                      settings: {
-                        ...(s.settings || {}),
-                        backgroundType: "color",
-                        backgroundColor: e.target.value,
-                        backgroundColorHex: e.target.value,
-                      },
-                    }))
-                  }
-                  placeholder="#0b1414"
-                />
-                <Input
-                  label="Overlay color"
-                  value={String((selectedSection.settings as any)?.overlayColor ?? "")}
-                  onChange={(e) =>
-                    updateSection(selectedSection.id, (s) => ({
-                      ...s,
-                      settings: { ...(s.settings || {}), overlayColor: e.target.value },
-                    }))
-                  }
-                  placeholder="rgba(0,0,0,0.3)"
-                />
-              </div>
+              {supportsBackgroundMedia ? (
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  <Input
+                    label="Background color"
+                    value={String((selectedSection.settings as any)?.backgroundColor ?? (selectedSection.settings as any)?.backgroundColorHex ?? "")}
+                    onChange={(e) =>
+                      updateSection(selectedSection.id, (s) => ({
+                        ...s,
+                        settings: {
+                          ...(s.settings || {}),
+                          backgroundType: "color",
+                          backgroundColor: e.target.value,
+                          backgroundColorHex: e.target.value,
+                        },
+                      }))
+                    }
+                    placeholder="#0b1414"
+                  />
+                  <Input
+                    label="Overlay color"
+                    value={String((selectedSection.settings as any)?.overlayColor ?? "")}
+                    onChange={(e) =>
+                      updateSection(selectedSection.id, (s) => ({
+                        ...s,
+                        settings: { ...(s.settings || {}), overlayColor: e.target.value },
+                      }))
+                    }
+                    placeholder="rgba(0,0,0,0.3)"
+                  />
+                </div>
+              ) : null}
 
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <Select
@@ -1731,54 +1743,56 @@ export function VisualBuilderPanel({ supabase, onNavigateTab, onSignOut }: Props
                 />
               </div>
 
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                <Button
-                  variant="secondary"
-                  className="mt-6 h-10"
-                  onClick={() => {
-                    openMediaPicker({
-                      title: "Pick background media",
-                      accept: "image/*,video/*",
-                      onPick: (asset) => {
-                        const lower = asset.url.toLowerCase();
-                        const isVideo = lower.endsWith(".mp4") || lower.endsWith(".webm") || lower.endsWith(".mov");
-                        updateSection(selectedSection.id, (s) => ({
-                          ...s,
-                          settings: {
-                            ...(s.settings || {}),
-                            backgroundType: isVideo ? "video" : "image",
-                            backgroundImage: isVideo ? undefined : asset.url,
-                            backgroundVideo: isVideo ? asset.url : undefined,
-                            background: { url: asset.url, path: asset.path },
-                          },
-                        }));
-                      },
-                    });
-                  }}
-                >
-                  Pick media
-                </Button>
-                <Button
-                  variant="secondary"
-                  className="mt-6 h-10"
-                  onClick={() =>
-                    updateSection(selectedSection.id, (s) => ({
-                      ...s,
-                      settings: {
-                        ...(s.settings || {}),
-                        backgroundType: undefined,
-                        backgroundColor: undefined,
-                        backgroundImage: undefined,
-                        backgroundVideo: undefined,
-                        overlayColor: undefined,
-                        background: undefined,
-                      },
-                    }))
-                  }
-                >
-                  Clear bg
-                </Button>
-              </div>
+              {supportsBackgroundMedia ? (
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  <Button
+                    variant="secondary"
+                    className="mt-6 h-10"
+                    onClick={() => {
+                      openMediaPicker({
+                        title: "Pick background media",
+                        accept: "image/*,video/*",
+                        onPick: (asset) => {
+                          const lower = asset.url.toLowerCase();
+                          const isVideo = lower.endsWith(".mp4") || lower.endsWith(".webm") || lower.endsWith(".mov");
+                          updateSection(selectedSection.id, (s) => ({
+                            ...s,
+                            settings: {
+                              ...(s.settings || {}),
+                              backgroundType: isVideo ? "video" : "image",
+                              backgroundImage: isVideo ? undefined : asset.url,
+                              backgroundVideo: isVideo ? asset.url : undefined,
+                              background: { url: asset.url, path: asset.path },
+                            },
+                          }));
+                        },
+                      });
+                    }}
+                  >
+                    Pick media
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    className="mt-6 h-10"
+                    onClick={() =>
+                      updateSection(selectedSection.id, (s) => ({
+                        ...s,
+                        settings: {
+                          ...(s.settings || {}),
+                          backgroundType: undefined,
+                          backgroundColor: undefined,
+                          backgroundImage: undefined,
+                          backgroundVideo: undefined,
+                          overlayColor: undefined,
+                          background: undefined,
+                        },
+                      }))
+                    }
+                  >
+                    Clear bg
+                  </Button>
+                </div>
+              ) : null}
             </div>
           ) : null}
 

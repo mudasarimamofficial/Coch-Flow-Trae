@@ -90,6 +90,97 @@ export function RebuiltLandingFrame({ content, templateHtml, device = "desktop",
   }
   function clampArray(arr, n){ var out = []; for (var i=0;i<n;i++){ out.push(arr && arr[i] ? arr[i] : ""); } return out; }
   function safeItems(arr){ return Array.isArray(arr) ? arr.map(function(v){ return typeof v === "string" ? v : ""; }).filter(Boolean) : []; }
+  function sectionByType(content, type){
+    var sections = content && content.page && Array.isArray(content.page.sections) ? content.page.sections : [];
+    for (var i=0; i<sections.length; i++){
+      if (sections[i] && sections[i].type === type) return sections[i];
+    }
+    return null;
+  }
+  function sectionBg(section){
+    var settings = section && section.settings ? section.settings : {};
+    var background = settings && settings.background ? settings.background : {};
+    var type = typeof settings.backgroundType === "string" ? settings.backgroundType : "";
+    var image = typeof settings.backgroundImage === "string" ? settings.backgroundImage : "";
+    var url = typeof background.url === "string" ? background.url : "";
+    var overlay = typeof settings.overlayColor === "string" ? settings.overlayColor : "";
+    var color = typeof settings.backgroundColor === "string"
+      ? settings.backgroundColor
+      : (typeof settings.backgroundColorHex === "string" ? settings.backgroundColorHex : "");
+    return { type: type, image: image || url, overlay: overlay, color: color };
+  }
+  function applyBg(target, cfg){
+    if(!target) return;
+    target.style.backgroundImage = cfg && cfg.type === "image" && cfg.image ? ("url(" + cfg.image + ")") : "";
+    target.style.backgroundSize = cfg && cfg.type === "image" && cfg.image ? "cover" : "";
+    target.style.backgroundPosition = cfg && cfg.type === "image" && cfg.image ? "center" : "";
+    target.style.backgroundRepeat = cfg && cfg.type === "image" && cfg.image ? "no-repeat" : "";
+    target.style.backgroundColor = cfg && cfg.type === "color" && cfg.color ? cfg.color : "";
+  }
+  function applyOverlay(target, rgba){
+    if(!target) return;
+    var ov = target.querySelector(":scope > .cf-bg-overlay");
+    if(!rgba){
+      if(ov && ov.parentNode) ov.parentNode.removeChild(ov);
+      return;
+    }
+    if(!ov){
+      ov = document.createElement("div");
+      ov.className = "cf-bg-overlay";
+      ov.style.position = "absolute";
+      ov.style.inset = "0";
+      ov.style.pointerEvents = "none";
+      target.insertBefore(ov, target.firstChild || null);
+    }
+    ov.style.backgroundColor = rgba;
+  }
+  function applySectionBackgrounds(content){
+    var heroSection = sectionByType(content, "hero");
+    var heroCfg = sectionBg(heroSection);
+    var heroFallback = content && content.hero && content.hero.backgroundImage && content.hero.backgroundImage.url
+      ? String(content.hero.backgroundImage.url)
+      : "";
+    if(!heroCfg.image && heroFallback){
+      heroCfg.image = heroFallback;
+      if(!heroCfg.type) heroCfg.type = "image";
+    }
+    var heroEl = q(".hero");
+    if(heroEl){
+      heroEl.style.position = heroEl.style.position || "relative";
+      applyBg(heroEl, heroCfg);
+      applyOverlay(heroEl, heroCfg.overlay);
+    }
+
+    var sectionMap = [
+      { type: "founder", selector: "#founder", contentKey: "rebuilt", nestedKey: "founder" },
+      { type: "promise", selector: "#promise", contentKey: "rebuilt", nestedKey: "promise" },
+      { type: "how", selector: "#how", contentKey: "rebuilt", nestedKey: "how" },
+      { type: "honest", selector: "#honest", contentKey: "rebuilt", nestedKey: "honest" },
+      { type: "pricing", selector: "#pricing", contentKey: "pricing", nestedKey: null },
+      { type: "application", selector: "#apply", contentKey: "application", nestedKey: null }
+    ];
+    for (var i=0; i<sectionMap.length; i++){
+      var item = sectionMap[i];
+      var sec = sectionByType(content, item.type);
+      var cfg = sectionBg(sec);
+      var fallbackImage = "";
+      if(item.contentKey === "pricing" && content && content.pricing && content.pricing.backgroundImage && content.pricing.backgroundImage.url){
+        fallbackImage = String(content.pricing.backgroundImage.url);
+      }
+      if(item.contentKey === "application" && content && content.application && content.application.backgroundImage && content.application.backgroundImage.url){
+        fallbackImage = String(content.application.backgroundImage.url);
+      }
+      if(!cfg.image && fallbackImage){
+        cfg.image = fallbackImage;
+        if(!cfg.type) cfg.type = "image";
+      }
+      var el = q(item.selector);
+      if(!el) continue;
+      el.style.position = el.style.position || "relative";
+      applyBg(el, cfg);
+      applyOverlay(el, cfg.overlay);
+    }
+  }
   function applySectionEnabled(map){
     if(!map) return;
     var byType = {};
@@ -369,6 +460,7 @@ export function RebuiltLandingFrame({ content, templateHtml, device = "desktop",
       if(footer.copyright) setText(q("footer .footer-copy"), footer.copyright);
 
       applySectionEnabled(content.page || {});
+      applySectionBackgrounds(content);
     } catch(e){}
   }
 
