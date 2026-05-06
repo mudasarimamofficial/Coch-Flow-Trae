@@ -5,7 +5,6 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import Image from "next/image";
-import { MEDIA_BUCKET } from "@/utils/mediaBucket";
 
 type MediaAsset = {
   name: string;
@@ -22,13 +21,7 @@ type Props = {
   onPick: (asset: { url: string; path: string }) => void;
 };
 
-function sanitizePathSegment(v: string) {
-  return v
-    .toLowerCase()
-    .replace(/[^a-z0-9._-]+/g, "-")
-    .replace(/-+/g, "-")
-    .replace(/^-|-$/g, "");
-}
+
 
 export function MediaPickerModal({ supabase, open, title, accept, onClose, onPick }: Props) {
   const [loading, setLoading] = useState(false);
@@ -41,22 +34,30 @@ export function MediaPickerModal({ supabase, open, title, accept, onClose, onPic
     setLoading(true);
     setError(null);
     try {
-      const { data, error } = await supabase.storage.from(MEDIA_BUCKET).list(prefix, {
-        limit: 200,
-        sortBy: { column: "created_at", order: "desc" },
-      });
-      if (error) {
-        setError(error.message);
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData.session?.access_token || "";
+      if (!token) {
+        setError("Missing auth session");
         setAssets([]);
         return;
       }
-      const rows = (data || []).filter((x) => x.name && !x.name.endsWith("/"));
-      const next = rows.map((x) => {
-        const path = `${prefix}/${x.name}`;
-        const { data } = supabase.storage.from(MEDIA_BUCKET).getPublicUrl(path);
-        return { name: x.name, path, url: data.publicUrl };
+
+      const res = await fetch(`/api/admin/media?prefix=${encodeURIComponent(prefix)}`, {
+        headers: { authorization: `Bearer ${token}` }
       });
-      setAssets(next);
+      const json = await res.json().catch(() => null);
+
+      if (!res.ok || !json?.ok) {
+        setError(json?.message || "Failed to load media");
+        setAssets([]);
+        return;
+      }
+
+      const rows = (json.assets || []).filter((x: any) => x.name && !x.name.endsWith("/"));
+      setAssets(rows);
+    } catch (e: any) {
+      setError(e?.message || "Failed to load media");
+      setAssets([]);
     } finally {
       setLoading(false);
     }
@@ -66,18 +67,35 @@ export function MediaPickerModal({ supabase, open, title, accept, onClose, onPic
     setLoading(true);
     setError(null);
     try {
-      const safeName = sanitizePathSegment(file.name);
-      const path = `${prefix}/${Date.now()}-${safeName || "file"}`;
-      const { error } = await supabase.storage
-        .from(MEDIA_BUCKET)
-        .upload(path, file, { upsert: true, contentType: file.type });
-      if (error) {
-        setError(error.message);
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData.session?.access_token || "";
+      if (!token) {
+        setError("Missing auth session");
         return;
       }
-      const { data } = supabase.storage.from(MEDIA_BUCKET).getPublicUrl(path);
-      onPick({ url: data.publicUrl, path });
+
+      const cleanPrefix = prefix.trim().replace(/^\/+|\/+$/g, "") || "media";
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("prefix", cleanPrefix);
+
+      const res = await fetch("/api/admin/media", {
+        method: "POST",
+        headers: { authorization: `Bearer ${token}` },
+        body: formData,
+      });
+
+      const json = await res.json().catch(() => null);
+
+      if (!res.ok || !json?.ok) {
+        setError(json?.message || "Failed to upload file");
+        return;
+      }
+
+      onPick({ url: json.asset.url, path: json.asset.path });
       onClose();
+    } catch (e: any) {
+      setError(e?.message || "Failed to upload file");
     } finally {
       setLoading(false);
     }

@@ -8,7 +8,6 @@ import { homepageDefaults, type HomepageContent } from "@/content/homepage";
 import { requestAdminRevalidate } from "@/utils/adminRevalidate";
 import { neutralizeLegacyProofContent } from "@/utils/homepageMerge";
 import { mergeTypographyScale } from "@/utils/typographyScale";
-import { MEDIA_BUCKET } from "@/utils/mediaBucket";
 
 type Props = {
   supabase: SupabaseClient;
@@ -16,13 +15,6 @@ type Props = {
 
 type UploadTarget = { url: string; path?: string };
 
-function sanitizePathSegment(v: string) {
-  return v
-    .toLowerCase()
-    .replace(/[^a-z0-9._-]+/g, "-")
-    .replace(/-+/g, "-")
-    .replace(/^-|-$/g, "");
-}
 
 function mergeContent(c: Partial<HomepageContent> | null): HomepageContent {
   if (!c) return homepageDefaults;
@@ -257,21 +249,31 @@ export function HomepagePanel({ supabase }: Props) {
   }, [supabase]);
 
   async function uploadFile(file: File, folder: string, previousPath?: string) {
-    const safeName = sanitizePathSegment(file.name);
-    const path = `${folder}/${Date.now()}-${safeName || "file"}`;
+    const { data: sessionData } = await supabase.auth.getSession();
+    const token = sessionData.session?.access_token || "";
+    if (!token) throw new Error("Missing auth session");
 
-    const { error: uploadError } = await supabase.storage
-      .from(MEDIA_BUCKET)
-      .upload(path, file, { upsert: true, contentType: file.type });
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("prefix", folder);
 
-    if (uploadError) throw uploadError;
+    const res = await fetch("/api/admin/media", {
+      method: "POST",
+      headers: { authorization: `Bearer ${token}` },
+      body: formData,
+    });
+    const json = await res.json().catch(() => null);
+    if (!res.ok || !json?.ok) throw new Error(json?.message || "Upload failed");
 
     if (previousPath) {
-      await supabase.storage.from(MEDIA_BUCKET).remove([previousPath]);
+      fetch("/api/admin/media", {
+        method: "DELETE",
+        headers: { authorization: `Bearer ${token}`, "content-type": "application/json" },
+        body: JSON.stringify({ paths: [previousPath], force: true }),
+      }).catch(() => null);
     }
 
-    const { data } = supabase.storage.from(MEDIA_BUCKET).getPublicUrl(path);
-    return { url: data.publicUrl, path } satisfies UploadTarget;
+    return { url: json.asset.url as string, path: json.asset.path as string } satisfies UploadTarget;
   }
 
   const revenueOptions = useMemo(

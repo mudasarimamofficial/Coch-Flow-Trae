@@ -5,7 +5,6 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
-import { MEDIA_BUCKET } from "@/utils/mediaBucket";
 
 type Props = {
   supabase: SupabaseClient;
@@ -19,13 +18,6 @@ type MediaAsset = {
   inUse: boolean;
 };
 
-function sanitizePathSegment(v: string) {
-  return v
-    .toLowerCase()
-    .replace(/[^a-z0-9._-]+/g, "-")
-    .replace(/-+/g, "-")
-    .replace(/^-|-$/g, "");
-}
 
 function isImage(asset: MediaAsset) {
   return asset.mimeType.startsWith("image/") || /\.(png|jpe?g|webp|gif|svg)$/i.test(asset.name);
@@ -39,7 +31,7 @@ export function MediaPanel({ supabase }: Props) {
   const [prefix, setPrefix] = useState("media");
   const [query, setQuery] = useState("");
   const [assets, setAssets] = useState<MediaAsset[]>([]);
-  const [usageIndex, setUsageIndex] = useState("");
+
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [forceDelete, setForceDelete] = useState(false);
@@ -60,52 +52,44 @@ export function MediaPanel({ supabase }: Props) {
     if (pages) chunks.push(JSON.stringify(pages));
 
     const next = chunks.join("\n");
-    setUsageIndex(next);
     return next;
   }, [supabase]);
-
-  const toAsset = useCallback(
-    (file: any, usage = usageIndex): MediaAsset | null => {
-      if (!file?.name) return null;
-      if (!file.id && !file.metadata) return null;
-      const cleanPrefix = prefix.trim().replace(/^\/+|\/+$/g, "");
-      const path = cleanPrefix ? `${cleanPrefix}/${file.name}` : file.name;
-      const { data } = supabase.storage.from(MEDIA_BUCKET).getPublicUrl(path);
-      const url = data.publicUrl;
-      const mimeType = String(file.metadata?.mimetype || file.metadata?.mimeType || "");
-      return {
-        name: file.name,
-        path,
-        url,
-        mimeType,
-        inUse: Boolean(usage && (usage.includes(path) || usage.includes(url))),
-      };
-    },
-    [prefix, supabase, usageIndex],
-  );
 
   const load = useCallback(async () => {
     setLoading(true);
     setError(null);
     setNotice(null);
     try {
-      const usage = await loadUsageIndex();
-      const cleanPrefix = prefix.trim().replace(/^\/+|\/+$/g, "");
-      const { data, error } = await supabase.storage.from(MEDIA_BUCKET).list(cleanPrefix, {
-        limit: 200,
-        sortBy: { column: "created_at", order: "desc" },
-      });
-      if (error) {
-        setAssets([]);
-        setError(error.message);
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData.session?.access_token || "";
+      if (!token) {
+        setError("Missing auth session");
         return;
       }
-      const next = (data || []).map((file) => toAsset(file, usage)).filter(Boolean) as MediaAsset[];
+      const cleanPrefix = prefix.trim().replace(/^\/+|\/+$/g, "") || "media";
+      const res = await fetch(`/api/admin/media?prefix=${encodeURIComponent(cleanPrefix)}`, {
+        headers: { authorization: `Bearer ${token}` },
+      });
+      const json = await res.json().catch(() => null);
+      if (!res.ok || !json?.ok) {
+        setAssets([]);
+        setError(json?.message || "Failed to load media");
+        return;
+      }
+      const usage = await loadUsageIndex();
+      const rows = (json.assets || []).filter((x: any) => x.name && !x.name.endsWith("/"));
+      const next: MediaAsset[] = rows.map((x: any) => ({
+        name: x.name,
+        path: x.path,
+        url: x.url,
+        mimeType: x.metadata?.mimetype || x.metadata?.mimeType || "",
+        inUse: Boolean(usage && (usage.includes(x.path) || usage.includes(x.url))),
+      }));
       setAssets(next);
     } finally {
       setLoading(false);
     }
-  }, [loadUsageIndex, prefix, supabase, toAsset]);
+  }, [loadUsageIndex, prefix, supabase]);
 
   async function upload(file: File) {
     setUploading(true);
@@ -156,9 +140,20 @@ export function MediaPanel({ supabase }: Props) {
       setError("This asset appears to be used by published or draft content. Enable force delete to remove it.");
       return;
     }
-    const { error } = await supabase.storage.from(MEDIA_BUCKET).remove([asset.path]);
-    if (error) {
-      setError(error.message);
+    const { data: sessionData } = await supabase.auth.getSession();
+    const token = sessionData.session?.access_token || "";
+    if (!token) {
+      setError("Missing auth session");
+      return;
+    }
+    const res = await fetch("/api/admin/media", {
+      method: "DELETE",
+      headers: { authorization: `Bearer ${token}`, "content-type": "application/json" },
+      body: JSON.stringify({ paths: [asset.path], force: forceDelete }),
+    });
+    const json = await res.json().catch(() => null);
+    if (!res.ok || !json?.ok) {
+      setError(json?.message || "Delete failed");
       return;
     }
     setNotice("Deleted");
@@ -188,7 +183,7 @@ export function MediaPanel({ supabase }: Props) {
       <div className="grid gap-4 rounded-2xl border border-white/10 bg-white/5 p-4 lg:grid-cols-[240px_1fr]">
         <div className="flex flex-col gap-3">
           <div className="rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-xs text-white/70">
-            Bucket: <span className="font-semibold text-white">{MEDIA_BUCKET}</span>
+            Bucket: <span className="font-semibold text-white">assets</span>
           </div>
           <Input label="Folder" value={prefix} onChange={(e) => setPrefix(e.target.value)} placeholder="media" />
           <Input label="Search" value={query} onChange={(e) => setQuery(e.target.value)} />
