@@ -11,7 +11,6 @@ type Props = {
 
 function tabFromSegments(segments: string[] | undefined): Tab {
   const [first, second] = segments || [];
-  if (first === "pages") return "pages";
   if (first === "leads") return "leads";
   if (first === "media") return "media";
   if (first === "settings") return "settings";
@@ -23,5 +22,9 @@ function tabFromSegments(segments: string[] | undefined): Tab {
 
 export default async function AdminSubroutePage({ params }: Props) {
   const { segments } = await params;
+  if (segments?.[0] === "pages") {
+    const { redirect } = await import("next/navigation");
+    redirect("/admin");
+  }
   return <AdminPageClient initialTab={tabFromSegments(segments)} />;
 }

@@ -15,7 +15,7 @@ import { mergePageSectionsWithDefaults } from "@/utils/homepageSections";
 import { neutralizeLegacyProofContent } from "@/utils/homepageMerge";
 import { buildThemeCssVars } from "@/utils/themeCss";
 import { mergeTypographyScale } from "@/utils/typographyScale";
-import { RebuiltLandingFrame } from "@/components/landing/RebuiltLandingFrame";
+import { DirectLandingRenderer } from "@/components/landing/DirectLandingRenderer";
 
 type Props = {
   initialContent: HomepageContent;
@@ -120,7 +120,7 @@ export function HomepageClient({ initialContent, isBuilderPreview, templateHtml,
   if (shouldUseRebuiltTemplate) {
     return (
       <div className="flex flex-1 flex-col">
-        <RebuiltLandingFrame
+        <DirectLandingRenderer
           content={resolved}
           templateHtml={templateHtml}
           device={isBuilderPreview ? previewDevice : "desktop"}

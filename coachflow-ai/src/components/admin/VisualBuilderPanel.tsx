@@ -30,7 +30,7 @@ import { mergePageSectionsWithDefaults } from "@/utils/homepageSections";
 import { neutralizeLegacyProofContent } from "@/utils/homepageMerge";
 import { requestAdminRevalidate } from "@/utils/adminRevalidate";
 import { mergeTypographyScale } from "@/utils/typographyScale";
-import { RebuiltLandingFrame } from "@/components/landing/RebuiltLandingFrame";
+import { DirectLandingRenderer } from "@/components/landing/DirectLandingRenderer";
 import { sanitizeContentStrings } from "@/utils/textSanitize";
 import type { Tab } from "@/components/admin/types";
 import {
@@ -1522,10 +1522,10 @@ export function VisualBuilderPanel({ supabase, onNavigateTab, onSignOut }: Props
         >
           <div className="flex h-full min-h-0 w-full items-center justify-center overflow-hidden p-3 lg:p-5">
             <div className={`h-full ${previewWidth} overflow-hidden rounded-2xl border border-white/10 bg-[#0A0F1E] shadow-[0_18px_50px_rgba(0,0,0,0.55)]`}>
-              <RebuiltLandingFrame
+              <DirectLandingRenderer
                 content={resolved}
                 device={mode}
-                height="100%"
+
                 className="h-full w-full"
               />
             </div>
