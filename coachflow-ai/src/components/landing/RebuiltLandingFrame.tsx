@@ -725,6 +725,41 @@ export function RebuiltLandingFrame({ content, templateHtml, device = "desktop",
     }
   });
 
+  function isAbsoluteExternal(href){
+    var h = String(href || "").trim();
+    if(!h) return false;
+    if(/^(mailto:|tel:|sms:)/i.test(h)) return true;
+    if(/^https?:\\/\\//i.test(h)){
+      try {
+        var u = new URL(h, window.location.href);
+        return u.origin !== window.location.origin;
+      } catch(err) {
+        return true;
+      }
+    }
+    return false;
+  }
+  function openExternal(href){
+    try {
+      var win = window.open(href, "_blank", "noopener,noreferrer");
+      if(win){
+        try { win.opener = null; } catch(_e) {}
+        return true;
+      }
+    } catch(err) {}
+    try {
+      if(window.top && window.top !== window.self){
+        window.top.location.href = href;
+        return true;
+      }
+    } catch(err) {}
+    try {
+      window.location.href = href;
+      return true;
+    } catch(err) {}
+    return false;
+  }
+
   document.addEventListener("click", function(e){
     var a = e.target && e.target.closest ? e.target.closest("a") : null;
     if(!a) return;
@@ -741,6 +776,14 @@ export function RebuiltLandingFrame({ content, templateHtml, device = "desktop",
         try { history.pushState(null, "", href); } catch(err) {}
         try { if(location.hash !== href) location.hash = href; } catch(err) {}
       }
+      return;
+    }
+    if(href && isAbsoluteExternal(href)){
+      if(e.defaultPrevented) return;
+      if(e.button !== undefined && e.button !== 0) return;
+      if(e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return;
+      e.preventDefault();
+      openExternal(href);
     }
   }, true);
 
@@ -786,7 +829,7 @@ export function RebuiltLandingFrame({ content, templateHtml, device = "desktop",
       title="Rebuilt landing"
       className={className}
       data-cf-rebuilt="true"
-      sandbox="allow-scripts allow-forms allow-same-origin allow-popups"
+      sandbox="allow-scripts allow-forms allow-same-origin allow-popups allow-popups-to-escape-sandbox"
       style={{ width: "100%", height, border: "none", background: "#0A0A0A" }}
       srcDoc={srcDoc}
     />
