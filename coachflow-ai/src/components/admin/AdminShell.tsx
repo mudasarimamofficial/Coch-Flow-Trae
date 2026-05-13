@@ -230,18 +230,7 @@ export function AdminShell({ tab, onTabChange, sessionEmail, onSignOut, topNotic
               <LayoutDashboard size={18} />
               <div className="mt-1 text-[11px] font-semibold">Builder</div>
             </button>
-            <button
-              type="button"
-              className={
-                tab === "pages"
-                  ? "flex h-12 flex-col items-center justify-center rounded-xl bg-white/10 text-white"
-                  : "flex h-12 flex-col items-center justify-center rounded-xl text-white/70 hover:bg-white/5 hover:text-white"
-              }
-              onClick={() => onTabChange("pages")}
-            >
-              <Files size={18} />
-              <div className="mt-1 text-[11px] font-semibold">Pages</div>
-            </button>
+
             <button
               type="button"
               className={
