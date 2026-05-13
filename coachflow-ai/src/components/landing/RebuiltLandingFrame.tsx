@@ -258,6 +258,21 @@ export function RebuiltLandingFrame({ content, templateHtml, device = "desktop",
   function socialHref(item){
     return String(item.url || item.href || "").trim();
   }
+  function isValidSocialHref(href){
+    var h = String(href || "").trim();
+    if(!h) return false;
+    if(h === "#" || h === "undefined" || h === "null") return false;
+    if(/^https?:\\/\\/$/i.test(h)) return false;
+    if(/^mailto:\\s*$/i.test(h)) return false;
+    if(/^tel:\\s*$/i.test(h)) return false;
+    return true;
+  }
+  function formatSocialLabel(raw){
+    var s = String(raw || "").trim();
+    if(!s) return "Social";
+    if(s.length <= 2) return s.toUpperCase();
+    return s.charAt(0).toUpperCase() + s.slice(1);
+  }
   function renderFooterSocials(content){
     var root = q("footer .footer-socials");
     if(!root) return;
@@ -270,15 +285,15 @@ export function RebuiltLandingFrame({ content, templateHtml, device = "desktop",
     for(var i=0;i<v2.length;i++){
       var item = v2[i] || {};
       var href = socialHref(item);
-      if(item.enabled === false || !href) continue;
-      items.push({ label: socialLabel(item), href: href });
+      if(item.enabled === false || !isValidSocialHref(href)) continue;
+      items.push({ label: formatSocialLabel(socialLabel(item)), href: href });
     }
     if(!items.length){
       for(var j=0;j<legacy.length;j++){
         var li = legacy[j] || {};
         var lh = socialHref(li);
-        if(!lh) continue;
-        items.push({ label: socialLabel(li), href: lh });
+        if(!isValidSocialHref(lh)) continue;
+        items.push({ label: formatSocialLabel(socialLabel(li)), href: lh });
       }
     }
     if(!showSocial || !items.length){
@@ -286,7 +301,7 @@ export function RebuiltLandingFrame({ content, templateHtml, device = "desktop",
       root.style.display = "none";
       return;
     }
-    root.style.display = "";
+    root.style.display = "flex";
     root.innerHTML = items.map(function(item){
       var href = item.href.replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
       var label = item.label.replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
