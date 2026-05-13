@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { usePathname } from "next/navigation";
 import type { HomepageContent } from "@/content/homepage";
 import Image from "next/image";
 
@@ -31,9 +32,17 @@ export function Header({ content }: Props) {
   const primaryCta = rawPrimaryCta && typeof rawPrimaryCta === "object" ? rawPrimaryCta : null;
   const ctaEnabled = primaryCta ? (primaryCta.enabled ?? true) : false;
   const isRebuiltTemplate = String((content.site as any)?.designPreset || "landing_html_v1") !== "classic";
-  const ctaHref = primaryCta ? normalizeAnchorHref(primaryCta.href as string, isRebuiltTemplate) : "#";
+  const pathname = usePathname() || "/";
+  const onHomepage = pathname === "/";
+  const linkHref = (href: string) => {
+    const normalized = normalizeAnchorHref(href, isRebuiltTemplate);
+    if (!onHomepage && normalized.startsWith("#")) return `/${normalized}`;
+    return normalized;
+  };
+  const ctaHref = primaryCta ? linkHref((primaryCta.href as string) || "#") : "#";
   const ctaLabel = primaryCta ? ((primaryCta.label as string) || (primaryCta.text as string) || "") : "";
   const enabledNavItems = navItems.filter((x) => x.enabled !== false);
+  const logoHref = onHomepage ? "#" : "/";
   const icon = content.header.brandIcon;
   const iconUrl = icon?.type === "image" ? (icon.url || "") : "";
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -101,7 +110,7 @@ export function Header({ content }: Props) {
       <header className="site-header">
         <nav className={isScrolled ? "is-scrolled" : ""} aria-label="Primary navigation">
           <div className="nav-inner">
-            <a href="#" className="nav-logo">
+            <a href={logoHref} className="nav-logo">
               {iconUrl ? (
                 <Image className="logo-img" src={iconUrl} alt="Coachflow Aquisition" width={32} height={32} unoptimized />
               ) : (
@@ -113,7 +122,7 @@ export function Header({ content }: Props) {
             <ul className="nav-links">
               {enabledNavItems.map((item) => (
                 <li key={item.href}>
-                  <a href={normalizeAnchorHref(item.href, isRebuiltTemplate)}>{item.label}</a>
+                  <a href={linkHref(item.href)}>{item.label}</a>
                 </li>
               ))}
             </ul>
@@ -175,7 +184,7 @@ export function Header({ content }: Props) {
           <ul className="nav-sheet-links">
             {enabledNavItems.map((item) => (
               <li key={item.href}>
-                <a href={normalizeAnchorHref(item.href, isRebuiltTemplate)} onClick={() => setMobileOpen(false)}>
+                <a href={linkHref(item.href)} onClick={() => setMobileOpen(false)}>
                   {item.label}
                 </a>
               </li>

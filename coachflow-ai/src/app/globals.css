@@ -1603,6 +1603,47 @@ small {
   font-weight: 700;
 }
 
+.cf-landing .cf-page-eyebrow {
+  margin: 0 0 12px;
+  color: var(--gold2);
+  font-family: var(--cf-font-body, var(--font-body)), system-ui, sans-serif;
+  font-size: 0.78rem;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.cf-landing .cf-legal-note {
+  margin-top: 2rem;
+  padding: 14px 18px;
+  border-left: 2px solid var(--gold2);
+  background: rgba(201, 152, 42, 0.06);
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.92rem;
+  line-height: 1.6;
+  border-radius: 6px;
+}
+
+.cf-landing .cf-cta-link {
+  display: inline-flex;
+  align-items: center;
+  padding: 10px 20px;
+  border: 1px solid var(--gold2);
+  border-radius: 999px;
+  background: rgba(201, 152, 42, 0.08);
+  color: var(--gold2);
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  text-decoration: none;
+  transition: background-color 0.2s, color 0.2s, border-color 0.2s;
+}
+
+.cf-landing .cf-cta-link:hover {
+  background: var(--gold2);
+  color: var(--navy);
+  border-color: var(--gold2);
+}
+
 @media (max-width: 640px) {
   .cf-landing .cf-rich-text-section {
     padding: 88px 16px;

@@ -739,6 +739,29 @@ export function RebuiltLandingFrame({ content, templateHtml, device = "desktop",
     }
     return false;
   }
+  function isSameOriginAbsolute(href){
+    var h = String(href || "").trim();
+    if(!/^https?:\\/\\//i.test(h)) return false;
+    try {
+      var u = new URL(h, window.location.href);
+      return u.origin === window.location.origin;
+    } catch(err) {
+      return false;
+    }
+  }
+  function navigateTop(href){
+    try {
+      if(window.top && window.top !== window.self){
+        window.top.location.href = href;
+        return true;
+      }
+    } catch(err) {}
+    try {
+      window.location.href = href;
+      return true;
+    } catch(err) {}
+    return false;
+  }
   function openExternal(href){
     try {
       var win = window.open(href, "_blank", "noopener,noreferrer");
@@ -784,6 +807,14 @@ export function RebuiltLandingFrame({ content, templateHtml, device = "desktop",
       if(e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return;
       e.preventDefault();
       openExternal(href);
+      return;
+    }
+    if(href && (href.charAt(0) === "/" || isSameOriginAbsolute(href))){
+      if(e.defaultPrevented) return;
+      if(e.button !== undefined && e.button !== 0) return;
+      if(e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return;
+      e.preventDefault();
+      navigateTop(href);
     }
   }, true);
 

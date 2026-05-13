@@ -37,8 +37,11 @@ export default async function CmsPage({ params, searchParams }: Props) {
   const url = nonEmpty(process.env.NEXT_PUBLIC_SUPABASE_URL);
   const anonKey = nonEmpty(process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
   if (!url || !anonKey) {
+    if (BRANDED_DEFAULT_SLUGS.has(slug)) {
+      return <CmsPageClient globalContent={globalContent} initialPage={{ sections: [] }} slug={slug} isBuilderPreview={isBuilderPreview} />;
+    }
     if (!isBuilderPreview) return notFound();
-    return <CmsPageClient globalContent={globalContent} initialPage={{ sections: [] }} isBuilderPreview />;
+    return <CmsPageClient globalContent={globalContent} initialPage={{ sections: [] }} slug={slug} isBuilderPreview />;
   }
 
   const supabase = createClient(url, anonKey, {
@@ -51,15 +54,23 @@ export default async function CmsPage({ params, searchParams }: Props) {
     .maybeSingle();
 
   if (!data) {
+    if (BRANDED_DEFAULT_SLUGS.has(slug)) {
+      return <CmsPageClient globalContent={globalContent} initialPage={{ sections: [] }} slug={slug} isBuilderPreview={isBuilderPreview} />;
+    }
     if (!isBuilderPreview) return notFound();
-    return <CmsPageClient globalContent={globalContent} initialPage={{ sections: [] }} isBuilderPreview />;
+    return <CmsPageClient globalContent={globalContent} initialPage={{ sections: [] }} slug={slug} isBuilderPreview />;
   }
 
   if (String((data as any).status) !== "published" && !isBuilderPreview) {
+    if (BRANDED_DEFAULT_SLUGS.has(slug)) {
+      return <CmsPageClient globalContent={globalContent} initialPage={{ sections: [] }} slug={slug} isBuilderPreview={isBuilderPreview} />;
+    }
     return notFound();
   }
 
   const initialPage = toPageContent((data as any).published_content);
-  return <CmsPageClient globalContent={globalContent} initialPage={initialPage} isBuilderPreview={isBuilderPreview} />;
+  return <CmsPageClient globalContent={globalContent} initialPage={initialPage} slug={slug} isBuilderPreview={isBuilderPreview} />;
 }
+
+const BRANDED_DEFAULT_SLUGS = new Set(["privacy-policy", "terms-of-service", "contact"]);
 
