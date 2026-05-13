@@ -8,11 +8,12 @@ import { attachLandingBootstrap, LandingDevice } from "@/utils/landingBootstrap"
 type Props = {
   content: HomepageContent;
   templateHtml?: string;
+  cmsHtml?: string;
   device?: LandingDevice;
   className?: string;
 };
 
-export function DirectLandingRenderer({ content, templateHtml, device = "desktop", className }: Props) {
+export function DirectLandingRenderer({ content, templateHtml, cmsHtml, device = "desktop", className }: Props) {
   const rootRef = useRef<HTMLDivElement | null>(null);
   const [fetchedTemplate, setFetchedTemplate] = useState<string | null>(null);
   const [scopedHtml, setScopedHtml] = useState<{scopeClass: string, css: string, bodyHtml: string} | null>(null);
@@ -41,9 +42,24 @@ export function DirectLandingRenderer({ content, templateHtml, device = "desktop
 
   useEffect(() => {
     if (baseTemplate) {
-      setScopedHtml(scopeRebuiltTemplate(baseTemplate));
+      let finalTemplate = baseTemplate;
+      if (cmsHtml !== undefined) {
+        // Strip out the main landing sections between <!-- HERO --> and <footer>
+        // We know the structure has <!-- HERO --> and <footer>
+        const heroStartIdx = finalTemplate.indexOf("<!-- HERO -->");
+        const footerStartIdx = finalTemplate.lastIndexOf("<footer");
+        if (heroStartIdx !== -1 && footerStartIdx !== -1 && footerStartIdx > heroStartIdx) {
+          finalTemplate = 
+            finalTemplate.substring(0, heroStartIdx) + 
+            "\n<main class=\"cf-cms-page\" style=\"min-height: 50vh; padding-top: 8rem; padding-bottom: 4rem;\">\n" + 
+            cmsHtml + 
+            "\n</main>\n" + 
+            finalTemplate.substring(footerStartIdx);
+        }
+      }
+      setScopedHtml(scopeRebuiltTemplate(finalTemplate));
     }
-  }, [baseTemplate]);
+  }, [baseTemplate, cmsHtml]);
 
   useEffect(() => {
     if (!scopedHtml || !rootRef.current) return;

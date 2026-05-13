@@ -22,6 +22,7 @@ export function AdminShell({ tab, onTabChange, sessionEmail, onSignOut, topNotic
   const [mobileMoreOpen, setMobileMoreOpen] = useState(false);
   const navItems: { tab: Tab; label: string; icon: ReactNode }[] = [
     { tab: "builder", label: "Builder", icon: <LayoutDashboard size={18} /> },
+    { tab: "pages", label: "Pages", icon: <Files size={18} /> },
     { tab: "leads", label: "Leads", icon: <Users size={18} /> },
     { tab: "media", label: "Media", icon: <ImageIcon size={18} /> },
     { tab: "homepage", label: "JSON", icon: <FileJson size={18} /> },
@@ -221,7 +222,7 @@ export function AdminShell({ tab, onTabChange, sessionEmail, onSignOut, topNotic
 
       {isMobile && tab !== "builder" ? (
         <div className="fixed bottom-0 left-0 right-0 z-40 border-t border-white/10 bg-[var(--cf-secondary)]/95 backdrop-blur">
-          <div className="mx-auto grid max-w-xl grid-cols-4 px-2 py-2">
+          <div className="mx-auto grid max-w-xl grid-cols-5 px-2 py-2">
             <button
               type="button"
               className="flex h-12 flex-col items-center justify-center rounded-xl text-white/70 hover:bg-white/5 hover:text-white"
@@ -230,7 +231,18 @@ export function AdminShell({ tab, onTabChange, sessionEmail, onSignOut, topNotic
               <LayoutDashboard size={18} />
               <div className="mt-1 text-[11px] font-semibold">Builder</div>
             </button>
-
+            <button
+              type="button"
+              className={
+                tab === "pages"
+                  ? "flex h-12 flex-col items-center justify-center rounded-xl bg-white/10 text-white"
+                  : "flex h-12 flex-col items-center justify-center rounded-xl text-white/70 hover:bg-white/5 hover:text-white"
+              }
+              onClick={() => onTabChange("pages")}
+            >
+              <Files size={18} />
+              <div className="mt-1 text-[11px] font-semibold">Pages</div>
+            </button>
             <button
               type="button"
               className={

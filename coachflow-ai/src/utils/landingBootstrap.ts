@@ -551,7 +551,6 @@ export function attachLandingBootstrap(root: HTMLElement, content: AnyContent, d
             if (!link || typeof link !== "object") return false;
             const href = String(link.href || "").trim();
             if (!href) return false;
-            if (href.startsWith("/p/")) return false;
             return true;
           })
         : [];

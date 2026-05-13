@@ -17,14 +17,11 @@ function tabFromSegments(segments: string[] | undefined): Tab {
   if (first === "builder") return "builder";
   if (first === "advanced" && second === "json") return "homepage";
   if (first === "advanced" && second === "code") return "custom";
+  if (first === "pages") return "pages";
   return "builder";
 }
 
 export default async function AdminSubroutePage({ params }: Props) {
   const { segments } = await params;
-  if (segments?.[0] === "pages") {
-    const { redirect } = await import("next/navigation");
-    redirect("/admin");
-  }
   return <AdminPageClient initialTab={tabFromSegments(segments)} />;
 }
