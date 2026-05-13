@@ -273,6 +273,49 @@ export function RebuiltLandingFrame({ content, templateHtml, device = "desktop",
     if(s.length <= 2) return s.toUpperCase();
     return s.charAt(0).toUpperCase() + s.slice(1);
   }
+  var SOCIAL_LIB_SVG = {
+    instagram: '<rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>',
+    facebook: '<path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path>',
+    twitter: '<path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z"></path>',
+    x: '<path d="M18 6 6 18"></path><path d="m6 6 12 12"></path>',
+    linkedin: '<path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect x="2" y="9" width="4" height="12"></rect><circle cx="4" cy="4" r="2"></circle>',
+    youtube: '<path d="M2.5 17a24.12 24.12 0 0 1 0-10 2 2 0 0 1 1.4-1.4 49.56 49.56 0 0 1 16.2 0A2 2 0 0 1 21.5 7a24.12 24.12 0 0 1 0 10 2 2 0 0 1-1.4 1.4 49.55 49.55 0 0 1-16.2 0A2 2 0 0 1 2.5 17"></path><path d="m10 15 5-3-5-3z"></path>',
+    tiktok: '<circle cx="8" cy="18" r="4"></circle><path d="M12 18V2l7 4"></path>',
+    whatsapp: '<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>',
+    telegram: '<line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>',
+    email: '<rect x="2" y="4" width="20" height="16" rx="2"></rect><path d="m2 7 10 6 10-6"></path>',
+    website: '<circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>'
+  };
+  function libSvgKey(platform){
+    var p = String(platform || "").trim().toLowerCase();
+    if(p === "twitter") return "twitter";
+    if(SOCIAL_LIB_SVG[p]) return p;
+    return "website";
+  }
+  function buildSocialIconHtml(icon, platform){
+    var safeAttrEscape = function(s){
+      return String(s || "").replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+    };
+    if(icon && typeof icon === "object"){
+      var t = String(icon.type || "").toLowerCase();
+      if(t === "upload" || t === "image"){
+        var url = String(icon.url || icon.value || "").trim();
+        if(url){
+          return '<img class="footer-social-icon" src="' + safeAttrEscape(url) + '" alt="" width="20" height="20" />';
+        }
+      } else if(t === "material"){
+        var name = String(icon.name || icon.value || "").trim().toLowerCase();
+        if(name){
+          return '<span class="footer-social-icon material-symbols-outlined" aria-hidden="true">' + safeAttrEscape(name) + '</span>';
+        }
+      } else if(t === "library"){
+        var key = libSvgKey(icon.value || platform);
+        return '<svg class="footer-social-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + SOCIAL_LIB_SVG[key] + '</svg>';
+      }
+    }
+    var fallbackKey = libSvgKey(platform);
+    return '<svg class="footer-social-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + SOCIAL_LIB_SVG[fallbackKey] + '</svg>';
+  }
   function renderFooterSocials(content){
     var root = q("footer .footer-socials");
     if(!root) return;
@@ -286,14 +329,24 @@ export function RebuiltLandingFrame({ content, templateHtml, device = "desktop",
       var item = v2[i] || {};
       var href = socialHref(item);
       if(item.enabled === false || !isValidSocialHref(href)) continue;
-      items.push({ label: formatSocialLabel(socialLabel(item)), href: href });
+      items.push({
+        label: formatSocialLabel(socialLabel(item)),
+        href: href,
+        platform: String(item.platform || item.id || "").trim(),
+        icon: item.icon || null
+      });
     }
     if(!items.length){
       for(var j=0;j<legacy.length;j++){
         var li = legacy[j] || {};
         var lh = socialHref(li);
         if(!isValidSocialHref(lh)) continue;
-        items.push({ label: formatSocialLabel(socialLabel(li)), href: lh });
+        items.push({
+          label: formatSocialLabel(socialLabel(li)),
+          href: lh,
+          platform: String(li.label || li.platform || li.id || "").trim(),
+          icon: li.icon || null
+        });
       }
     }
     if(!showSocial || !items.length){
@@ -306,7 +359,8 @@ export function RebuiltLandingFrame({ content, templateHtml, device = "desktop",
       var href = item.href.replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
       var label = item.label.replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
       var attrs = isExternalHref(item.href) ? ' target="_blank" rel="noopener noreferrer"' : "";
-      return '<a class="footer-social" href="' + href + '"' + attrs + ' aria-label="' + label + '">' + label + '</a>';
+      var iconHtml = buildSocialIconHtml(item.icon, item.platform);
+      return '<a class="footer-social" href="' + href + '"' + attrs + ' aria-label="' + label + '" title="' + label + '">' + iconHtml + '<span class="footer-social-sr">' + label + '</span></a>';
     }).join("");
   }
 

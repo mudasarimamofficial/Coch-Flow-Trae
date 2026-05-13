@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
 
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -915,7 +916,7 @@
 
   .footer-socials {
     display: none;
-    gap: 0.6rem;
+    gap: 0.55rem;
     align-items: center;
     justify-content: center;
     flex-wrap: wrap;
@@ -925,14 +926,13 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: 0.4rem 0.85rem;
+    width: 36px;
+    height: 36px;
     border: 0.5px solid var(--border);
     border-radius: 999px;
     color: rgba(245,242,237,0.72);
     text-decoration: none;
-    font-size: 0.72rem;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
+    background-color: transparent;
     transition: color 0.2s, border-color 0.2s, background-color 0.2s;
   }
 
@@ -940,6 +940,32 @@
     color: var(--gold);
     border-color: var(--gold);
     background-color: rgba(201,168,76,0.05);
+  }
+
+  .footer-social-icon {
+    width: 18px;
+    height: 18px;
+    display: block;
+    flex-shrink: 0;
+  }
+
+  .footer-social-icon.material-symbols-outlined {
+    font-size: 20px;
+    line-height: 1;
+    width: auto;
+    height: auto;
+  }
+
+  .footer-social-sr {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
   }
 
   /* ANIMATE IN */
