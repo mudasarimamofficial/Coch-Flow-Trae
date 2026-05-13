@@ -424,6 +424,51 @@ function InspectorGroup({ title, children }: { title: string; children: ReactNod
   );
 }
 
+
+/**
+ * DevicePreviewStage - fixed-width device viewport scaled to fit the preview panel.
+ * Desktop=1440px, Tablet=768px, Mobile=375px accurate responsive simulation.
+ */
+function DevicePreviewStage({ deviceWidth, children }: { deviceWidth: number; children: ReactNode }) {
+  const stageRef = useRef<HTMLDivElement | null>(null);
+  const [scale, setScale] = useState(1);
+
+  useEffect(() => {
+    const parent = stageRef.current ? stageRef.current.parentElement : null;
+    if (!parent) return;
+    function recalc() {
+      if (!parent) return;
+      const availW = Math.max(parent.clientWidth - 24, 100);
+      const scaleX = availW / deviceWidth;
+      setScale(Math.min(scaleX, 1));
+    }
+    recalc();
+    const ro = new ResizeObserver(recalc);
+    ro.observe(parent);
+    return () => ro.disconnect();
+  }, [deviceWidth]);
+
+  return (
+    <div ref={stageRef} className="relative flex h-full w-full items-start justify-center overflow-auto p-3">
+      <div
+        style={{
+          width: deviceWidth,
+          minHeight: "100%",
+          transform: `scale(${scale})`,
+          transformOrigin: "top center",
+          flexShrink: 0,
+          borderRadius: 12,
+          overflow: "hidden",
+          border: "1px solid rgba(255,255,255,0.1)",
+          background: "#0A0F1E",
+          boxShadow: "0 18px 50px rgba(0,0,0,0.55)",
+        }}
+      >
+        {children}
+      </div>
+    </div>
+  );
+}
 export function VisualBuilderPanel({ supabase, onNavigateTab, onSignOut }: Props) {
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 6 } }));
   const [loading, setLoading] = useState(true);
@@ -849,8 +894,11 @@ export function VisualBuilderPanel({ supabase, onNavigateTab, onSignOut }: Props
     };
   }, [supabase]);
 
-  const previewWidth =
-    mode === "mobile" ? "w-[375px]" : mode === "tablet" ? "w-[768px]" : "w-full";
+  // Device viewport widths for accurate responsive preview
+  const DEVICE_WIDTHS = { desktop: 1440, tablet: 768, mobile: 375 } as const;
+  const deviceViewportWidth = DEVICE_WIDTHS[mode];
+  // Keep previewWidth for any remaining references
+  const previewWidth = mode === "mobile" ? "w-[375px]" : mode === "tablet" ? "w-[768px]" : "w-[1440px]";
 
   const selectedSection = useMemo(
     () => pageSections.find((s) => s.id === selectedId) || null,
@@ -1520,16 +1568,15 @@ export function VisualBuilderPanel({ supabase, onNavigateTab, onSignOut }: Props
         <div
           className={`${mobilePane === "preview" ? "flex" : "hidden"} relative h-full min-h-0 flex-1 justify-center overflow-hidden rounded-2xl border border-white/10 bg-[radial-gradient(1200px_circle_at_50%_0%,rgba(255,255,255,0.10),transparent_60%)] lg:flex`}
         >
-          <div className="flex h-full min-h-0 w-full items-center justify-center overflow-hidden p-3 lg:p-5">
-            <div className={`h-full ${previewWidth} overflow-hidden rounded-2xl border border-white/10 bg-[#0A0F1E] shadow-[0_18px_50px_rgba(0,0,0,0.55)]`}>
-              <DirectLandingRenderer
-                content={resolved}
-                device={mode}
-
-                className="h-full w-full"
-              />
-            </div>
-          </div>
+          {/* Scaling device preview stage */}
+          <DevicePreviewStage deviceWidth={deviceViewportWidth}>
+            <DirectLandingRenderer
+              content={resolved}
+              device={mode}
+              context="admin-preview"
+              className="h-full w-full"
+            />
+          </DevicePreviewStage>
 
           <div className="pointer-events-none absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-black/25 to-transparent" />
 

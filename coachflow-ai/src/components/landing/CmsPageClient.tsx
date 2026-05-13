@@ -69,7 +69,11 @@ export function CmsPageClient({ globalContent, initialPage, slug, isBuilderPrevi
 
   return (
     <div className="flex flex-1 flex-col">
-      <DirectLandingRenderer content={globalContent} cmsHtml={cmsHtml} />
+      <DirectLandingRenderer
+        content={globalContent}
+        cmsHtml={cmsHtml}
+        context={isBuilderPreview ? "admin-preview" : "cms-subpage"}
+      />
     </div>
   );
 }
