@@ -44,6 +44,185 @@ const PREVIEW_CONTAINMENT_CSS = `
     opacity: 1 !important;
     animation: none !important;
   }
+
+  .cf-rebuilt-shell[data-cf-preview-device="desktop"] nav {
+    padding: 1.25rem 4rem !important;
+  }
+  .cf-rebuilt-shell[data-cf-preview-device="desktop"] .nav-links {
+    display: flex !important;
+  }
+  .cf-rebuilt-shell[data-cf-preview-device="desktop"] .nav-hamburger {
+    display: none !important;
+  }
+  .cf-rebuilt-shell[data-cf-preview-device="desktop"] .hero {
+    padding: 8rem 4rem 5rem !important;
+    min-height: 100vh !important;
+  }
+  .cf-rebuilt-shell[data-cf-preview-device="desktop"] .hero h1 {
+    font-size: clamp(4rem, 8vw, 7.5rem) !important;
+  }
+  .cf-rebuilt-shell[data-cf-preview-device="desktop"] .hero-sub {
+    font-size: 1.2rem !important;
+    margin-bottom: 3rem !important;
+  }
+  .cf-rebuilt-shell[data-cf-preview-device="desktop"] .hero-actions {
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 1rem !important;
+  }
+  .cf-rebuilt-shell[data-cf-preview-device="desktop"] .btn-primary,
+  .cf-rebuilt-shell[data-cf-preview-device="desktop"] .btn-ghost {
+    width: auto !important;
+  }
+  .cf-rebuilt-shell[data-cf-preview-device="desktop"] .founder {
+    grid-template-columns: 1fr 1.4fr !important;
+    gap: 6rem !important;
+    padding: 6rem 4rem !important;
+  }
+  .cf-rebuilt-shell[data-cf-preview-device="desktop"] .trust-strip {
+    padding: 1.5rem 4rem !important;
+    flex-direction: row !important;
+    align-items: center !important;
+  }
+  .cf-rebuilt-shell[data-cf-preview-device="desktop"] section {
+    padding: 7rem 4rem !important;
+  }
+  .cf-rebuilt-shell[data-cf-preview-device="desktop"] .promise-grid {
+    grid-template-columns: 1fr 1fr !important;
+  }
+  .cf-rebuilt-shell[data-cf-preview-device="desktop"] .honest-inner,
+  .cf-rebuilt-shell[data-cf-preview-device="desktop"] .form-inner {
+    grid-template-columns: 1fr 1.1fr !important;
+    gap: 6rem !important;
+  }
+  .cf-rebuilt-shell[data-cf-preview-device="desktop"] .tiers {
+    grid-template-columns: repeat(3, 1fr) !important;
+  }
+  .cf-rebuilt-shell[data-cf-preview-device="desktop"] .form-row {
+    grid-template-columns: 1fr 1fr !important;
+  }
+  .cf-rebuilt-shell[data-cf-preview-device="desktop"] footer {
+    flex-direction: row !important;
+    text-align: left !important;
+    padding: 2.5rem 4rem !important;
+  }
+
+  .cf-rebuilt-shell[data-cf-preview-device="tablet"] nav,
+  .cf-rebuilt-shell[data-cf-preview-device="mobile"] nav {
+    padding: 1rem 1.5rem !important;
+  }
+  .cf-rebuilt-shell[data-cf-preview-device="tablet"] .nav-links,
+  .cf-rebuilt-shell[data-cf-preview-device="mobile"] .nav-links {
+    display: none !important;
+  }
+  .cf-rebuilt-shell[data-cf-preview-device="tablet"] .nav-hamburger,
+  .cf-rebuilt-shell[data-cf-preview-device="mobile"] .nav-hamburger {
+    display: flex !important;
+  }
+  .cf-rebuilt-shell[data-cf-preview-device="tablet"] .hero,
+  .cf-rebuilt-shell[data-cf-preview-device="mobile"] .hero {
+    padding: 7rem 1.5rem 4rem !important;
+    min-height: 90vh !important;
+  }
+  .cf-rebuilt-shell[data-cf-preview-device="tablet"] .hero h1,
+  .cf-rebuilt-shell[data-cf-preview-device="mobile"] .hero h1 {
+    font-size: clamp(3rem, 14vw, 4.5rem) !important;
+  }
+  .cf-rebuilt-shell[data-cf-preview-device="tablet"] .hero-sub,
+  .cf-rebuilt-shell[data-cf-preview-device="mobile"] .hero-sub {
+    font-size: 1rem !important;
+    margin-bottom: 2rem !important;
+  }
+  .cf-rebuilt-shell[data-cf-preview-device="tablet"] .hero-actions,
+  .cf-rebuilt-shell[data-cf-preview-device="mobile"] .hero-actions {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 0.75rem !important;
+  }
+  .cf-rebuilt-shell[data-cf-preview-device="tablet"] .btn-primary,
+  .cf-rebuilt-shell[data-cf-preview-device="tablet"] .btn-ghost,
+  .cf-rebuilt-shell[data-cf-preview-device="mobile"] .btn-primary,
+  .cf-rebuilt-shell[data-cf-preview-device="mobile"] .btn-ghost {
+    width: 100% !important;
+    text-align: center !important;
+  }
+  .cf-rebuilt-shell[data-cf-preview-device="tablet"] .founder,
+  .cf-rebuilt-shell[data-cf-preview-device="mobile"] .founder,
+  .cf-rebuilt-shell[data-cf-preview-device="tablet"] .honest-inner,
+  .cf-rebuilt-shell[data-cf-preview-device="mobile"] .honest-inner,
+  .cf-rebuilt-shell[data-cf-preview-device="tablet"] .form-inner,
+  .cf-rebuilt-shell[data-cf-preview-device="mobile"] .form-inner {
+    grid-template-columns: 1fr !important;
+    gap: 2.5rem !important;
+  }
+  .cf-rebuilt-shell[data-cf-preview-device="tablet"] .founder,
+  .cf-rebuilt-shell[data-cf-preview-device="mobile"] .founder,
+  .cf-rebuilt-shell[data-cf-preview-device="tablet"] section,
+  .cf-rebuilt-shell[data-cf-preview-device="mobile"] section,
+  .cf-rebuilt-shell[data-cf-preview-device="tablet"] .honest,
+  .cf-rebuilt-shell[data-cf-preview-device="mobile"] .honest,
+  .cf-rebuilt-shell[data-cf-preview-device="tablet"] .founding,
+  .cf-rebuilt-shell[data-cf-preview-device="mobile"] .founding,
+  .cf-rebuilt-shell[data-cf-preview-device="tablet"] .form-section,
+  .cf-rebuilt-shell[data-cf-preview-device="mobile"] .form-section {
+    padding: 4rem 1.5rem !important;
+  }
+  .cf-rebuilt-shell[data-cf-preview-device="tablet"] .trust-strip,
+  .cf-rebuilt-shell[data-cf-preview-device="mobile"] .trust-strip {
+    padding: 1.5rem !important;
+    gap: 1rem !important;
+    justify-content: flex-start !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+  }
+  .cf-rebuilt-shell[data-cf-preview-device="tablet"] .promise-grid,
+  .cf-rebuilt-shell[data-cf-preview-device="mobile"] .promise-grid,
+  .cf-rebuilt-shell[data-cf-preview-device="tablet"] .tiers,
+  .cf-rebuilt-shell[data-cf-preview-device="mobile"] .tiers,
+  .cf-rebuilt-shell[data-cf-preview-device="tablet"] .form-row,
+  .cf-rebuilt-shell[data-cf-preview-device="mobile"] .form-row {
+    grid-template-columns: 1fr !important;
+  }
+  .cf-rebuilt-shell[data-cf-preview-device="tablet"] .founding-header,
+  .cf-rebuilt-shell[data-cf-preview-device="mobile"] .founding-header {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 0.5rem !important;
+  }
+  .cf-rebuilt-shell[data-cf-preview-device="tablet"] .founding-header p,
+  .cf-rebuilt-shell[data-cf-preview-device="mobile"] .founding-header p {
+    max-width: 100% !important;
+    text-align: left !important;
+  }
+  .cf-rebuilt-shell[data-cf-preview-device="tablet"] .tier.featured,
+  .cf-rebuilt-shell[data-cf-preview-device="mobile"] .tier.featured {
+    margin: 0 !important;
+  }
+  .cf-rebuilt-shell[data-cf-preview-device="tablet"] footer,
+  .cf-rebuilt-shell[data-cf-preview-device="mobile"] footer {
+    flex-direction: column !important;
+    text-align: center !important;
+    padding: 2rem 1.5rem !important;
+    gap: 1.25rem !important;
+  }
+  .cf-rebuilt-shell[data-cf-preview-device="tablet"] .footer-links,
+  .cf-rebuilt-shell[data-cf-preview-device="mobile"] .footer-links {
+    flex-wrap: wrap !important;
+    justify-content: center !important;
+    gap: 1rem !important;
+  }
+  .cf-rebuilt-shell[data-cf-preview-device="mobile"] .hero h1 {
+    font-size: clamp(2.75rem, 16vw, 3.5rem) !important;
+  }
+  .cf-rebuilt-shell[data-cf-preview-device="mobile"] .section-title {
+    font-size: clamp(2rem, 10vw, 2.5rem) !important;
+  }
+  .cf-rebuilt-shell[data-cf-preview-device="mobile"] .promise-num {
+    font-size: 2.5rem !important;
+  }
+  .cf-rebuilt-shell[data-cf-preview-device="mobile"] .tier-price-num {
+    font-size: 2.25rem !important;
+  }
 `;
 
 /**
@@ -53,6 +232,19 @@ const PREVIEW_CONTAINMENT_CSS = `
 function rewriteSubpageLinks(html: string): string {
   // Rewrite href="#..." to href="/#..."
   return html.replace(/href="#([^"]+)"/g, 'href="/#$1"');
+}
+
+function rewriteMountedSubpageLinks(root: HTMLElement) {
+  root.querySelectorAll<HTMLAnchorElement>('a[href^="#"]').forEach((a) => {
+    const href = a.getAttribute("href") || "";
+    if (href.length > 1) a.setAttribute("href", `/${href}`);
+  });
+}
+
+function stripMountedInlineHandlers(root: HTMLElement) {
+  root.querySelectorAll<HTMLElement>("[onclick]").forEach((el) => {
+    el.removeAttribute("onclick");
+  });
 }
 
 export function DirectLandingRenderer({
@@ -70,8 +262,6 @@ export function DirectLandingRenderer({
     css: string;
     bodyHtml: string;
   } | null>(null);
-  const currentContentRef = useRef(content);
-  currentContentRef.current = content;
 
   useEffect(() => {
     if (templateHtml && templateHtml.trim().length) return;
@@ -123,21 +313,15 @@ export function DirectLandingRenderer({
 
   useEffect(() => {
     if (!scopedHtml || !rootRef.current) return;
-    const cleanup = attachLandingBootstrap(rootRef.current, content, device);
+    stripMountedInlineHandlers(rootRef.current);
+    const cleanup = attachLandingBootstrap(rootRef.current, content, device, {
+      scopeDeviceToRoot: context === "admin-preview",
+    });
+    if (context === "cms-subpage") rewriteMountedSubpageLinks(rootRef.current);
     return () => {
       cleanup();
     };
-  }, [scopedHtml, content, device]);
-
-  // Dead message listener cleanup (was for old iframe bridge, no longer needed but kept for safety)
-  useEffect(() => {
-    function onMessage(e: MessageEvent) {
-      if (e.origin !== window.location.origin) return;
-      // Intentionally no-op: builder passes content via props, not postMessage
-    }
-    window.addEventListener("message", onMessage);
-    return () => window.removeEventListener("message", onMessage);
-  }, []);
+  }, [scopedHtml, content, device, context]);
 
   if (!scopedHtml) return <div className={className}>Loading...</div>;
 
@@ -153,6 +337,7 @@ export function DirectLandingRenderer({
       <div
         ref={rootRef}
         className={scopedHtml.scopeClass}
+        data-cf-preview-device={isAdminPreview ? device : undefined}
         dangerouslySetInnerHTML={{ __html: scopedHtml.bodyHtml }}
       />
     </div>

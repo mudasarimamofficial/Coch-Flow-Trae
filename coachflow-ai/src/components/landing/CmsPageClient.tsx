@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { renderToStaticMarkup } from "react-dom/server";
 import type { HomepageContent } from "@/content/homepage";
 import { DirectLandingRenderer } from "@/components/landing/DirectLandingRenderer";
 import { renderBrandedDefault } from "@/components/landing/CmsDefaultContent";
@@ -53,8 +54,6 @@ export function CmsPageClient({ globalContent, initialPage, slug, isBuilderPrevi
 
   let cmsHtml = "";
   if (showBrandedDefault) {
-    const React = require("react");
-    const { renderToStaticMarkup } = require("react-dom/server");
     cmsHtml = renderToStaticMarkup(renderBrandedDefault(slug as string, { content: globalContent }));
   } else {
     cmsHtml = enabledSections.map((s) => {

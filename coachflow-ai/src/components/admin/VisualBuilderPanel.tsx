@@ -15,7 +15,7 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import Image from "next/image";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -45,6 +45,7 @@ import {
   SlidersHorizontal,
   Layers,
   LogOut,
+  X,
 } from "lucide-react";
 
 type Props = {
@@ -425,50 +426,100 @@ function InspectorGroup({ title, children }: { title: string; children: ReactNod
 }
 
 
-/**
- * DevicePreviewStage - fixed-width device viewport scaled to fit the preview panel.
- * Desktop=1440px, Tablet=768px, Mobile=375px accurate responsive simulation.
- */
 function DevicePreviewStage({ deviceWidth, children }: { deviceWidth: number; children: ReactNode }) {
   const stageRef = useRef<HTMLDivElement | null>(null);
-  const [scale, setScale] = useState(1);
+  const viewportRef = useRef<HTMLDivElement | null>(null);
+  const [metrics, setMetrics] = useState({ scale: 1, height: 900 });
 
   useEffect(() => {
-    const parent = stageRef.current ? stageRef.current.parentElement : null;
-    if (!parent) return;
+    const stage = stageRef.current;
+    const viewport = viewportRef.current;
+    if (!stage || !viewport) return;
+
     function recalc() {
-      if (!parent) return;
-      const availW = Math.max(parent.clientWidth - 24, 100);
-      const scaleX = availW / deviceWidth;
-      setScale(Math.min(scaleX, 1));
+      if (!stage || !viewport) return;
+      const availW = Math.max(stage.clientWidth - 32, 120);
+      const scaleByW = availW / deviceWidth;
+      const nextScale = Math.max(0.2, Math.min(scaleByW, 1));
+      const rawHeight = Math.max(viewport.scrollHeight, viewport.offsetHeight, 900);
+      setMetrics((prev) => {
+        const next = { scale: nextScale, height: Math.ceil(rawHeight * nextScale) };
+        return Math.abs(prev.scale - next.scale) < 0.001 && Math.abs(prev.height - next.height) < 2 ? prev : next;
+      });
     }
+
     recalc();
     const ro = new ResizeObserver(recalc);
-    ro.observe(parent);
-    return () => ro.disconnect();
+    ro.observe(stage);
+    ro.observe(viewport);
+    window.addEventListener("resize", recalc);
+    const id = window.setTimeout(recalc, 250);
+    return () => {
+      window.clearTimeout(id);
+      window.removeEventListener("resize", recalc);
+      ro.disconnect();
+    };
   }, [deviceWidth]);
 
   return (
-    <div ref={stageRef} className="relative flex h-full w-full items-start justify-center overflow-auto p-3">
+    <div
+      ref={stageRef}
+      className="relative min-h-0 flex-1 overflow-auto p-3"
+      style={{ minWidth: 0 }}
+    >
       <div
+        className="mx-auto"
         style={{
-          width: deviceWidth,
-          minHeight: "100%",
-          transform: `scale(${scale})`,
-          transformOrigin: "top center",
-          flexShrink: 0,
-          borderRadius: 12,
-          overflow: "hidden",
-          border: "1px solid rgba(255,255,255,0.1)",
-          background: "#0A0F1E",
-          boxShadow: "0 18px 50px rgba(0,0,0,0.55)",
+          width: Math.ceil(deviceWidth * metrics.scale),
+          height: metrics.height,
+          minHeight: 320,
         }}
       >
-        {children}
+        <div
+          ref={viewportRef}
+          style={{
+            width: deviceWidth,
+            transform: `scale(${metrics.scale})`,
+            transformOrigin: "top left",
+            flexShrink: 0,
+            borderRadius: 12,
+            overflow: "hidden",
+            border: "1px solid rgba(255,255,255,0.1)",
+            background: "#0A0F1E",
+            boxShadow: "0 12px 40px rgba(0,0,0,0.5)",
+          }}
+        >
+          {children}
+        </div>
+        {metrics.scale < 0.99 ? (
+          <div
+            style={{
+              position: "sticky",
+              bottom: 8,
+              left: "50%",
+              transform: "translateX(-50%)",
+              display: "inline-flex",
+              background: "rgba(0,0,0,0.7)",
+              color: "rgba(255,255,255,0.7)",
+              borderRadius: 20,
+              padding: "2px 8px",
+              fontSize: 11,
+              fontWeight: 600,
+              backdropFilter: "blur(4px)",
+              border: "1px solid rgba(255,255,255,0.1)",
+              marginTop: 8,
+              zIndex: 10,
+            }}
+          >
+            {Math.round(metrics.scale * 100)}%
+          </div>
+        ) : null}
       </div>
     </div>
   );
 }
+
+
 export function VisualBuilderPanel({ supabase, onNavigateTab, onSignOut }: Props) {
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 6 } }));
   const [loading, setLoading] = useState(true);
@@ -480,6 +531,14 @@ export function VisualBuilderPanel({ supabase, onNavigateTab, onSignOut }: Props
   const [mobilePane, setMobilePane] = useState<MobilePane>("preview");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [mobileActionsOpen, setMobileActionsOpen] = useState(false);
+  const [inspectorOpen, setInspectorOpen] = useState(true);
+  const [sectionsOpen, setSectionsOpen] = useState(true);
+  const [builderMoreOpen, setBuilderMoreOpen] = useState(false);
+  const [builderWidth, setBuilderWidth] = useState(0);
+  const [isDesktopViewport, setIsDesktopViewport] = useState(false);
+  const [adaptedCompactPanels, setAdaptedCompactPanels] = useState(false);
+  const builderMoreRef = useRef<HTMLDivElement | null>(null);
+  const builderRootRef = useRef<HTMLDivElement | null>(null);
   const [selectedId, setSelectedId] = useState<string>("hero");
   const [selectedBlockId, setSelectedBlockId] = useState<string | null>(null);
   const [addType, setAddType] = useState<string>("hero");
@@ -567,6 +626,51 @@ export function VisualBuilderPanel({ supabase, onNavigateTab, onSignOut }: Props
     window.addEventListener("mousedown", onDown);
     return () => window.removeEventListener("mousedown", onDown);
   }, [backupsOpen]);
+
+  useEffect(() => {
+    if (!builderMoreOpen) return;
+    function onDown(e: MouseEvent) {
+      const root = builderMoreRef.current;
+      if (!root) return;
+      if (root.contains(e.target as Node)) return;
+      setBuilderMoreOpen(false);
+      setBackupsOpen(false);
+    }
+    window.addEventListener("mousedown", onDown);
+    return () => window.removeEventListener("mousedown", onDown);
+  }, [builderMoreOpen]);
+
+  useEffect(() => {
+    const root = builderRootRef.current;
+    if (!root) return;
+    const update = () => setBuilderWidth(root.clientWidth || 0);
+    update();
+    const ro = new ResizeObserver(update);
+    ro.observe(root);
+    window.addEventListener("resize", update);
+    return () => {
+      window.removeEventListener("resize", update);
+      ro.disconnect();
+    };
+  }, []);
+
+  useEffect(() => {
+    const mq = window.matchMedia("(min-width: 1024px)");
+    const update = () => setIsDesktopViewport(Boolean(mq.matches));
+    update();
+    const anyMq = mq as unknown as {
+      addEventListener?: (type: "change", listener: () => void) => void;
+      addListener?: (listener: () => void) => void;
+      removeEventListener?: (type: "change", listener: () => void) => void;
+      removeListener?: (listener: () => void) => void;
+    };
+    if (anyMq.addEventListener) anyMq.addEventListener("change", update);
+    else if (anyMq.addListener) anyMq.addListener(update);
+    return () => {
+      if (anyMq.removeEventListener) anyMq.removeEventListener("change", update);
+      else if (anyMq.removeListener) anyMq.removeListener(update);
+    };
+  }, []);
 
   const loadLandingPreset = useCallback(() => {
     const base = cloneContent(homepageDefaults);
@@ -897,8 +1001,50 @@ export function VisualBuilderPanel({ supabase, onNavigateTab, onSignOut }: Props
   // Device viewport widths for accurate responsive preview
   const DEVICE_WIDTHS = { desktop: 1440, tablet: 768, mobile: 375 } as const;
   const deviceViewportWidth = DEVICE_WIDTHS[mode];
-  // Keep previewWidth for any remaining references
-  const previewWidth = mode === "mobile" ? "w-[375px]" : mode === "tablet" ? "w-[768px]" : "w-[1440px]";
+  const isCompactDesktop = isDesktopViewport && builderWidth > 0 && builderWidth < 1240;
+  const sectionsPanelStyle: CSSProperties | undefined = !isDesktopViewport
+    ? undefined
+    : isCompactDesktop
+      ? sectionsOpen
+        ? {
+            position: "absolute",
+            left: 8,
+            top: 8,
+            bottom: 8,
+            zIndex: 45,
+            width: "min(320px, calc(100% - 16px))",
+            minWidth: 0,
+            boxShadow: "0 24px 70px rgba(0,0,0,0.5)",
+          }
+        : { display: "none" }
+      : sectionsOpen
+        ? { width: 252, minWidth: 252, flexShrink: 0 }
+        : { display: "none" };
+  const inspectorPanelStyle: CSSProperties | undefined = !isDesktopViewport
+    ? undefined
+    : isCompactDesktop
+      ? inspectorOpen
+        ? {
+            position: "absolute",
+            right: 8,
+            top: 8,
+            bottom: 8,
+            zIndex: 50,
+            width: "min(360px, calc(100% - 16px))",
+            minWidth: 0,
+            boxShadow: "0 24px 70px rgba(0,0,0,0.55)",
+          }
+        : { display: "none" }
+      : inspectorOpen
+        ? { width: 340, minWidth: 340, flexShrink: 0 }
+        : { display: "none" };
+
+  useEffect(() => {
+    if (!isCompactDesktop || adaptedCompactPanels) return;
+    setSectionsOpen(false);
+    setInspectorOpen(true);
+    setAdaptedCompactPanels(true);
+  }, [adaptedCompactPanels, isCompactDesktop]);
 
   const selectedSection = useMemo(
     () => pageSections.find((s) => s.id === selectedId) || null,
@@ -1175,117 +1321,66 @@ export function VisualBuilderPanel({ supabase, onNavigateTab, onSignOut }: Props
   };
 
   return (
-    <div className="flex h-full flex-col overflow-hidden bg-[var(--cf-bg)]">
-      <div className="hidden lg:block">
-        <div className="sticky top-0 z-30 border-b border-white/10 bg-[var(--cf-secondary)]/80 px-6 py-3 backdrop-blur">
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-3">
-              <div className="text-xs text-white/60">/admin</div>
-              <div className="text-sm font-semibold text-white/90">Visual Builder</div>
+    <div ref={builderRootRef} className="flex h-full min-w-0 flex-col overflow-hidden bg-[var(--cf-bg)]">
+      <div className="hidden lg:flex flex-col">
+        <div className="sticky top-0 z-30 border-b border-white/10 bg-[var(--cf-secondary)]/80 backdrop-blur">
+          {/* Primary row: always visible */}
+          <div className="flex min-w-0 items-center gap-2 px-3 py-2">
+            {/* Panel toggles */}
+            <div className="flex items-center gap-1 flex-shrink-0">
+              <button
+                type="button"
+                title={sectionsOpen ? "Hide sections" : "Show sections"}
+                className={`inline-flex h-8 w-8 items-center justify-center rounded-lg border border-white/10 text-xs font-bold transition-colors ${sectionsOpen ? "bg-[var(--cf-accent)] text-[#0A0F1E]" : "bg-white/5 text-white/70 hover:bg-white/10 hover:text-white"}`}
+                onClick={() => setSectionsOpen(v => !v)}
+                aria-label="Toggle sections panel"
+              >
+                <PanelLeft className="h-3.5 w-3.5" />
+              </button>
+            </div>
+
+            {/* Breadcrumb */}
+            <div className="flex items-center gap-2 flex-shrink-0">
+              <div className="text-xs text-white/50 hidden xl:block">/admin</div>
+              <div className="text-sm font-semibold text-white/90">Builder</div>
               {pill(statusText, statusTone)}
             </div>
 
-            <div className="flex flex-1 items-center justify-center">
-              <div className="flex items-center gap-1 rounded-xl border border-white/10 bg-white/5 p-1">
+            {/* Device buttons — center */}
+            <div className="flex flex-1 min-w-0 items-center justify-center">
+              <div className="flex items-center gap-1 rounded-xl border border-white/10 bg-white/5 p-1 flex-shrink-0">
                 {deviceButton(mode === "desktop", () => setMode("desktop"), <Monitor className="h-4 w-4" />, "Desktop")}
                 {deviceButton(mode === "tablet", () => setMode("tablet"), <TabletIcon className="h-4 w-4" />, "Tablet")}
                 {deviceButton(mode === "mobile", () => setMode("mobile"), <Smartphone className="h-4 w-4" />, "Mobile")}
               </div>
             </div>
 
-            <div className="flex items-center gap-2">
+            {/* Primary actions */}
+            <div className="flex items-center gap-1.5 flex-shrink-0">
+              {/* Undo/Redo - always visible */}
               <button
                 type="button"
-                className="inline-flex h-9 items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 text-xs font-semibold text-white/80 hover:bg-white/10 disabled:opacity-50"
+                className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-white/10 bg-white/5 text-white/70 hover:bg-white/10 disabled:opacity-40"
                 disabled={historySize === 0}
                 onClick={undo}
+                title="Undo"
               >
-                <Undo2 className="h-4 w-4" />
-                Undo
+                <Undo2 className="h-3.5 w-3.5" />
               </button>
               <button
                 type="button"
-                className="inline-flex h-9 items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 text-xs font-semibold text-white/80 hover:bg-white/10 disabled:opacity-50"
+                className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-white/10 bg-white/5 text-white/70 hover:bg-white/10 disabled:opacity-40"
                 disabled={futureSize === 0}
                 onClick={redo}
+                title="Redo"
               >
-                <Redo2 className="h-4 w-4" />
-                Redo
-              </button>
-              <button
-                type="button"
-                className="inline-flex h-9 items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 text-xs font-semibold text-white/80 hover:bg-white/10"
-                onClick={loadLandingPreset}
-              >
-                Load landing preset
+                <Redo2 className="h-3.5 w-3.5" />
               </button>
 
-              <div ref={backupsRef} className="relative">
-                <button
-                  type="button"
-                  className="inline-flex h-9 items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 text-xs font-semibold text-white/80 hover:bg-white/10"
-                  onClick={async () => {
-                    const next = !backupsOpen;
-                    setBackupsOpen(next);
-                    if (next) await loadBackups();
-                  }}
-                >
-                  Backups
-                </button>
-
-                {backupsOpen ? (
-                  <div className="absolute right-0 top-full mt-2 w-[360px] rounded-2xl border border-white/10 bg-[var(--cf-secondary)] p-3 shadow-2xl">
-                    <div className="flex items-center justify-between px-1 pb-2">
-                      <div className="text-xs font-bold uppercase tracking-wide text-white/60">Latest backups (5)</div>
-                      <button
-                        type="button"
-                        className="text-xs font-semibold text-white/70 hover:text-white"
-                        onClick={async () => {
-                          await loadBackups();
-                        }}
-                      >
-                        Refresh
-                      </button>
-                    </div>
-                    <div className="flex flex-col gap-2">
-                      {!backups.length ? (
-                        <div className="rounded-xl border border-white/10 bg-white/5 px-3 py-3 text-sm text-white/70">
-                          No backups yet. Use Save Draft or Publish to create one.
-                        </div>
-                      ) : null}
-                      {backups.map((b) => (
-                        <div
-                          key={b.id}
-                          className="flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-white/5 px-3 py-3"
-                        >
-                          <div className="min-w-0">
-                            <div className="truncate text-sm font-semibold text-white">{formatTimestamp(b.createdAt)}</div>
-                            <div className="text-xs text-white/50">Backup #{b.id}</div>
-                          </div>
-                          <button
-                            type="button"
-                            className="inline-flex h-9 items-center justify-center rounded-xl bg-[var(--cf-accent)] px-3 text-xs font-bold text-[#0A0F1E] hover:brightness-95"
-                            onClick={() => {
-                              setDraft(b.content);
-                              setSelectedId("hero");
-                              setSelectedBlockId(null);
-                              resetHistory();
-                              setBackupsOpen(false);
-                              setNotice(`Restored backup from ${formatTimestamp(b.createdAt)}`);
-                            }}
-                          >
-                            Restore
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                ) : null}
-              </div>
-
+              {/* Save Draft — always visible */}
               <button
                 type="button"
-                className="inline-flex h-9 items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 text-xs font-semibold text-white/80 hover:bg-white/10 disabled:opacity-50"
+                className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-white/10 bg-white/5 px-2.5 text-xs font-semibold text-white/80 hover:bg-white/10 disabled:opacity-50"
                 disabled={saving}
                 onClick={async () => {
                   const ok = await saveDraft(content);
@@ -1294,49 +1389,130 @@ export function VisualBuilderPanel({ supabase, onNavigateTab, onSignOut }: Props
                   setNotice("Draft saved (backup created)");
                 }}
               >
-                Save Draft
+                Save
               </button>
+
+              {/* Publish — always visible */}
               <button
                 type="button"
-                className="inline-flex h-9 items-center gap-2 rounded-xl bg-[var(--cf-accent)] px-3 text-xs font-bold text-[#0A0F1E] hover:brightness-95 disabled:opacity-50"
+                className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-[var(--cf-accent)] px-2.5 text-xs font-bold text-[#0A0F1E] hover:brightness-95 disabled:opacity-50"
                 disabled={!draft || publishing}
                 onClick={publishNow}
               >
                 Publish
               </button>
-              <button
-                type="button"
-                className="inline-flex h-9 items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 text-xs font-semibold text-white/80 hover:bg-white/10"
-                onClick={async () => {
-                  await supabase.from("homepage_content_drafts").upsert({ id: 1, content: {} }, { onConflict: "id" });
-                  setDraft(null);
-                  resetHistory();
-                  setNotice("Reverted to published");
-                }}
-              >
-                Revert
-              </button>
 
+              {/* More — secondary actions dropdown */}
+              <div ref={builderMoreRef} className="relative">
+                <button
+                  type="button"
+                  className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-white/10 bg-white/5 text-white/70 hover:bg-white/10"
+                  onClick={() => setBuilderMoreOpen(v => !v)}
+                  title="More actions"
+                >
+                  <MoreHorizontal className="h-3.5 w-3.5" />
+                </button>
+
+                {builderMoreOpen ? (
+                  <div className="absolute right-0 top-full z-50 mt-2 w-56 rounded-2xl border border-white/10 bg-[var(--cf-secondary)] p-2 shadow-2xl">
+                    <button
+                      type="button"
+                      className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-xs text-white/80 hover:bg-white/10"
+                      onClick={() => { loadLandingPreset(); setBuilderMoreOpen(false); }}
+                    >
+                      Load landing preset
+                    </button>
+
+                    {/* Backups inline */}
+                    <div ref={backupsRef} className="relative">
+                      <button
+                        type="button"
+                        className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-xs text-white/80 hover:bg-white/10"
+                        onClick={async () => {
+                          const next = !backupsOpen;
+                          setBackupsOpen(next);
+                          if (next) await loadBackups();
+                        }}
+                      >
+                        Backups {backupsOpen ? "open" : "closed"}
+                      </button>
+                      {backupsOpen ? (
+                        <div className="mt-1 rounded-xl border border-white/10 bg-white/5 p-2">
+                          {!backups.length ? (
+                            <div className="px-2 py-2 text-xs text-white/50">No backups yet.</div>
+                          ) : null}
+                          {backups.map((b) => (
+                            <div key={b.id} className="flex items-center justify-between gap-2 rounded-lg px-2 py-2">
+                              <div className="min-w-0">
+                                <div className="truncate text-xs font-semibold text-white">{formatTimestamp(b.createdAt)}</div>
+                                <div className="text-[10px] text-white/40">#{b.id}</div>
+                              </div>
+                              <button
+                                type="button"
+                                className="inline-flex h-7 items-center rounded-lg bg-[var(--cf-accent)] px-2 text-[11px] font-bold text-[#0A0F1E]"
+                                onClick={() => {
+                                  setDraft(b.content);
+                                  setSelectedId("hero");
+                                  setSelectedBlockId(null);
+                                  resetHistory();
+                                  setBackupsOpen(false);
+                                  setBuilderMoreOpen(false);
+                                  setNotice(`Restored backup from ${formatTimestamp(b.createdAt)}`);
+                                }}
+                              >
+                                Restore
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      ) : null}
+                    </div>
+
+                    <button
+                      type="button"
+                      className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-xs text-white/80 hover:bg-white/10"
+                      onClick={async () => {
+                        await supabase.from("homepage_content_drafts").upsert({ id: 1, content: {} }, { onConflict: "id" });
+                        setDraft(null);
+                        resetHistory();
+                        setNotice("Reverted to published");
+                        setBuilderMoreOpen(false);
+                      }}
+                    >
+                      Revert to published
+                    </button>
+
+                    <div className="my-1 border-t border-white/10" />
+
+                    <button
+                      type="button"
+                      className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-xs text-white/80 hover:bg-white/10"
+                      onClick={async () => {
+                        if (onSignOut) { await onSignOut(); return; }
+                        void supabase.auth.signOut({ scope: "local" }).catch(() => undefined);
+                        window.location.assign("/admin");
+                      }}
+                    >
+                      <LogOut className="h-3.5 w-3.5" /> Sign out
+                    </button>
+                  </div>
+                ) : null}
+              </div>
+
+              {/* Inspector toggle */}
               <button
                 type="button"
-                className="ml-2 inline-flex h-9 items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 text-xs font-semibold text-white/80 hover:bg-white/10"
-                onClick={async () => {
-                  if (onSignOut) {
-                    await onSignOut();
-                    return;
-                  }
-                  void supabase.auth.signOut({ scope: "local" }).catch(() => undefined);
-                  window.location.assign("/admin");
-                }}
+                title={inspectorOpen ? "Hide inspector" : "Show inspector"}
+                className={`inline-flex h-8 w-8 items-center justify-center rounded-lg border border-white/10 text-xs font-bold transition-colors ${inspectorOpen ? "bg-[var(--cf-accent)] text-[#0A0F1E]" : "bg-white/5 text-white/70 hover:bg-white/10 hover:text-white"}`}
+                onClick={() => setInspectorOpen(v => !v)}
+                aria-label="Toggle inspector panel"
               >
-                <LogOut className="h-4 w-4" />
-                Sign out
+                <SlidersHorizontal className="h-3.5 w-3.5" />
               </button>
             </div>
           </div>
         </div>
       </div>
-
       <div className="lg:hidden">
         <div className="sticky top-0 z-30 border-b border-white/10 bg-[var(--cf-secondary)]/85 px-4 py-3 backdrop-blur">
           <div className="flex items-center justify-between gap-3">
@@ -1356,15 +1532,6 @@ export function VisualBuilderPanel({ supabase, onNavigateTab, onSignOut }: Props
 
             <button
               type="button"
-              className="inline-flex h-10 items-center justify-center rounded-xl bg-[var(--cf-accent)] px-4 text-sm font-bold text-[#0A0F1E] disabled:opacity-50"
-              disabled={!draft || publishing}
-              onClick={publishNow}
-            >
-              Publish
-            </button>
-
-            <button
-              type="button"
               className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-white/90"
               onClick={() => setMobileActionsOpen(true)}
               aria-label="More"
@@ -1376,6 +1543,23 @@ export function VisualBuilderPanel({ supabase, onNavigateTab, onSignOut }: Props
           <div className="mt-3 flex items-center justify-between">
             <div className="text-xs text-white/60">/admin – Visual Builder</div>
             {pill(statusText, statusTone)}
+          </div>
+          <div className="mt-2 flex items-center justify-end">
+            <button
+              type="button"
+              className="inline-flex h-9 items-center justify-center rounded-xl bg-[var(--cf-accent)] px-3 text-xs font-bold text-[#0A0F1E] disabled:opacity-50"
+              disabled={!draft || publishing}
+              onClick={publishNow}
+            >
+              Publish
+            </button>
+          </div>
+          <div className="mt-3 flex items-center justify-center">
+            <div className="flex items-center gap-1 rounded-xl border border-white/10 bg-white/5 p-1">
+              {deviceButton(mode === "desktop", () => setMode("desktop"), <Monitor className="h-4 w-4" />, "Desktop")}
+              {deviceButton(mode === "tablet", () => setMode("tablet"), <TabletIcon className="h-4 w-4" />, "Tablet")}
+              {deviceButton(mode === "mobile", () => setMode("mobile"), <Smartphone className="h-4 w-4" />, "Mobile")}
+            </div>
           </div>
         </div>
       </div>
@@ -1413,13 +1597,26 @@ export function VisualBuilderPanel({ supabase, onNavigateTab, onSignOut }: Props
         </div>
       ) : null}
 
-      <div className="relative flex min-h-0 flex-1 flex-col gap-3 overflow-hidden p-3 pb-24 lg:flex-row lg:pb-3">
+      <div className="cf-builder-workspace relative flex min-h-0 min-w-0 flex-1 gap-2 overflow-hidden p-2 pb-24 lg:flex-row lg:pb-2">
         <div
-          className={`${mobilePane === "sections" ? "flex" : "hidden"} h-full min-h-0 flex-1 flex-col rounded-2xl border border-white/10 bg-[var(--cf-secondary)]/60 p-3 lg:flex lg:w-[280px] lg:flex-none`}
+          className={`${mobilePane === "sections" ? "flex" : "hidden"} h-full min-h-0 flex-col rounded-2xl border border-white/10 bg-[var(--cf-secondary)]/60 p-3 lg:flex lg:flex-none`}
+          style={sectionsPanelStyle}
         >
           <div className="mb-3 flex items-center justify-between">
             <div className="text-xs font-bold uppercase tracking-wide text-white/50">Sections</div>
-            <div className="text-xs text-white/40">Drag to reorder</div>
+            <div className="flex items-center gap-2">
+              <div className="text-xs text-white/40">Drag to reorder</div>
+              {isCompactDesktop ? (
+                <button
+                  type="button"
+                  className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-white/10 bg-white/5 text-white/75 hover:bg-white/10 hover:text-white"
+                  onClick={() => setSectionsOpen(false)}
+                  aria-label="Close sections"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              ) : null}
+            </div>
           </div>
 
           <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain pb-20 lg:pb-3">
@@ -1566,7 +1763,7 @@ export function VisualBuilderPanel({ supabase, onNavigateTab, onSignOut }: Props
         </div>
 
         <div
-          className={`${mobilePane === "preview" ? "flex" : "hidden"} relative h-full min-h-0 flex-1 justify-center overflow-hidden rounded-2xl border border-white/10 bg-[radial-gradient(1200px_circle_at_50%_0%,rgba(255,255,255,0.10),transparent_60%)] lg:flex`}
+          className={`${mobilePane === "preview" ? "flex" : "hidden"} relative h-full min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border border-white/10 bg-[radial-gradient(1200px_circle_at_50%_0%,rgba(255,255,255,0.10),transparent_60%)] lg:flex`} style={{ minWidth: 0 }}
         >
           {/* Scaling device preview stage */}
           <DevicePreviewStage deviceWidth={deviceViewportWidth}>
@@ -1574,7 +1771,7 @@ export function VisualBuilderPanel({ supabase, onNavigateTab, onSignOut }: Props
               content={resolved}
               device={mode}
               context="admin-preview"
-              className="h-full w-full"
+              className="w-full"
             />
           </DevicePreviewStage>
 
@@ -1592,11 +1789,24 @@ export function VisualBuilderPanel({ supabase, onNavigateTab, onSignOut }: Props
         </div>
 
         <div
-          className={`${mobilePane === "inspector" ? "flex" : "hidden"} h-full min-h-0 flex-1 flex-col rounded-2xl border border-white/10 bg-[var(--cf-secondary)]/60 p-4 lg:flex lg:w-[360px] lg:flex-none`}
+          className={`${mobilePane === "inspector" ? "flex" : "hidden"} h-full min-h-0 flex-col rounded-2xl border border-white/10 bg-[var(--cf-secondary)]/60 p-4 lg:flex lg:flex-none`}
+          style={inspectorPanelStyle}
         >
           <div className="mb-3 flex items-center justify-between">
             <div className="text-xs font-bold uppercase tracking-wide text-white/50">Inspector</div>
-            <div className="lg:hidden text-xs font-semibold text-white/70">SECTION: {String(selectedSection?.type || "").replaceAll("_", " ").toUpperCase()}</div>
+            <div className="flex items-center gap-2">
+              <div className="lg:hidden text-xs font-semibold text-white/70">SECTION: {String(selectedSection?.type || "").replaceAll("_", " ").toUpperCase()}</div>
+              {isCompactDesktop ? (
+                <button
+                  type="button"
+                  className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-white/10 bg-white/5 text-white/75 hover:bg-white/10 hover:text-white"
+                  onClick={() => setInspectorOpen(false)}
+                  aria-label="Close inspector"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              ) : null}
+            </div>
           </div>
           <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain pb-24 lg:pb-4">
           {selectedSection && selectedSection.id !== "footer" ? (
@@ -3839,7 +4049,7 @@ export function VisualBuilderPanel({ supabase, onNavigateTab, onSignOut }: Props
                 onClick={() => setMobileMenuOpen(false)}
                 aria-label="Close menu"
               >
-                ×
+                <X className="h-4 w-4" />
               </button>
             </div>
             <div className="mt-2 flex flex-col gap-1">
@@ -3899,7 +4109,7 @@ export function VisualBuilderPanel({ supabase, onNavigateTab, onSignOut }: Props
                 onClick={() => setMobileActionsOpen(false)}
                 aria-label="Close actions"
               >
-                ×
+                <X className="h-4 w-4" />
               </button>
             </div>
 

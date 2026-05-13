@@ -22,12 +22,17 @@ const SOCIAL_LIB_SVG: Record<string, string> = {
 
 export type LandingDevice = "desktop" | "tablet" | "mobile";
 
-export function attachLandingBootstrap(root: HTMLElement, content: AnyContent, device: LandingDevice = "desktop"): () => void {
+export function attachLandingBootstrap(
+  root: HTMLElement,
+  content: AnyContent,
+  device: LandingDevice = "desktop",
+  options?: { scopeDeviceToRoot?: boolean },
+): () => void {
   const win = root.ownerDocument?.defaultView;
   if (!win) return () => undefined;
 
-  let cleanupFns: Array<() => void> = [];
-  let currentContent: AnyContent = content;
+  const cleanupFns: Array<() => void> = [];
+  const currentContent: AnyContent = content;
 
   function q<T extends Element = Element>(sel: string): T | null {
     return root.querySelector<T>(sel);
@@ -111,6 +116,9 @@ export function attachLandingBootstrap(root: HTMLElement, content: AnyContent, d
     };
   }
   function shouldUseMobileBg(): boolean {
+    const scopedDevice = root.dataset.cfPreviewDevice;
+    if (scopedDevice === "mobile") return true;
+    if (scopedDevice === "desktop" || scopedDevice === "tablet") return false;
     if (root.ownerDocument?.documentElement?.dataset.device === "mobile") return true;
     try { return win!.matchMedia && win!.matchMedia("(max-width: 767px)").matches; } catch { return false; }
   }
@@ -704,7 +712,9 @@ export function attachLandingBootstrap(root: HTMLElement, content: AnyContent, d
   cleanupFns.push(() => win.removeEventListener("click", onClick, true));
   cleanupFns.push(() => win.removeEventListener("resize", onResize));
 
-  if (root.ownerDocument?.documentElement) {
+  if (options?.scopeDeviceToRoot) {
+    try { root.dataset.cfPreviewDevice = device; } catch {}
+  } else if (root.ownerDocument?.documentElement) {
     try { root.ownerDocument.documentElement.dataset.device = device; } catch {}
   }
 
@@ -715,18 +725,4 @@ export function attachLandingBootstrap(root: HTMLElement, content: AnyContent, d
       try { fn(); } catch {}
     }
   };
-}
-
-export function reapplyLandingContent(root: HTMLElement, content: AnyContent, device: LandingDevice = "desktop") {
-  if (root.ownerDocument?.documentElement) {
-    try { root.ownerDocument.documentElement.dataset.device = device; } catch {}
-  }
-  // Reuse attach to re-run apply. Returns a no-op cleanup since attach already wires events on first call.
-  // To avoid double-binding events, callers should only call this when bootstrap is already attached.
-  // We expose this for the postMessage / content-change path.
-  void content;
-  void device;
-  void root;
-  // No-op stub: the real implementation lives inside attachLandingBootstrap closure.
-  // Use attachLandingBootstrap exclusively from the component.
 }

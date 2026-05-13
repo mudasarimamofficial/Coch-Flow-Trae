@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import Link from "next/link";
 import type { HomepageContent } from "@/content/homepage";
 
 type Args = {
@@ -224,7 +225,7 @@ function ContactDefault({ content }: { content: HomepageContent }) {
         less than two minutes and gives us what we need to come prepared.
       </p>
       <p>
-        <a href="/#apply" className="cf-cta-link">Open the application →</a>
+        <Link href="/#apply" className="cf-cta-link">Open the application →</Link>
       </p>
 
       {email ? (
@@ -253,16 +254,16 @@ function ContactDefault({ content }: { content: HomepageContent }) {
       <h2>Looking for the basics?</h2>
       <ul>
         <li>
-          <a href="/#how">How it works</a>
+          <Link href="/#how">How it works</Link>
         </li>
         <li>
-          <a href="/#pricing">Pricing</a>
+          <Link href="/#pricing">Pricing</Link>
         </li>
         <li>
-          <a href="/p/privacy-policy">Privacy Policy</a>
+          <Link href="/p/privacy-policy">Privacy Policy</Link>
         </li>
         <li>
-          <a href="/p/terms-of-service">Terms of Service</a>
+          <Link href="/p/terms-of-service">Terms of Service</Link>
         </li>
       </ul>
     </PageShell>

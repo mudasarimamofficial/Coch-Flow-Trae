@@ -124,6 +124,7 @@ export function HomepageClient({ initialContent, isBuilderPreview, templateHtml,
           content={resolved}
           templateHtml={templateHtml}
           device={isBuilderPreview ? previewDevice : "desktop"}
+          context={isBuilderPreview ? "admin-preview" : "public"}
         />
         <WhatsAppWidget content={resolved} />
         {isBuilderPreview && !hasPreviewOverride ? (
