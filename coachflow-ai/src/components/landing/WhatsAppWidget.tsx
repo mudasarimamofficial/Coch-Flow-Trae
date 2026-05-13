@@ -32,7 +32,7 @@ export function WhatsAppWidget({ content }: Props) {
     return {
       url,
       tooltip: cfg.tooltip || "Chat with us!",
-      modalTitle: cfg.modalTitle || content.header.brandText || "CoachFlow AI",
+      modalTitle: cfg.modalTitle || content.header.brandText || "Coachflow Aquisition",
       modalSubtitle: cfg.modalSubtitle || "Usually replies instantly",
       buttonText: cfg.buttonText || "Start Chat",
       avatarUrl:

@@ -90,6 +90,22 @@ export function RebuiltLandingFrame({ content, templateHtml, device = "desktop",
   }
   function clampArray(arr, n){ var out = []; for (var i=0;i<n;i++){ out.push(arr && arr[i] ? arr[i] : ""); } return out; }
   function safeItems(arr){ return Array.isArray(arr) ? arr.map(function(v){ return typeof v === "string" ? v : ""; }).filter(Boolean) : []; }
+  function normalizeAnchorHref(href){
+    var h = String(href || "").trim();
+    if(h === "#lead-form") return "#apply";
+    if(h === "#workflow") return "#how";
+    if(h === "#features") return "#promise";
+    return h;
+  }
+  function isExternalHref(href){
+    var h = String(href || "").trim();
+    return /^https?:\\/\\//i.test(h) || /^mailto:/i.test(h) || /^tel:/i.test(h) || /^https?:\\/\\/wa\\.me/i.test(h);
+  }
+  function mediaUrl(value){
+    if(typeof value === "string") return value;
+    if(value && typeof value === "object" && typeof value.url === "string") return value.url;
+    return "";
+  }
   function sectionByType(content, type){
     var sections = content && content.page && Array.isArray(content.page.sections) ? content.page.sections : [];
     for (var i=0; i<sections.length; i++){
@@ -100,21 +116,32 @@ export function RebuiltLandingFrame({ content, templateHtml, device = "desktop",
   function sectionBg(section){
     var settings = section && section.settings ? section.settings : {};
     var background = settings && settings.background ? settings.background : {};
+    var mobileBackground = settings && settings.mobileBackground ? settings.mobileBackground : {};
     var type = typeof settings.backgroundType === "string" ? settings.backgroundType : "";
     var image = typeof settings.backgroundImage === "string" ? settings.backgroundImage : "";
+    var mobileImage = typeof settings.mobileBackgroundImage === "string" ? settings.mobileBackgroundImage : "";
     var url = typeof background.url === "string" ? background.url : "";
+    var mobileUrl = typeof mobileBackground.url === "string" ? mobileBackground.url : "";
     var overlay = typeof settings.overlayColor === "string" ? settings.overlayColor : "";
     var color = typeof settings.backgroundColor === "string"
       ? settings.backgroundColor
       : (typeof settings.backgroundColorHex === "string" ? settings.backgroundColorHex : "");
-    return { type: type, image: image || url, overlay: overlay, color: color };
+    return { type: type, image: image || url, mobileImage: mobileImage || mobileUrl, overlay: overlay, color: color };
+  }
+  function shouldUseMobileBg(){
+    if(document.documentElement.dataset.device === "mobile") return true;
+    try { return window.matchMedia && window.matchMedia("(max-width: 767px)").matches; } catch(e) { return false; }
   }
   function applyBg(target, cfg){
     if(!target) return;
-    target.style.backgroundImage = cfg && cfg.type === "image" && cfg.image ? ("url(" + cfg.image + ")") : "";
-    target.style.backgroundSize = cfg && cfg.type === "image" && cfg.image ? "cover" : "";
-    target.style.backgroundPosition = cfg && cfg.type === "image" && cfg.image ? "center" : "";
-    target.style.backgroundRepeat = cfg && cfg.type === "image" && cfg.image ? "no-repeat" : "";
+    var desktopImage = cfg && cfg.image ? String(cfg.image) : "";
+    var mobileImage = cfg && cfg.mobileImage ? String(cfg.mobileImage) : "";
+    var activeImage = shouldUseMobileBg() && mobileImage ? mobileImage : desktopImage;
+    var hasImage = cfg && cfg.type === "image" && activeImage;
+    target.style.backgroundImage = hasImage ? ("url(" + activeImage + ")") : "";
+    target.style.backgroundSize = hasImage ? "cover" : "";
+    target.style.backgroundPosition = hasImage ? "center" : "";
+    target.style.backgroundRepeat = hasImage ? "no-repeat" : "";
     target.style.backgroundColor = cfg && cfg.type === "color" && cfg.color ? cfg.color : "";
   }
   function applyOverlay(target, rgba){
@@ -140,8 +167,15 @@ export function RebuiltLandingFrame({ content, templateHtml, device = "desktop",
     var heroFallback = content && content.hero && content.hero.backgroundImage && content.hero.backgroundImage.url
       ? String(content.hero.backgroundImage.url)
       : "";
+    var heroMobileFallback = content && content.hero && content.hero.mobileBackgroundImage && content.hero.mobileBackgroundImage.url
+      ? String(content.hero.mobileBackgroundImage.url)
+      : "";
     if(!heroCfg.image && heroFallback){
       heroCfg.image = heroFallback;
+      if(!heroCfg.type) heroCfg.type = "image";
+    }
+    if(!heroCfg.mobileImage && heroMobileFallback){
+      heroCfg.mobileImage = heroMobileFallback;
       if(!heroCfg.type) heroCfg.type = "image";
     }
     var heroEl = q(".hero");
@@ -164,14 +198,25 @@ export function RebuiltLandingFrame({ content, templateHtml, device = "desktop",
       var sec = sectionByType(content, item.type);
       var cfg = sectionBg(sec);
       var fallbackImage = "";
+      var fallbackMobileImage = "";
       if(item.contentKey === "pricing" && content && content.pricing && content.pricing.backgroundImage && content.pricing.backgroundImage.url){
         fallbackImage = String(content.pricing.backgroundImage.url);
+      }
+      if(item.contentKey === "pricing" && content && content.pricing && content.pricing.mobileBackgroundImage && content.pricing.mobileBackgroundImage.url){
+        fallbackMobileImage = String(content.pricing.mobileBackgroundImage.url);
       }
       if(item.contentKey === "application" && content && content.application && content.application.backgroundImage && content.application.backgroundImage.url){
         fallbackImage = String(content.application.backgroundImage.url);
       }
+      if(item.contentKey === "application" && content && content.application && content.application.mobileBackgroundImage && content.application.mobileBackgroundImage.url){
+        fallbackMobileImage = String(content.application.mobileBackgroundImage.url);
+      }
       if(!cfg.image && fallbackImage){
         cfg.image = fallbackImage;
+        if(!cfg.type) cfg.type = "image";
+      }
+      if(!cfg.mobileImage && fallbackMobileImage){
+        cfg.mobileImage = fallbackMobileImage;
         if(!cfg.type) cfg.type = "image";
       }
       var el = q(item.selector);
@@ -207,12 +252,80 @@ export function RebuiltLandingFrame({ content, templateHtml, device = "desktop",
     show("footer", byType.footer !== false);
   }
 
+  function socialLabel(item){
+    return String(item.platform || item.label || item.id || "Social").trim();
+  }
+  function socialHref(item){
+    return String(item.url || item.href || "").trim();
+  }
+  function renderFooterSocials(content){
+    var root = q("footer .footer-socials");
+    if(!root) return;
+    var footerSection = sectionByType(content, "footer");
+    var settings = footerSection && footerSection.settings ? footerSection.settings : {};
+    var showSocial = settings.showSocial !== false;
+    var v2 = Array.isArray(content.socialLinksV2) ? content.socialLinksV2 : [];
+    var legacy = Array.isArray(content.socialLinks) ? content.socialLinks : [];
+    var items = [];
+    for(var i=0;i<v2.length;i++){
+      var item = v2[i] || {};
+      var href = socialHref(item);
+      if(item.enabled === false || !href) continue;
+      items.push({ label: socialLabel(item), href: href });
+    }
+    if(!items.length){
+      for(var j=0;j<legacy.length;j++){
+        var li = legacy[j] || {};
+        var lh = socialHref(li);
+        if(!lh) continue;
+        items.push({ label: socialLabel(li), href: lh });
+      }
+    }
+    if(!showSocial || !items.length){
+      root.innerHTML = "";
+      root.style.display = "none";
+      return;
+    }
+    root.style.display = "";
+    root.innerHTML = items.map(function(item){
+      var href = item.href.replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+      var label = item.label.replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+      var attrs = isExternalHref(item.href) ? ' target="_blank" rel="noopener noreferrer"' : "";
+      return '<a class="footer-social" href="' + href + '"' + attrs + ' aria-label="' + label + '">' + label + '</a>';
+    }).join("");
+  }
+
+  var selectedTier = "";
+  function setSelectedTier(value){
+    selectedTier = String(value || "").trim();
+    var input = q("#selected_tier");
+    if(input) input.value = selectedTier;
+    var box = q("#selected-tier-summary");
+    if(box){
+      if(selectedTier){
+        box.style.display = "";
+        box.textContent = "Selected tier: " + selectedTier;
+      } else {
+        box.style.display = "none";
+        box.textContent = "";
+      }
+    }
+  }
+  function tierFromTrigger(a){
+    if(!a) return "";
+    var direct = a.getAttribute("data-selected-tier") || "";
+    if(direct) return direct;
+    var tier = a.closest ? a.closest(".tier") : null;
+    var name = tier ? tier.querySelector(".tier-name") : null;
+    return name ? name.textContent || "" : "";
+  }
+
   function applyContent(content){
     try{
       if(!content) return;
       var rebuilt = content.rebuilt || {};
 
-      var brandText = (content.header && content.header.brandText) ? String(content.header.brandText) : "CoachFlow AI";
+      var brandText = (content.header && content.header.brandText) ? String(content.header.brandText) : "Coachflow Aquisition";
       setText(q(".nav-logo"), brandText);
       setText(q("footer .footer-logo"), (content.footer && content.footer.brandText) ? content.footer.brandText : brandText);
 
@@ -223,10 +336,10 @@ export function RebuiltLandingFrame({ content, templateHtml, device = "desktop",
         for (var i=0;i<3;i++){
           var n = navItems[i] || null;
           if(n && n.label) setText(navAnchors[i], n.label);
-          if(n && n.href) navAnchors[i].setAttribute("href", n.href);
+          if(n && n.href) navAnchors[i].setAttribute("href", normalizeAnchorHref(n.href));
         }
         if(navCta && navCta.text) setText(navAnchors[3], navCta.text);
-        if(navCta && navCta.href) navAnchors[3].setAttribute("href", navCta.href);
+        if(navCta && navCta.href) navAnchors[3].setAttribute("href", normalizeAnchorHref(navCta.href));
       }
 
       var mobileAnchors = qa("#mobile-menu a");
@@ -234,10 +347,10 @@ export function RebuiltLandingFrame({ content, templateHtml, device = "desktop",
         for (var j=0;j<3;j++){
           var mn = navItems[j] || null;
           if(mn && mn.label) setText(mobileAnchors[j], mn.label);
-          if(mn && mn.href) mobileAnchors[j].setAttribute("href", mn.href);
+          if(mn && mn.href) mobileAnchors[j].setAttribute("href", normalizeAnchorHref(mn.href));
         }
         if(navCta && navCta.text) setText(mobileAnchors[3], navCta.text);
-        if(navCta && navCta.href) mobileAnchors[3].setAttribute("href", navCta.href);
+        if(navCta && navCta.href) mobileAnchors[3].setAttribute("href", normalizeAnchorHref(navCta.href));
       }
 
       var hero = rebuilt.hero || {};
@@ -268,11 +381,11 @@ export function RebuiltLandingFrame({ content, templateHtml, device = "desktop",
         var cta2 = content.hero && content.hero.secondaryCta ? content.hero.secondaryCta : null;
         if(cta1){
           if(cta1.text) setText(heroActions[0], cta1.text);
-          if(cta1.href) heroActions[0].setAttribute("href", cta1.href);
+          if(cta1.href) heroActions[0].setAttribute("href", normalizeAnchorHref(cta1.href));
         }
         if(cta2){
           if(cta2.text) setText(heroActions[1], cta2.text);
-          if(cta2.href) heroActions[1].setAttribute("href", cta2.href);
+          if(cta2.href) heroActions[1].setAttribute("href", normalizeAnchorHref(cta2.href));
         }
       }
 
@@ -376,8 +489,10 @@ export function RebuiltLandingFrame({ content, templateHtml, device = "desktop",
         var cta = tierEls[ti].querySelector("a.tier-cta");
         if(cta){
           if(tr.ctaText) setText(cta, tr.ctaText);
-          if(tr.ctaHref) cta.setAttribute("href", tr.ctaHref);
+          cta.setAttribute("href", normalizeAnchorHref(tr.ctaHref || "#apply"));
+          cta.setAttribute("data-selected-tier", String(tr.name || ""));
         }
+        tierEls[ti].setAttribute("data-tier", String(tr.name || ""));
         var bulletEls = Array.prototype.slice.call(tierEls[ti].querySelectorAll(".tier-features li"));
         var bullets = Array.isArray(tr.bullets) ? tr.bullets : [];
         for (var bi=0; bi<bulletEls.length; bi++){
@@ -452,12 +567,25 @@ export function RebuiltLandingFrame({ content, templateHtml, device = "desktop",
         var fLinks = qa("footer .footer-links li a");
         for (var fl=0; fl<fLinks.length; fl++){
           var link = footer.links[fl] || null;
-          if(!link) continue;
+          if(!link || !link.href){
+            fLinks[fl].style.display = "none";
+            continue;
+          }
+          fLinks[fl].style.display = "";
           if(link.label) setText(fLinks[fl], link.label);
-          if(link.href) fLinks[fl].setAttribute("href", link.href);
+          fLinks[fl].setAttribute("href", normalizeAnchorHref(link.href));
+          if(isExternalHref(link.href)){
+            fLinks[fl].setAttribute("target", "_blank");
+            fLinks[fl].setAttribute("rel", "noopener noreferrer");
+          } else {
+            fLinks[fl].removeAttribute("target");
+            fLinks[fl].removeAttribute("rel");
+          }
         }
       }
       if(footer.copyright) setText(q("footer .footer-copy"), footer.copyright);
+
+      renderFooterSocials(content);
 
       applySectionEnabled(content.page || {});
       applySectionBackgrounds(content);
@@ -478,6 +606,8 @@ export function RebuiltLandingFrame({ content, templateHtml, device = "desktop",
       var email = (document.getElementById("email") || {}).value || "";
       var revenue = (document.getElementById("revenue") || {}).value || "";
       var message = (document.getElementById("bottleneck") || {}).value || "";
+      var tierInput = document.getElementById("selected_tier");
+      var selectedTierValue = selectedTier || (tierInput && tierInput.value ? tierInput.value : "");
 
       if(!fname || !email){
         alert("Please fill in your name and email to apply.");
@@ -489,7 +619,7 @@ export function RebuiltLandingFrame({ content, templateHtml, device = "desktop",
       fetch("/api/leads", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ first_name: String(fname), last_name: String(lname), email: String(email), revenue: revenue ? String(revenue) : null, message: message ? String(message) : null })
+        body: JSON.stringify({ first_name: String(fname), last_name: String(lname), email: String(email), revenue: revenue ? String(revenue) : null, message: message ? String(message) : null, selected_tier: selectedTierValue ? String(selectedTierValue) : null })
       }).then(function(r){
         if(!r.ok) throw new Error("lead_submit_failed");
         return r.json();
@@ -515,10 +645,12 @@ export function RebuiltLandingFrame({ content, templateHtml, device = "desktop",
     if(e.origin !== window.location.origin) return;
     var data = e.data || {};
     if(data.type === "coachflow_builder_preview" && data.content){
+      window.__CF_REBUILT_INITIAL__ = data.content;
       applyContent(data.content);
       return;
     }
     if(data.type === "cf_rebuilt_apply" && data.content){
+      window.__CF_REBUILT_INITIAL__ = data.content;
       applyContent(data.content);
       return;
     }
@@ -527,9 +659,25 @@ export function RebuiltLandingFrame({ content, templateHtml, device = "desktop",
   document.addEventListener("click", function(e){
     var a = e.target && e.target.closest ? e.target.closest("a") : null;
     if(!a) return;
+    if(a.classList && a.classList.contains("tier-cta")){
+      setSelectedTier(tierFromTrigger(a));
+    }
     var href = a.getAttribute("href") || "";
-    if(href && href.charAt(0) === "#"){ closeMenu(); }
+    if(href && href.charAt(0) === "#"){
+      closeMenu();
+      var target = document.querySelector(href);
+      if(target){
+        e.preventDefault();
+        target.scrollIntoView({ behavior: "smooth", block: "start" });
+        try { history.pushState(null, "", href); } catch(err) {}
+        try { if(location.hash !== href) location.hash = href; } catch(err) {}
+      }
+    }
   }, true);
+
+  window.addEventListener("resize", function(){
+    try{ applySectionBackgrounds(window.__CF_REBUILT_INITIAL__); } catch(e){}
+  });
 
   try{
     applyContent(window.__CF_REBUILT_INITIAL__);

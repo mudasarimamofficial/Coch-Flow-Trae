@@ -125,7 +125,7 @@ export function TestimonialsSection({ section }: Props) {
       const safeMetric = !isRealTestimonial && hasClaimyNumbers(metricRaw) ? "" : metricRaw;
       return {
         id: block.id,
-        name: isRealTestimonial ? asString((content as any).name) || "CoachFlow client" : fallbackProofTitle(index),
+        name: isRealTestimonial ? asString((content as any).name) || "Coachflow Aquisition client" : fallbackProofTitle(index),
         role:
           isRealTestimonial
             ? asString((content as any).role || (content as any).title) || "High-ticket coaching business"
@@ -200,7 +200,7 @@ export function TestimonialsSection({ section }: Props) {
         </div>
 
         {showStats ? (
-          <div className="proof-stats" aria-label="CoachFlow AI proof metrics">
+          <div className="proof-stats" aria-label="Coachflow Aquisition proof metrics">
             {stats.map((stat) => (
               <div key={`${stat.value}-${stat.label}`} className="proof-stat">
                 <strong>{stat.value}</strong>
@@ -210,7 +210,7 @@ export function TestimonialsSection({ section }: Props) {
           </div>
         ) : null}
 
-        <div className="proof-carousel" aria-label="CoachFlow proof signals">
+        <div className="proof-carousel" aria-label="Coachflow Aquisition proof signals">
           <div className="proof-carousel-controls">
             <button
               type="button"

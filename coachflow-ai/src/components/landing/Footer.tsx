@@ -10,7 +10,7 @@ type Props = {
 };
 
 export function Footer({ content, section }: Props) {
-  const showSocial = (section?.settings as any)?.showSocial === true;
+  const showSocial = (section?.settings as any)?.showSocial !== false;
   const socialV2 = (content.socialLinksV2 || []).filter((s) => s.enabled && s.url && s.url.trim().length);
   const socialLegacy = (content.socialLinks || []).filter((s) => s.href && s.href.trim().length);
   const icon = content.footer.brandIcon;
@@ -20,13 +20,18 @@ export function Footer({ content, section }: Props) {
       <div className="container">
         <div className="footer-inner">
           <div className="footer-logo">
-            {iconUrl ? <Image className="logo-img" src={iconUrl} alt="CoachFlow" width={32} height={32} unoptimized /> : null}
+            {iconUrl ? <Image className="logo-img" src={iconUrl} alt="Coachflow Aquisition" width={32} height={32} unoptimized /> : null}
             {renderBrandText(content.footer.brandText)}
           </div>
 
           <div className="footer-links">
-            {content.footer.links.map((l) => (
-              <a key={l.href} href={l.href}>
+            {content.footer.links.filter((l) => l.href && l.href.trim().length).map((l) => (
+              <a
+                key={l.href}
+                href={l.href}
+                target={isExternalHref(l.href) ? "_blank" : undefined}
+                rel={isExternalHref(l.href) ? "noopener noreferrer" : undefined}
+              >
                 {l.label}
               </a>
             ))}
@@ -35,7 +40,14 @@ export function Footer({ content, section }: Props) {
           {showSocial && (socialV2.length || socialLegacy.length) ? (
             <div className="footer-socials" aria-label="Social links">
               {socialV2.map((s) => (
-                <a key={s.id} className="footer-social" href={s.url} target="_blank" rel="noreferrer" aria-label={s.platform}>
+                <a
+                  key={s.id}
+                  className="footer-social"
+                  href={s.url}
+                  target={isExternalHref(s.url) ? "_blank" : undefined}
+                  rel={isExternalHref(s.url) ? "noopener noreferrer" : undefined}
+                  aria-label={s.platform}
+                >
                   <DynamicIcon
                     icon={s.icon || { type: "library", value: s.platform } as any}
                     className="footer-social-icon"
@@ -44,7 +56,14 @@ export function Footer({ content, section }: Props) {
                 </a>
               ))}
               {socialLegacy.map((s, idx) => (
-                <a key={`${s.href}-${idx}`} className="footer-social" href={s.href} target="_blank" rel="noreferrer" aria-label={s.label}>
+                <a
+                  key={`${s.href}-${idx}`}
+                  className="footer-social"
+                  href={s.href}
+                  target={isExternalHref(s.href) ? "_blank" : undefined}
+                  rel={isExternalHref(s.href) ? "noopener noreferrer" : undefined}
+                  aria-label={s.label}
+                >
                   {s.icon?.type === "image" && s.icon.url ? (
                     <Image className="footer-social-icon" src={s.icon.url} alt="" width={20} height={20} unoptimized />
                   ) : s.icon?.type === "material" && s.icon.name ? (
@@ -76,4 +95,8 @@ function renderBrandText(text: string) {
     );
   }
   return text;
+}
+
+function isExternalHref(href: string) {
+  return /^(https?:\/\/|mailto:|tel:)/i.test(href.trim());
 }

@@ -55,6 +55,22 @@ html {
   scroll-behavior: smooth;
 }
 
+.cf-section-wrapper {
+  background-image: var(--cf-section-bg-desktop, none);
+}
+
+.cf-landing section[id],
+.cf-landing [id="lead-form"],
+.cf-landing [id="apply"] {
+  scroll-margin-top: 88px;
+}
+
+@media (max-width: 767px) {
+  .cf-section-wrapper {
+    background-image: var(--cf-section-bg-mobile, var(--cf-section-bg-desktop, none));
+  }
+}
+
 html[data-device="mobile"] {
   font-size: 14px;
 }
@@ -1488,7 +1504,7 @@ small {
   }
 }
 
-/* Google Build visual integration layer. Functional data still comes from CoachFlow admin/Supabase. */
+/* Google Build visual integration layer. Functional data still comes from Coachflow Aquisition admin/Supabase. */
 .cf-landing {
   --gold-dark: var(--gold2);
   --ease-premium: cubic-bezier(0.2, 0.8, 0.2, 1);

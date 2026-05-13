@@ -112,7 +112,7 @@ export function Hero({ content, section }: Props) {
         </div>
 
         {showPanel ? (
-          <div className="hero-visual" data-reveal="right" aria-label="CoachFlow pipeline metrics">
+          <div className="hero-visual" data-reveal="right" aria-label="Coachflow Aquisition pipeline metrics">
             <div className="hero-panel">
               <div className="hero-panel-glow" aria-hidden="true" />
               <div className="hero-metrics">

@@ -1,4 +1,9 @@
 const replacements: Array<[string, string]> = [
+  ["CoachFlow AI", "Coachflow Aquisition"],
+  ["Coachflow AI", "Coachflow Aquisition"],
+  ["Coach Flow AI", "Coachflow Aquisition"],
+  ["CoachFlow", "Coachflow Aquisition"],
+  ["Coach Flow", "Coachflow Aquisition"],
   ["Î“Ã‡Ã¶", "-"],
   ["Î“Ã‡Ã´", "-"],
   ["â€”", "-"],

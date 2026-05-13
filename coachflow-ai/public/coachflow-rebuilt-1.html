@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CoachFlow AI | Predictable Booked Calls For Masculinity Coaches</title>
+<title>Coachflow Aquisition | Predictable Booked Calls For Masculinity Coaches</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
@@ -25,6 +25,17 @@
   }
 
   html { scroll-behavior: smooth; }
+
+  .hero,
+  #founder,
+  #promise,
+  #how,
+  #honest,
+  #pricing,
+  #apply,
+  footer {
+    scroll-margin-top: 88px;
+  }
 
   body {
     background: var(--black);
@@ -201,6 +212,17 @@
     margin-top: 2rem;
     font-size: 0.8rem;
     color: var(--muted);
+    letter-spacing: 0.03em;
+  }
+
+  .selected-tier {
+    display: none;
+    margin-bottom: 1rem;
+    border: 0.5px solid rgba(201,168,76,0.25);
+    background: rgba(201,168,76,0.08);
+    color: var(--gold-light);
+    padding: 0.75rem 0.85rem;
+    font-size: 0.8rem;
     letter-spacing: 0.03em;
   }
 
@@ -891,6 +913,27 @@
     color: var(--muted);
   }
 
+  .footer-socials {
+    display: none;
+    gap: 0.75rem;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .footer-social {
+    color: rgba(245,242,237,0.58);
+    text-decoration: none;
+    font-size: 0.76rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    transition: color 0.2s, border-color 0.2s;
+  }
+
+  .footer-social:hover {
+    color: var(--white);
+  }
+
   /* ANIMATE IN */
   @keyframes fadeUp {
     from { opacity: 0; transform: translateY(20px); }
@@ -1067,7 +1110,7 @@
 
 <!-- NAV -->
 <nav>
-  <a href="#" class="nav-logo">CoachFlow AI</a>
+  <a href="#hero" class="nav-logo">Coachflow Aquisition</a>
   <ul class="nav-links">
     <li><a href="#founder">Our Story</a></li>
     <li><a href="#how">How It Works</a></li>
@@ -1088,17 +1131,21 @@
 </div>
 
 <!-- HERO -->
-<section class="hero" style="max-width:none; padding-top: 8rem;">
-  <div class="hero-tag">Client Acquisition For Masculinity Coaches</div>
-  <h1>Stop Guessing.<br>Start <em>Closing.</em></h1>
-  <p class="hero-sub">
-    You've built a real coaching business. <strong>Your calendar shouldn't depend on content going viral or a referral showing up.</strong> We install a system that fills it — month after month, without ads.
-  </p>
-  <div class="hero-actions">
-    <a href="#apply" class="btn-primary">Apply for Partnership</a>
-    <a href="#how" class="btn-ghost">See How It Works</a>
+<section class="hero" id="hero" style="max-width:none; padding-top: 8rem;">
+  <div class="hero-copy">
+    <div class="hero-tag">Client Acquisition For Masculinity Coaches</div>
+    <h1>Stop Guessing.<br>Start <em>Closing.</em></h1>
+    <p class="hero-sub">
+      You've built a real coaching business. <strong>Your calendar shouldn't depend on content going viral or a referral showing up.</strong> We install a system that fills it — month after month, without ads.
+    </p>
   </div>
-  <p class="hero-note">Applications reviewed personally. No automated responses.</p>
+  <div class="hero-conversion">
+    <div class="hero-actions">
+      <a href="#apply" class="btn-primary">Apply for Partnership</a>
+      <a href="#how" class="btn-ghost">See How It Works</a>
+    </div>
+    <p class="hero-note">Applications reviewed personally. No automated responses.</p>
+  </div>
 </section>
 
 <div class="divider"></div>
@@ -1119,14 +1166,14 @@
       <div class="founder-label">Who Is Behind This</div>
       <div class="founder-avatar">H</div>
       <div class="founder-name">Hamza</div>
-      <div class="founder-title">Founder, CoachFlow AI · Masculinity Coach</div>
+      <div class="founder-title">Founder, Coachflow Aquisition · Masculinity Coach</div>
     </div>
     <div>
       <p class="founder-quote">"I didn't build this for coaches. I built it because I was one."</p>
       <div class="founder-body">
         <p>I spent years in the masculinity coaching space — developing men, running programmes, trying to figure out how to fill my calendar without becoming a content machine. I know the frustration of having a life-changing offer and not being able to get it in front of the right men consistently.</p>
         <p>Most client acquisition agencies <strong>have never coached anyone.</strong> They sell outreach systems built for SaaS companies and slap them onto coaches. It doesn't work — because they don't understand the buyer, the conversation, or what it takes to earn trust with men who are already sceptical.</p>
-        <p>CoachFlow is built differently. Every system, every message, every piece of outreach is designed specifically for masculinity coaches — because I know your world from the inside.</p>
+        <p>Coachflow Aquisition is built differently. Every system, every message, every piece of outreach is designed specifically for masculinity coaches — because I know your world from the inside.</p>
         <p><strong>That's not a marketing line. That's why this works.</strong></p>
       </div>
     </div>
@@ -1219,7 +1266,7 @@
     </div>
     <div>
       <div class="honest-body">
-        <p>CoachFlow is new. We don't have a wall of client logos or ten years of case studies to show you. What we do have is a founder who has lived your problem, a system built specifically for your world, and a commitment to prove ourselves through results — not through looking established on a website.</p>
+        <p>Coachflow Aquisition is new. We don't have a wall of client logos or ten years of case studies to show you. What we do have is a founder who has lived your problem, a system built specifically for your world, and a commitment to prove ourselves through results — not through looking established on a website.</p>
         <p>That's why we're offering our first founding cohort a different arrangement: <strong>you get a reduced rate, we get to build the proof together.</strong> Full transparency. Weekly reporting. And if we don't deliver qualified conversations within the first 60 days, you don't pay for the second month.</p>
         <p>That's the deal. No fine print.</p>
       </div>
@@ -1267,7 +1314,7 @@
         <li>Weekly reporting</li>
         <li>60-day results guarantee</li>
       </ul>
-      <a href="#apply" class="tier-cta tier-cta-outline">Apply for Starter</a>
+      <a href="#apply" class="tier-cta tier-cta-outline" data-selected-tier="Starter">Apply for Starter</a>
     </div>
 
     <div class="tier featured">
@@ -1288,7 +1335,7 @@
         <li>Dedicated account manager</li>
         <li>Monthly strategy call</li>
       </ul>
-      <a href="#apply" class="tier-cta tier-cta-solid">Apply for Growth</a>
+      <a href="#apply" class="tier-cta tier-cta-solid" data-selected-tier="Growth">Apply for Growth</a>
     </div>
 
     <div class="tier">
@@ -1308,7 +1355,7 @@
         <li>Priority support and strategy calls</li>
         <li>Quarterly audit and scale review</li>
       </ul>
-      <a href="#apply" class="tier-cta tier-cta-outline">Apply for Scale</a>
+      <a href="#apply" class="tier-cta tier-cta-outline" data-selected-tier="Scale">Apply for Scale</a>
     </div>
   </div>
 
@@ -1353,6 +1400,8 @@
       <div id="form-content">
         <div class="form-title">Your Application</div>
         <div class="form-subtitle">Takes 2 minutes. No pressure, no pitch call unless it's a clear fit.</div>
+        <div class="selected-tier" id="selected-tier-summary"></div>
+        <input type="hidden" id="selected_tier" name="selected_tier" value="">
 
         <div class="form-row">
           <div>
@@ -1402,13 +1451,14 @@
 
 <!-- FOOTER -->
 <footer>
-  <div class="footer-logo">CoachFlow AI</div>
+  <div class="footer-logo">Coachflow Aquisition</div>
   <ul class="footer-links">
-    <li><a href="#">Privacy Policy</a></li>
-    <li><a href="#">Terms of Service</a></li>
-    <li><a href="#">Contact</a></li>
+    <li><a href="/p/privacy-policy">Privacy Policy</a></li>
+    <li><a href="/p/terms-of-service">Terms of Service</a></li>
+    <li><a href="/p/contact">Contact</a></li>
   </ul>
-  <div class="footer-copy">© 2026 CoachFlow AI. All rights reserved.</div>
+  <div class="footer-socials" aria-label="Social links"></div>
+  <div class="footer-copy">© 2026 Coachflow Aquisition. All rights reserved.</div>
 </footer>
 
 <script>
@@ -1423,6 +1473,33 @@ function closeMenu() {
   document.getElementById('mobile-menu').classList.remove('open');
   document.getElementById('hamburger').classList.remove('open');
 }
+
+let selectedTier = '';
+document.addEventListener('click', function(event) {
+  const anchor = event.target && event.target.closest ? event.target.closest('a') : null;
+  const cta = event.target && event.target.closest ? event.target.closest('.tier-cta') : null;
+  if (cta) {
+    selectedTier = cta.getAttribute('data-selected-tier') || cta.closest('.tier')?.querySelector('.tier-name')?.textContent || '';
+    const input = document.getElementById('selected_tier');
+    const summary = document.getElementById('selected-tier-summary');
+    if (input) input.value = selectedTier;
+    if (summary && selectedTier) {
+      summary.textContent = 'Selected tier: ' + selectedTier;
+      summary.style.display = 'block';
+    }
+  }
+  const href = anchor ? anchor.getAttribute('href') || '' : '';
+  if (href.charAt(0) === '#') {
+    const target = document.querySelector(href);
+    if (target) {
+      event.preventDefault();
+      closeMenu();
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      try { history.pushState(null, '', href); } catch (err) {}
+      try { if (location.hash !== href) location.hash = href; } catch (err) {}
+    }
+  }
+});
 
 function handleSubmit() {
   const email = document.getElementById('email').value;

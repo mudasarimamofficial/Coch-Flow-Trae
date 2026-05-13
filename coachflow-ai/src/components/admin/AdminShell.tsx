@@ -106,16 +106,14 @@ export function AdminShell({ tab, onTabChange, sessionEmail, onSignOut, topNotic
           <div className={sidebarCollapsed ? "mb-4 flex items-center justify-center" : "mb-5 flex items-center gap-2 px-2"}>
             <Image
               src="https://ekwydksbprxebgmhbmtj.supabase.co/storage/v1/object/public/assets/header%20icon.png"
-              alt="CoachFlow"
+              alt="Coachflow Aquisition"
               className={sidebarCollapsed ? "h-8 w-8 rounded-xl" : "h-7 w-7 rounded-xl"}
               width={32}
               height={32}
               unoptimized
             />
             {!sidebarCollapsed ? (
-              <div className="text-sm font-bold">
-                CoachFlow <span className="text-[var(--cf-accent)]">AI</span>
-              </div>
+              <div className="text-sm font-bold">Coachflow Aquisition</div>
             ) : null}
           </div>
 

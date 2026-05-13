@@ -201,6 +201,7 @@ export type HomepageContent = {
     primaryCta: { text: string; href: string; icon: string };
     secondaryCta: { text: string; href: string };
     backgroundImage?: { url: string; path?: string };
+    mobileBackgroundImage?: { url: string; path?: string };
   };
   trust: {
     eyebrow: string;
@@ -212,6 +213,7 @@ export type HomepageContent = {
     subcopy: string;
     cards: { icon?: string; iconRef?: { type: "library" | "upload"; value: string }; title: string; copy: string }[];
     backgroundImage?: { url: string; path?: string };
+    mobileBackgroundImage?: { url: string; path?: string };
   };
   workflow: {
     id: string;
@@ -220,6 +222,7 @@ export type HomepageContent = {
     expandIcon: string;
     steps: { title: string; copy: string; open?: boolean }[];
     backgroundImage?: { url: string; path?: string };
+    mobileBackgroundImage?: { url: string; path?: string };
   };
   pricing: {
     id: string;
@@ -242,6 +245,7 @@ export type HomepageContent = {
       ctaHref: string;
     }[];
     backgroundImage?: { url: string; path?: string };
+    mobileBackgroundImage?: { url: string; path?: string };
   };
   application: {
     id: string;
@@ -270,6 +274,7 @@ export type HomepageContent = {
     submitAnotherText: string;
     footnote?: string;
     backgroundImage?: { url: string; path?: string };
+    mobileBackgroundImage?: { url: string; path?: string };
   };
   footer: {
     brandText: string;
@@ -441,7 +446,7 @@ export const homepageDefaults: HomepageContent = {
     phone: "+923191106310",
     message: "Hi, I want to learn more about your services",
     tooltip: "Chat with us!",
-    modalTitle: "CoachFlow AI",
+    modalTitle: "Coachflow Aquisition",
     modalSubtitle: "Usually replies instantly",
     buttonText: "Start Chat",
     headerColorHex: "#25D366",
@@ -473,12 +478,12 @@ export const homepageDefaults: HomepageContent = {
       label: "Who Is Behind This",
       avatarText: "H",
       name: "Hamza",
-      title: "Founder, CoachFlow AI · Masculinity Coach",
+      title: "Founder, Coachflow Aquisition · Masculinity Coach",
       quote: `"I didn't build this for coaches. I built it because I was one."`,
       paragraphs: [
         "I spent years in the masculinity coaching space — developing men, running programmes, trying to figure out how to fill my calendar without becoming a content machine. I know the frustration of having a life-changing offer and not being able to get it in front of the right men consistently.",
         "Most client acquisition agencies <strong>have never coached anyone.</strong> They sell outreach systems built for SaaS companies and slap them onto coaches. It doesn't work — because they don't understand the buyer, the conversation, or what it takes to earn trust with men who are already sceptical.",
-        "CoachFlow is built differently. Every system, every message, every piece of outreach is designed specifically for masculinity coaches — because I know your world from the inside.",
+        "Coachflow Aquisition is built differently. Every system, every message, every piece of outreach is designed specifically for masculinity coaches — because I know your world from the inside.",
         "<strong>That's not a marketing line. That's why this works.</strong>",
       ],
     },
@@ -536,7 +541,7 @@ export const homepageDefaults: HomepageContent = {
       tag: "The Honest Part",
       quote: `"We're not the biggest agency. We're building something serious — and we want the right coaches to build it with."`,
       paragraphs: [
-        "CoachFlow is new. We don't have a wall of client logos or ten years of case studies to show you. What we do have is a founder who has lived your problem, a system built specifically for your world, and a commitment to prove ourselves through results — not through looking established on a website.",
+        "Coachflow Aquisition is new. We don't have a wall of client logos or ten years of case studies to show you. What we do have is a founder who has lived your problem, a system built specifically for your world, and a commitment to prove ourselves through results — not through looking established on a website.",
         "That's why we're offering our first founding cohort a different arrangement: you get a reduced rate, we get to build the proof together. Full transparency. Weekly reporting. And if we don't deliver qualified conversations within the first 60 days, you don't pay for the second month.",
         "That's the deal. No fine print.",
       ],
@@ -564,7 +569,7 @@ export const homepageDefaults: HomepageContent = {
   },
   customSections: [],
   header: {
-    brandText: "CoachFlow AI",
+    brandText: "Coachflow Aquisition",
     brandIcon: {
       type: "image",
       url: "https://ekwydksbprxebgmhbmtj.supabase.co/storage/v1/object/public/assets/header%20icon.png",
@@ -618,7 +623,7 @@ export const homepageDefaults: HomepageContent = {
   },
   features: {
     id: "features",
-    heading: "How CoachFlow AI fills your calendar",
+    heading: "How Coachflow Aquisition fills your calendar",
     subcopy:
       "Three core capabilities working together to turn cold prospects into booked sales calls — consistently, every month.",
     cards: [
@@ -771,7 +776,7 @@ export const homepageDefaults: HomepageContent = {
     footnote: "No newsletter. No automated sales blast. Just a personal fit review from Hamza.",
   },
   footer: {
-    brandText: "CoachFlow AI",
+    brandText: "Coachflow Aquisition",
     brandIcon: {
       type: "image",
       url: "https://ekwydksbprxebgmhbmtj.supabase.co/storage/v1/object/public/assets/header%20icon.png",
@@ -781,6 +786,6 @@ export const homepageDefaults: HomepageContent = {
       { label: "Terms of Service", href: "/p/terms-of-service" },
       { label: "Contact", href: "/p/contact" },
     ],
-    copyright: "© 2026 CoachFlow AI. All rights reserved.",
+    copyright: "© 2026 Coachflow Aquisition. All rights reserved.",
   },
 };

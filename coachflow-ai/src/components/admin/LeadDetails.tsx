@@ -1,14 +1,31 @@
 import type { Lead } from "@/components/admin/types";
-import { Mail } from "lucide-react";
+import { Mail, Trash2 } from "lucide-react";
 
 type Props = {
   lead: Lead | null;
+  onDelete?: () => void;
 };
 
-export function LeadDetails({ lead }: Props) {
+function selectedTier(lead: Lead) {
+  return (lead.selected_tier || lead.business_type || "").trim();
+}
+
+export function LeadDetails({ lead, onDelete }: Props) {
   return (
     <div className="rounded-2xl border border-slate-200 bg-white p-6 dark:border-white/10 dark:bg-[#112121]">
-      <div className="mb-4 text-sm font-bold">Lead details</div>
+      <div className="mb-4 flex items-center justify-between gap-3">
+        <div className="text-sm font-bold">Lead details</div>
+        {lead && onDelete ? (
+          <button
+            type="button"
+            className="inline-flex items-center gap-2 rounded-lg border border-rose-400/20 bg-rose-500/10 px-3 py-2 text-xs font-semibold text-rose-200 hover:bg-rose-500/20"
+            onClick={onDelete}
+          >
+            <Trash2 className="h-4 w-4" />
+            Delete
+          </button>
+        ) : null}
+      </div>
       {lead ? (
         <div className="flex flex-col gap-4 text-sm">
           <div>
@@ -51,6 +68,12 @@ export function LeadDetails({ lead }: Props) {
             <div className="mt-1 font-semibold">{lead.phone || "—"}</div>
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div>
+              <div className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                Selected Tier
+              </div>
+              <div className="mt-1 font-semibold">{selectedTier(lead) || "—"}</div>
+            </div>
             <div>
               <div className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">
                 Business Type

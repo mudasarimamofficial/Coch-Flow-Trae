@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { z } from "zod";
 import type { HomepageContent } from "@/content/homepage";
 import type { PageSection } from "@/components/landing/sectionRegistry";
@@ -11,6 +11,7 @@ const schema = z.object({
   email: z.string().email("Enter a valid email").max(240),
   revenue: z.string().min(1, "Select a revenue range").max(120),
   message: z.string().max(4000).optional().nullable(),
+  selected_tier: z.string().max(160).optional().nullable(),
   company: z.string().optional().nullable(),
 });
 
@@ -46,6 +47,7 @@ export function LeadFormSection({ content, section }: Props) {
     email: "",
     revenue: "",
     message: "",
+    selected_tier: "",
     company: "",
   });
   const [submitting, setSubmitting] = useState(false);
@@ -60,9 +62,21 @@ export function LeadFormSection({ content, section }: Props) {
       email: values.email.trim(),
       revenue: values.revenue?.trim() || null,
       message: values.message?.trim() || null,
+      selected_tier: values.selected_tier?.trim() || null,
       company: values.company?.trim() || null,
     };
   }, [values]);
+
+  useEffect(() => {
+    function onSelectedTier(event: Event) {
+      const detail = (event as CustomEvent<{ tier?: string }>).detail;
+      const tier = String(detail?.tier || "").trim();
+      if (!tier) return;
+      setValues((v) => ({ ...v, selected_tier: tier }));
+    }
+    window.addEventListener("coachflow:selected-tier", onSelectedTier as EventListener);
+    return () => window.removeEventListener("coachflow:selected-tier", onSelectedTier as EventListener);
+  }, []);
 
   return (
     <section id="lead-form">
@@ -128,11 +142,12 @@ export function LeadFormSection({ content, section }: Props) {
                     setValues({
                       first_name: "",
                       last_name: "",
-                      email: "",
-                      revenue: "",
-                      message: "",
-                      company: "",
-                    });
+                    email: "",
+                    revenue: "",
+                    message: "",
+                    selected_tier: "",
+                    company: "",
+                  });
                   } catch {
                     setError("Network error. Please try again.");
                   } finally {
@@ -148,6 +163,12 @@ export function LeadFormSection({ content, section }: Props) {
                 {error ? (
                   <div className="form-alert" role="alert">
                     {error}
+                  </div>
+                ) : null}
+
+                {values.selected_tier ? (
+                  <div className="form-alert" role="status">
+                    Selected tier: {values.selected_tier}
                   </div>
                 ) : null}
 
@@ -249,6 +270,8 @@ export function LeadFormSection({ content, section }: Props) {
                     />
                   </div>
                 </fieldset>
+
+                <input type="hidden" name="selected_tier" value={values.selected_tier || ""} readOnly />
 
                 <input
                   tabIndex={-1}

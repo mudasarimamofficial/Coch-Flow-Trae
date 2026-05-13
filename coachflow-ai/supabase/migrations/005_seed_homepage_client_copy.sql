@@ -12,22 +12,22 @@ set content = (
       "customJs": ""
     },
     "header": {
-      "brandText": "CoachFlow AI",
+      "brandText": "Coachflow Aquisition",
       "brandIcon": { "type": "material", "name": "psychology" },
       "nav": [
-        { "label": "Workflow", "href": "#workflow" },
-        { "label": "Features", "href": "#features" },
+        { "label": "Workflow", "href": "#how" },
+        { "label": "Features", "href": "#promise" },
         { "label": "Pricing", "href": "#pricing" }
       ],
-      "primaryCta": { "text": "Apply Now", "href": "#lead-form" }
+      "primaryCta": { "text": "Apply Now", "href": "#apply" }
     },
     "hero": {
       "badge": { "icon": "auto_awesome", "text": "Next-Gen B2B Lead Gen" },
       "heading": { "prefix": "Predictable Booked Calls For ", "highlight": "Masculinity Coaches" },
       "subcopy": "We install a client acquisition infrastructure that generates qualified sales conversations consistently — so you stop relying on content, referrals, or luck.",
       "note": "Every campaign is personally overseen by our team — AI handles the scale, humans handle the strategy.",
-      "primaryCta": { "text": "Apply for Partnership", "href": "#lead-form", "icon": "arrow_forward" },
-      "secondaryCta": { "text": "See How It Works", "href": "#workflow" }
+      "primaryCta": { "text": "Apply for Partnership", "href": "#apply", "icon": "arrow_forward" },
+      "secondaryCta": { "text": "See How It Works", "href": "#how" }
     },
     "trust": {
       "eyebrow": "Built exclusively for masculinity coaches selling $1k–$5k programs.",
@@ -63,7 +63,7 @@ set content = (
     },
     "workflow": {
       "id": "workflow",
-      "heading": "The CoachFlow Framework",
+      "heading": "The Coachflow Aquisition Framework",
       "subcopy": "A systematic approach to scaling your coaching business predictably.",
       "expandIcon": "expand_more",
       "steps": [
@@ -109,7 +109,7 @@ set content = (
             "Appointment setting"
           ],
           "ctaText": "Select Starter",
-          "ctaHref": "#lead-form"
+          "ctaHref": "#apply"
         },
         {
           "name": "Growth",
@@ -125,7 +125,7 @@ set content = (
             "Dedicated account manager"
           ],
           "ctaText": "Select Growth",
-          "ctaHref": "#lead-form"
+          "ctaHref": "#apply"
         },
         {
           "name": "Scale",
@@ -139,7 +139,7 @@ set content = (
             "Priority support"
           ],
           "ctaText": "Select Scale",
-          "ctaHref": "#lead-form"
+          "ctaHref": "#apply"
         }
       ]
     },
@@ -167,14 +167,14 @@ set content = (
       "submitAnotherText": "Submit another"
     },
     "footer": {
-      "brandText": "CoachFlow AI",
+      "brandText": "Coachflow Aquisition",
       "brandIcon": { "type": "material", "name": "psychology" },
       "links": [
         { "label": "Privacy Policy", "href": "#" },
         { "label": "Terms of Service", "href": "#" },
         { "label": "Contact", "href": "#" }
       ],
-      "copyright": "© 2026 CoachFlow AI. All rights reserved."
+      "copyright": "© 2026 Coachflow Aquisition. All rights reserved."
     },
     "socialLinks": [
       { "label": "Instagram", "href": "https://instagram.com/", "icon": { "type": "material", "name": "photo_camera" } },
@@ -186,7 +186,7 @@ set content = (
       "phone": "+923XXXXXXXXX",
       "message": "Hi, I want to learn more about your services",
       "tooltip": "Chat with us!",
-      "modalTitle": "CoachFlow AI",
+      "modalTitle": "Coachflow Aquisition",
       "modalSubtitle": "Usually replies instantly",
       "buttonText": "Start Chat",
       "headerColorHex": "#25D366"

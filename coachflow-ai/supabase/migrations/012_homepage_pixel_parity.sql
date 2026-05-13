@@ -12,14 +12,14 @@ set content = (
       "customJs": ""
     },
     "header": {
-      "brandText": "CoachFlow AI",
+      "brandText": "Coachflow Aquisition",
       "brandIcon": { "type": "material", "name": "psychology" },
       "nav": [
-        { "label": "How It Works", "href": "#workflow" },
-        { "label": "What We Do", "href": "#features" },
+        { "label": "How It Works", "href": "#how" },
+        { "label": "What We Do", "href": "#promise" },
         { "label": "Pricing", "href": "#pricing" }
       ],
-      "primaryCta": { "text": "Apply Now", "href": "#lead-form" }
+      "primaryCta": { "text": "Apply Now", "href": "#apply" }
     },
     "hero": {
       "badge": { "icon": "auto_awesome", "text": "Client Acquisition Infrastructure" },
@@ -30,12 +30,12 @@ set content = (
         "text": "Built exclusively for",
         "pills": ["Masculinity coaches", "$1k–$5k programmes", "High-ticket scale"]
       },
-      "primaryCta": { "text": "Apply for Partnership", "href": "#lead-form", "icon": "arrow_forward" },
-      "secondaryCta": { "text": "See How It Works", "href": "#workflow" }
+      "primaryCta": { "text": "Apply for Partnership", "href": "#apply", "icon": "arrow_forward" },
+      "secondaryCta": { "text": "See How It Works", "href": "#how" }
     },
     "features": {
       "id": "features",
-      "heading": "How CoachFlow AI fills your calendar",
+      "heading": "How Coachflow Aquisition fills your calendar",
       "subcopy": "Three core capabilities working together to turn cold prospects into booked sales calls — consistently, every month.",
       "cards": [
         {
@@ -104,7 +104,7 @@ set content = (
             "Appointment setting"
           ],
           "ctaText": "Apply for Starter",
-          "ctaHref": "#lead-form"
+          "ctaHref": "#apply"
         },
         {
           "name": "Growth",
@@ -121,7 +121,7 @@ set content = (
             "Dedicated account manager"
           ],
           "ctaText": "Apply for Growth",
-          "ctaHref": "#lead-form"
+          "ctaHref": "#apply"
         },
         {
           "name": "Scale",
@@ -136,7 +136,7 @@ set content = (
             "Priority support and strategy calls"
           ],
           "ctaText": "Apply for Scale",
-          "ctaHref": "#lead-form"
+          "ctaHref": "#apply"
         }
       ]
     },
@@ -170,21 +170,21 @@ set content = (
       "footnote": "We review every application personally and respond within 24 hours."
     },
     "footer": {
-      "brandText": "CoachFlow AI",
+      "brandText": "Coachflow Aquisition",
       "brandIcon": { "type": "material", "name": "psychology" },
       "links": [
         { "label": "Privacy Policy", "href": "/p/privacy-policy" },
         { "label": "Terms of Service", "href": "/p/terms-of-service" },
         { "label": "Contact", "href": "/p/contact" }
       ],
-      "copyright": "© 2026 CoachFlow AI. All rights reserved."
+      "copyright": "© 2026 Coachflow Aquisition. All rights reserved."
     },
     "whatsapp": {
       "enabled": false,
       "phone": "+923191106310",
       "message": "Hi, I want to learn more about your services",
       "tooltip": "Chat with us!",
-      "modalTitle": "CoachFlow AI",
+      "modalTitle": "Coachflow Aquisition",
       "modalSubtitle": "Usually replies instantly",
       "buttonText": "Start Chat",
       "headerColorHex": "#25D366",

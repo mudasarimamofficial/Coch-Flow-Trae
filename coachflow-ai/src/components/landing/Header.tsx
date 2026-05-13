@@ -30,7 +30,8 @@ export function Header({ content }: Props) {
   const rawPrimaryCta = (content.header as any).primaryCta;
   const primaryCta = rawPrimaryCta && typeof rawPrimaryCta === "object" ? rawPrimaryCta : null;
   const ctaEnabled = primaryCta ? (primaryCta.enabled ?? true) : false;
-  const ctaHref = primaryCta ? (primaryCta.href as string) : "#";
+  const isRebuiltTemplate = String((content.site as any)?.designPreset || "landing_html_v1") !== "classic";
+  const ctaHref = primaryCta ? normalizeAnchorHref(primaryCta.href as string, isRebuiltTemplate) : "#";
   const ctaLabel = primaryCta ? ((primaryCta.label as string) || (primaryCta.text as string) || "") : "";
   const enabledNavItems = navItems.filter((x) => x.enabled !== false);
   const icon = content.header.brandIcon;
@@ -102,7 +103,7 @@ export function Header({ content }: Props) {
           <div className="nav-inner">
             <a href="#" className="nav-logo">
               {iconUrl ? (
-                <Image className="logo-img" src={iconUrl} alt="CoachFlow" width={32} height={32} unoptimized />
+                <Image className="logo-img" src={iconUrl} alt="Coachflow Aquisition" width={32} height={32} unoptimized />
               ) : (
                 <div className="logo-dot" />
               )}
@@ -112,7 +113,7 @@ export function Header({ content }: Props) {
             <ul className="nav-links">
               {enabledNavItems.map((item) => (
                 <li key={item.href}>
-                  <a href={item.href}>{item.label}</a>
+                  <a href={normalizeAnchorHref(item.href, isRebuiltTemplate)}>{item.label}</a>
                 </li>
               ))}
             </ul>
@@ -145,7 +146,7 @@ export function Header({ content }: Props) {
           <div className="nav-sheet-top">
             <div className="nav-sheet-brand">
               {iconUrl ? (
-                <Image className="logo-img" src={iconUrl} alt="CoachFlow" width={32} height={32} unoptimized />
+                <Image className="logo-img" src={iconUrl} alt="Coachflow Aquisition" width={32} height={32} unoptimized />
               ) : (
                 <div className="logo-dot" />
               )}
@@ -174,7 +175,7 @@ export function Header({ content }: Props) {
           <ul className="nav-sheet-links">
             {enabledNavItems.map((item) => (
               <li key={item.href}>
-                <a href={item.href} onClick={() => setMobileOpen(false)}>
+                <a href={normalizeAnchorHref(item.href, isRebuiltTemplate)} onClick={() => setMobileOpen(false)}>
                   {item.label}
                 </a>
               </li>
@@ -204,4 +205,12 @@ function renderBrandText(text: string) {
     );
   }
   return text;
+}
+
+function normalizeAnchorHref(href: string, isRebuiltTemplate: boolean) {
+  if (!isRebuiltTemplate) return href;
+  if (href === "#lead-form") return "#apply";
+  if (href === "#workflow") return "#how";
+  if (href === "#features") return "#promise";
+  return href;
 }

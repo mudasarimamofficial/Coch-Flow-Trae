@@ -14,6 +14,7 @@ const legacySchema = z.object({
   business_type: z.string().max(120).nullable().optional(),
   revenue: z.string().max(120).nullable().optional(),
   message: z.string().max(4000).nullable().optional(),
+  selected_tier: z.string().max(160).nullable().optional(),
   company: z.string().nullable().optional(),
 });
 
@@ -23,6 +24,7 @@ const htmlSchema = z.object({
   email: z.string().email().max(240),
   revenue: z.string().max(120).nullable().optional(),
   message: z.string().max(4000).nullable().optional(),
+  selected_tier: z.string().max(160).nullable().optional(),
   company: z.string().nullable().optional(),
 });
 
@@ -141,6 +143,7 @@ export async function POST(req: Request) {
             business_type: parsed.data.business_type?.trim() || null,
             revenue: parsed.data.revenue?.trim() || null,
             message: parsed.data.message?.trim() || null,
+            selected_tier: parsed.data.selected_tier?.trim() || null,
             company: parsed.data.company?.trim() || null,
           }
         : {
@@ -150,6 +153,7 @@ export async function POST(req: Request) {
             business_type: null,
             revenue: parsed.data.revenue?.trim() || null,
             message: parsed.data.message?.trim() || null,
+            selected_tier: parsed.data.selected_tier?.trim() || null,
             company: parsed.data.company?.trim() || null,
           };
 
@@ -197,18 +201,37 @@ export async function POST(req: Request) {
     let emailSkipReason: string | null = null;
     let slackSkipReason: string | null = null;
 
-    const { data: lead, error: insertError, status: insertStatus } = await supabase
+    const leadPayload = {
+      name: sanitized.name,
+      email: sanitized.email,
+      phone: sanitized.phone,
+      business_type: sanitized.business_type,
+      revenue: sanitized.revenue,
+      message: sanitized.message,
+      selected_tier: sanitized.selected_tier,
+    };
+
+    let { data: lead, error: insertError, status: insertStatus } = await supabase
       .from("leads")
-      .insert({
-        name: sanitized.name,
-        email: sanitized.email,
-        phone: sanitized.phone,
-        business_type: sanitized.business_type,
-        revenue: sanitized.revenue,
-        message: sanitized.message,
-      })
+      .insert(leadPayload)
       .select("id, created_at")
       .single();
+
+    if (insertError && /selected_tier|schema cache|column/i.test(insertError.message || "")) {
+      const fallbackPayload = {
+        ...leadPayload,
+        business_type: leadPayload.business_type || leadPayload.selected_tier,
+      } as Omit<typeof leadPayload, "selected_tier"> & { selected_tier?: string | null };
+      delete fallbackPayload.selected_tier;
+      const fallback = await supabase
+        .from("leads")
+        .insert(fallbackPayload)
+        .select("id, created_at")
+        .single();
+      lead = fallback.data;
+      insertError = fallback.error;
+      insertStatus = fallback.status;
+    }
 
     if (insertError || !lead) {
       const msg = (insertError?.message || "").toLowerCase();
@@ -281,12 +304,13 @@ export async function POST(req: Request) {
         const html = `
           <div style="font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;line-height:1.5">
             <h2 style="margin:0 0 12px">New Lead Alert</h2>
-            <p style="margin:0 0 12px">A new lead was submitted on CoachFlow AI.</p>
+            <p style="margin:0 0 12px">A new lead was submitted on Coachflow Aquisition.</p>
             <table style="border-collapse:collapse;width:100%;max-width:640px">
               <tr><td style="padding:8px 0;color:#64748b">Name</td><td style="padding:8px 0">${fmt(sanitized.name)}</td></tr>
               <tr><td style="padding:8px 0;color:#64748b">Email</td><td style="padding:8px 0">${fmt(sanitized.email)}</td></tr>
               <tr><td style="padding:8px 0;color:#64748b">Phone</td><td style="padding:8px 0">${fmt(sanitized.phone)}</td></tr>
               <tr><td style="padding:8px 0;color:#64748b">Business Type</td><td style="padding:8px 0">${fmt(sanitized.business_type)}</td></tr>
+              <tr><td style="padding:8px 0;color:#64748b">Selected Tier</td><td style="padding:8px 0">${fmt(sanitized.selected_tier)}</td></tr>
               <tr><td style="padding:8px 0;color:#64748b">Monthly Revenue</td><td style="padding:8px 0">${fmt(sanitized.revenue)}</td></tr>
               <tr><td style="padding:8px 0;color:#64748b">Message</td><td style="padding:8px 0">${fmt(sanitized.message)}</td></tr>
             </table>

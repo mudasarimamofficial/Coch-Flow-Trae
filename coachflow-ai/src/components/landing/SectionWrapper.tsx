@@ -4,6 +4,7 @@ type Settings = {
   backgroundType?: "color" | "image" | "video";
   backgroundColor?: string;
   backgroundImage?: string;
+  mobileBackgroundImage?: string;
   backgroundVideo?: string;
   overlayColor?: string;
   paddingTop?: number;
@@ -22,6 +23,7 @@ function normalize(settings?: Record<string, unknown> | null): Settings {
   const s = settings as any;
   const legacyBgColor = typeof s.backgroundColorHex === "string" ? s.backgroundColorHex : undefined;
   const legacyBgUrl = typeof s.background?.url === "string" ? s.background.url : undefined;
+  const legacyMobileBgUrl = typeof s.mobileBackground?.url === "string" ? s.mobileBackground.url : undefined;
   const legacyPaddingY = typeof s.paddingY === "number" ? s.paddingY : undefined;
 
   const backgroundType: Settings["backgroundType"] =
@@ -33,6 +35,8 @@ function normalize(settings?: Record<string, unknown> | null): Settings {
       typeof s.backgroundColor === "string" ? s.backgroundColor : legacyBgColor,
     backgroundImage:
       typeof s.backgroundImage === "string" ? s.backgroundImage : legacyBgUrl,
+    mobileBackgroundImage:
+      typeof s.mobileBackgroundImage === "string" ? s.mobileBackgroundImage : legacyMobileBgUrl,
     backgroundVideo: typeof s.backgroundVideo === "string" ? s.backgroundVideo : undefined,
     overlayColor: typeof s.overlayColor === "string" ? s.overlayColor : undefined,
     paddingTop:
@@ -49,11 +53,14 @@ export function SectionWrapper({ settings, children }: Props) {
   const bgType = s.backgroundType;
   const bgColor = bgType === "color" ? s.backgroundColor : undefined;
   const bgImage = bgType === "image" ? s.backgroundImage : undefined;
+  const mobileBgImage = bgType === "image" ? (s.mobileBackgroundImage || bgImage) : undefined;
   const overlay = s.overlayColor;
 
   const style: Record<string, any> = {
     backgroundColor: bgColor || undefined,
-    backgroundImage: bgImage ? `url(${bgImage})` : undefined,
+    "--cf-section-bg-desktop": bgImage ? `url("${bgImage.replaceAll('"', '\\"')}")` : "none",
+    "--cf-section-bg-mobile": mobileBgImage ? `url("${mobileBgImage.replaceAll('"', '\\"')}")` : "none",
+    backgroundImage: bgImage ? "var(--cf-section-bg-desktop)" : undefined,
     backgroundSize: bgImage ? "cover" : undefined,
     backgroundPosition: bgImage ? "center" : undefined,
     backgroundRepeat: bgImage ? "no-repeat" : undefined,
@@ -72,7 +79,7 @@ export function SectionWrapper({ settings, children }: Props) {
           : "max-w-none";
 
   return (
-    <div className="relative w-full" style={style}>
+    <div className="cf-section-wrapper relative w-full" style={style}>
       {overlay ? <div className="pointer-events-none absolute inset-0" style={{ backgroundColor: overlay }} /> : null}
       {bgType === "video" && s.backgroundVideo ? (
         <video

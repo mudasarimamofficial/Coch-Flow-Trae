@@ -32,6 +32,7 @@ function safeTierOutcome(name: string, value: string) {
 export function Pricing({ content, section }: Props) {
   const label = (section?.settings as any)?.label || (content.pricing as any).label || "";
   const pricingNote = safePricingNote(content.pricing.note || "");
+  const isRebuiltTemplate = String((content.site as any)?.designPreset || "landing_html_v1") !== "classic";
   return (
     <section id="pricing">
       <div className="container">
@@ -63,9 +64,15 @@ export function Pricing({ content, section }: Props) {
               </ul>
 
               <a
-                href={t.ctaHref}
+                href={normalizeApplyHref(t.ctaHref, isRebuiltTemplate)}
                 className={t.highlight ? "btn-primary" : "pricing-secondary-cta"}
                 style={{ width: "100%", justifyContent: "center" }}
+                data-selected-tier={t.name}
+                onClick={() => {
+                  if (typeof window !== "undefined") {
+                    window.dispatchEvent(new CustomEvent("coachflow:selected-tier", { detail: { tier: t.name } }));
+                  }
+                }}
               >
                 {t.ctaText}
               </a>
@@ -79,4 +86,9 @@ export function Pricing({ content, section }: Props) {
       </div>
     </section>
   );
+}
+
+function normalizeApplyHref(href: string, isRebuiltTemplate: boolean) {
+  if (isRebuiltTemplate && (!href || href === "#lead-form")) return "#apply";
+  return href || (isRebuiltTemplate ? "#apply" : "#lead-form");
 }

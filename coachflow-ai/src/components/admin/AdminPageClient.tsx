@@ -66,6 +66,28 @@ export function AdminPageClient({ initialTab = "builder" }: Props) {
     return Boolean((data as any)?.is_admin);
   }
 
+  async function getAdminToken() {
+    if (!supabase) return "";
+    const { data } = await supabase.auth.getSession();
+    return data.session?.access_token || "";
+  }
+
+  const handleSignOut = useCallback(async () => {
+    if (supabase) {
+      void supabase.auth.signOut({ scope: "local" }).catch(() => undefined);
+    }
+    setAuthStatus("signedOut");
+    setSessionEmail(null);
+    setSessionUserId(null);
+    setEmail("");
+    setPassword("");
+    setLeads([]);
+    setSelectedId(null);
+    setQuery("");
+    setAuthError(null);
+    window.location.assign("/admin");
+  }, [supabase]);
+
   useEffect(() => {
     let alive = true;
     let subscription: { unsubscribe: () => void } | null = null;
@@ -124,18 +146,21 @@ export function AdminPageClient({ initialTab = "builder" }: Props) {
     setLeadsError(null);
     setLeadsLoading(true);
     try {
-      const { data, error } = await supabase
-        .from("leads")
-        .select(
-          "id, created_at, name, email, phone, business_type, revenue, message, status",
-        )
-        .order("created_at", { ascending: false });
-
-      if (error) {
-        setLeadsError(error.message);
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData.session?.access_token || "";
+      if (!token) {
+        setLeadsError("Missing auth session");
         return;
       }
-      const rows = (data || []) as Lead[];
+      const res = await fetch("/api/admin/leads", {
+        headers: { authorization: `Bearer ${token}` },
+      });
+      const json = (await res.json().catch(() => null)) as { ok?: boolean; leads?: Lead[]; message?: string } | null;
+      if (!res.ok || !json?.ok) {
+        setLeadsError(json?.message || "Failed to load leads");
+        return;
+      }
+      const rows = (json.leads || []) as Lead[];
       setLeads(rows);
       setSelectedId(rows[0]?.id || null);
     } finally {
@@ -242,12 +267,7 @@ export function AdminPageClient({ initialTab = "builder" }: Props) {
             <button
               type="button"
               className="inline-flex h-10 items-center justify-center rounded-lg bg-[#0fa3a3] px-4 text-sm font-bold text-white transition hover:bg-[#0e9696]"
-              onClick={async () => {
-                await supabase.auth.signOut();
-                setAuthError(null);
-                setEmail("");
-                setPassword("");
-              }}
+              onClick={handleSignOut}
             >
               Sign out
             </button>
@@ -270,23 +290,13 @@ export function AdminPageClient({ initialTab = "builder" }: Props) {
       onTabChange={setTab}
       sessionEmail={sessionEmail || ""}
       topNotice={resendNotice}
-      onSignOut={async () => {
-        await supabase.auth.signOut();
-        setLeads([]);
-        setSelectedId(null);
-        setQuery("");
-      }}
+      onSignOut={handleSignOut}
     >
       {tab === "builder" ? (
         <VisualBuilderPanel
           supabase={supabase}
           onNavigateTab={setTab}
-          onSignOut={async () => {
-            await supabase.auth.signOut();
-            setLeads([]);
-            setSelectedId(null);
-            setQuery("");
-          }}
+          onSignOut={handleSignOut}
         />
       ) : tab === "pages" ? (
         <PagesPanel supabase={supabase} />
@@ -303,17 +313,70 @@ export function AdminPageClient({ initialTab = "builder" }: Props) {
           onSelect={setSelectedId}
           onRefresh={loadLeads}
           onUpdateStatus={async (id, status) => {
-            const { error } = await supabase
-              .from("leads")
-              .update({ status })
-              .eq("id", id);
-            if (error) {
-              setLeadsError(error.message);
+            const token = await getAdminToken();
+            if (!token) {
+              setLeadsError("Missing auth session");
+              return;
+            }
+            const res = await fetch(`/api/admin/leads/${encodeURIComponent(id)}`, {
+              method: "PATCH",
+              headers: { "content-type": "application/json", authorization: `Bearer ${token}` },
+              body: JSON.stringify({ status }),
+            });
+            const json = (await res.json().catch(() => null)) as { ok?: boolean; message?: string } | null;
+            if (!res.ok || !json?.ok) {
+              setLeadsError(json?.message || "Failed to update lead");
               return;
             }
             setLeads((prev) =>
               prev.map((l) => (l.id === id ? { ...l, status } : l)),
             );
+          }}
+          onDeleteLead={async (id) => {
+            const token = await getAdminToken();
+            if (!token) {
+              setLeadsError("Missing auth session");
+              return false;
+            }
+            const res = await fetch(`/api/admin/leads/${encodeURIComponent(id)}`, {
+              method: "DELETE",
+              headers: { authorization: `Bearer ${token}` },
+            });
+            const json = (await res.json().catch(() => null)) as { ok?: boolean; message?: string } | null;
+            if (!res.ok || !json?.ok) {
+              setLeadsError(json?.message || "Failed to delete lead");
+              return false;
+            }
+            setLeads((prev) => {
+              const next = prev.filter((lead) => lead.id !== id);
+              setSelectedId((current) => (current === id ? next[0]?.id || null : current));
+              return next;
+            });
+            return true;
+          }}
+          onBulkDelete={async (ids) => {
+            const token = await getAdminToken();
+            if (!token) {
+              setLeadsError("Missing auth session");
+              return false;
+            }
+            const res = await fetch("/api/admin/leads", {
+              method: "DELETE",
+              headers: { "content-type": "application/json", authorization: `Bearer ${token}` },
+              body: JSON.stringify({ ids }),
+            });
+            const json = (await res.json().catch(() => null)) as { ok?: boolean; message?: string } | null;
+            if (!res.ok || !json?.ok) {
+              setLeadsError(json?.message || "Failed to delete leads");
+              return false;
+            }
+            setLeads((prev) => {
+              const remove = new Set(ids);
+              const next = prev.filter((lead) => !remove.has(lead.id));
+              setSelectedId((current) => (current && remove.has(current) ? next[0]?.id || null : current));
+              return next;
+            });
+            return true;
           }}
         />
       ) : tab === "media" ? (

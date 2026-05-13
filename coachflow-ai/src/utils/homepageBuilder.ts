@@ -41,6 +41,7 @@ function blocks(section: PageSection | undefined) {
 
 export function applyBuilderOverrides(input: HomepageContent): HomepageContent {
   const sections = input.page?.sections || [];
+  const isRebuiltTemplate = String((input.site as any)?.designPreset || "landing_html_v1") !== "classic";
 
   const hero = sections.find((x) => x.type === "hero");
   const features = sections.find((x) => x.type === "features");
@@ -176,7 +177,7 @@ export function applyBuilderOverrides(input: HomepageContent): HomepageContent {
                 : undefined,
               bullets,
               ctaText: ctaText || "Select",
-              ctaHref: ctaHref || "#lead-form",
+              ctaHref: ctaHref || (isRebuiltTemplate ? "#apply" : "#lead-form"),
             };
           })
           .filter((t) => t.name.trim().length && t.price.trim().length),

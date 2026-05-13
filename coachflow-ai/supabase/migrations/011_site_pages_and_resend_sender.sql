@@ -70,7 +70,7 @@ values
     true,
     'published',
     'Privacy Policy',
-    'Privacy Policy for CoachFlow AI.',
+    'Privacy Policy for Coachflow Aquisition.',
     jsonb_build_object(
       'sections', jsonb_build_array(
         jsonb_build_object('id','legal_privacy','type','rich_text','enabled',true,'settings',jsonb_build_object('title','Privacy Policy','content','<p>Update this content in Admin → Pages.</p>'))
@@ -91,7 +91,7 @@ values
     true,
     'published',
     'Terms of Service',
-    'Terms of Service for CoachFlow AI.',
+    'Terms of Service for Coachflow Aquisition.',
     jsonb_build_object(
       'sections', jsonb_build_array(
         jsonb_build_object('id','legal_terms','type','rich_text','enabled',true,'settings',jsonb_build_object('title','Terms of Service','content','<p>Update this content in Admin → Pages.</p>'))
@@ -112,7 +112,7 @@ values
     true,
     'published',
     'Contact',
-    'Contact CoachFlow AI.',
+    'Contact Coachflow Aquisition.',
     jsonb_build_object(
       'sections', jsonb_build_array(
         jsonb_build_object('id','contact_rich','type','rich_text','enabled',true,'settings',jsonb_build_object('title','Contact','content','<p>Update this content in Admin → Pages.</p>'))

@@ -1,6 +1,7 @@
 import { homepageDefaults, type HomepageContent } from "@/content/homepage";
 import { mergePageSectionsWithDefaults } from "@/utils/homepageSections";
 import { mergeTypographyScale } from "@/utils/typographyScale";
+import { sanitizeContentStrings } from "@/utils/textSanitize";
 
 type Link = { label: string; href: string };
 
@@ -215,7 +216,7 @@ export function neutralizeLegacyProofContent(content: HomepageContent): Homepage
 export function mergeHomepageContent(c: Partial<HomepageContent> | null | undefined): HomepageContent {
   if (!c) return homepageDefaults;
 
-  return neutralizeLegacyProofContent({
+  return neutralizeLegacyProofContent(sanitizeContentStrings({
     ...homepageDefaults,
     ...c,
     site: {
@@ -254,6 +255,7 @@ export function mergeHomepageContent(c: Partial<HomepageContent> | null | undefi
         ...(c.hero?.revenueVisual || {}),
       },
       backgroundImage: c.hero?.backgroundImage || homepageDefaults.hero.backgroundImage,
+        mobileBackgroundImage: c.hero?.mobileBackgroundImage || (homepageDefaults.hero as any).mobileBackgroundImage,
     },
     trust: {
       ...homepageDefaults.trust,
@@ -265,18 +267,21 @@ export function mergeHomepageContent(c: Partial<HomepageContent> | null | undefi
       ...(c.features || {}),
       cards: Array.isArray(c.features?.cards) ? c.features?.cards : homepageDefaults.features.cards,
       backgroundImage: c.features?.backgroundImage || homepageDefaults.features.backgroundImage,
+        mobileBackgroundImage: c.features?.mobileBackgroundImage || (homepageDefaults.features as any).mobileBackgroundImage,
     },
     workflow: {
       ...homepageDefaults.workflow,
       ...(c.workflow || {}),
       steps: Array.isArray(c.workflow?.steps) ? c.workflow?.steps : homepageDefaults.workflow.steps,
       backgroundImage: c.workflow?.backgroundImage || homepageDefaults.workflow.backgroundImage,
+        mobileBackgroundImage: c.workflow?.mobileBackgroundImage || (homepageDefaults.workflow as any).mobileBackgroundImage,
     },
     pricing: {
       ...homepageDefaults.pricing,
       ...(c.pricing || {}),
       tiers: Array.isArray(c.pricing?.tiers) ? c.pricing?.tiers : homepageDefaults.pricing.tiers,
       backgroundImage: c.pricing?.backgroundImage || homepageDefaults.pricing.backgroundImage,
+        mobileBackgroundImage: c.pricing?.mobileBackgroundImage || (homepageDefaults.pricing as any).mobileBackgroundImage,
     },
     application: {
       ...homepageDefaults.application,
@@ -289,6 +294,7 @@ export function mergeHomepageContent(c: Partial<HomepageContent> | null | undefi
           : homepageDefaults.application.fields.revenueOptions,
       },
       backgroundImage: c.application?.backgroundImage || homepageDefaults.application.backgroundImage,
+        mobileBackgroundImage: c.application?.mobileBackgroundImage || (homepageDefaults.application as any).mobileBackgroundImage,
     },
     footer: {
       ...homepageDefaults.footer,
@@ -308,7 +314,7 @@ export function mergeHomepageContent(c: Partial<HomepageContent> | null | undefi
         phone: "",
         message: "",
         tooltip: "Chat with us!",
-        modalTitle: "CoachFlow AI",
+        modalTitle: "Coachflow Aquisition",
         modalSubtitle: "Usually replies instantly",
         buttonText: "Start Chat",
         headerColorHex: "#25D366",
@@ -318,12 +324,12 @@ export function mergeHomepageContent(c: Partial<HomepageContent> | null | undefi
       phone: c.whatsapp?.phone ?? (homepageDefaults.whatsapp?.phone ?? ""),
       message: c.whatsapp?.message ?? (homepageDefaults.whatsapp?.message ?? ""),
       tooltip: c.whatsapp?.tooltip ?? (homepageDefaults.whatsapp?.tooltip ?? "Chat with us!"),
-      modalTitle: c.whatsapp?.modalTitle ?? (homepageDefaults.whatsapp?.modalTitle ?? "CoachFlow AI"),
+      modalTitle: c.whatsapp?.modalTitle ?? (homepageDefaults.whatsapp?.modalTitle ?? "Coachflow Aquisition"),
       modalSubtitle:
         c.whatsapp?.modalSubtitle ?? (homepageDefaults.whatsapp?.modalSubtitle ?? "Usually replies instantly"),
       buttonText: c.whatsapp?.buttonText ?? (homepageDefaults.whatsapp?.buttonText ?? "Start Chat"),
       headerColorHex: c.whatsapp?.headerColorHex ?? (homepageDefaults.whatsapp?.headerColorHex || "#25D366"),
       avatar: c.whatsapp?.avatar || homepageDefaults.whatsapp?.avatar,
     },
-  });
+  }));
 }

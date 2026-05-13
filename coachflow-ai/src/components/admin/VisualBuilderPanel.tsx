@@ -16,7 +16,6 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
-import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -32,6 +31,7 @@ import { neutralizeLegacyProofContent } from "@/utils/homepageMerge";
 import { requestAdminRevalidate } from "@/utils/adminRevalidate";
 import { mergeTypographyScale } from "@/utils/typographyScale";
 import { RebuiltLandingFrame } from "@/components/landing/RebuiltLandingFrame";
+import { sanitizeContentStrings } from "@/utils/textSanitize";
 import type { Tab } from "@/components/admin/types";
 import {
   Monitor,
@@ -139,7 +139,7 @@ function mergeContent(c: Partial<HomepageContent> | null): HomepageContent {
     return out as HomepageContent["socialLinksV2"];
   };
 
-  return neutralizeLegacyProofContent({
+  return neutralizeLegacyProofContent(sanitizeContentStrings({
     ...homepageDefaults,
     ...c,
     site: { ...homepageDefaults.site, ...(c.site || {}), theme: mergeTheme(homepageDefaults.site.theme, c.site?.theme) },
@@ -168,6 +168,7 @@ function mergeContent(c: Partial<HomepageContent> | null): HomepageContent {
         ...(c.hero?.revenueVisual || {}),
       },
       backgroundImage: c.hero?.backgroundImage || homepageDefaults.hero.backgroundImage,
+        mobileBackgroundImage: c.hero?.mobileBackgroundImage || (homepageDefaults.hero as any).mobileBackgroundImage,
     },
     trust: { ...homepageDefaults.trust, ...(c.trust || {}), icons: c.trust?.icons || homepageDefaults.trust.icons },
     features: {
@@ -175,18 +176,21 @@ function mergeContent(c: Partial<HomepageContent> | null): HomepageContent {
       ...(c.features || {}),
       cards: c.features?.cards || homepageDefaults.features.cards,
       backgroundImage: c.features?.backgroundImage || homepageDefaults.features.backgroundImage,
+        mobileBackgroundImage: c.features?.mobileBackgroundImage || (homepageDefaults.features as any).mobileBackgroundImage,
     },
     workflow: {
       ...homepageDefaults.workflow,
       ...(c.workflow || {}),
       steps: c.workflow?.steps || homepageDefaults.workflow.steps,
       backgroundImage: c.workflow?.backgroundImage || homepageDefaults.workflow.backgroundImage,
+        mobileBackgroundImage: c.workflow?.mobileBackgroundImage || (homepageDefaults.workflow as any).mobileBackgroundImage,
     },
     pricing: {
       ...homepageDefaults.pricing,
       ...(c.pricing || {}),
       tiers: c.pricing?.tiers || homepageDefaults.pricing.tiers,
       backgroundImage: c.pricing?.backgroundImage || homepageDefaults.pricing.backgroundImage,
+        mobileBackgroundImage: c.pricing?.mobileBackgroundImage || (homepageDefaults.pricing as any).mobileBackgroundImage,
     },
     application: {
       ...homepageDefaults.application,
@@ -197,6 +201,7 @@ function mergeContent(c: Partial<HomepageContent> | null): HomepageContent {
         revenueOptions: c.application?.fields?.revenueOptions || homepageDefaults.application.fields.revenueOptions,
       },
       backgroundImage: c.application?.backgroundImage || homepageDefaults.application.backgroundImage,
+        mobileBackgroundImage: c.application?.mobileBackgroundImage || (homepageDefaults.application as any).mobileBackgroundImage,
     },
     footer: {
       ...homepageDefaults.footer,
@@ -212,7 +217,7 @@ function mergeContent(c: Partial<HomepageContent> | null): HomepageContent {
         phone: "",
         message: "",
         tooltip: "Chat with us!",
-        modalTitle: "CoachFlow AI",
+        modalTitle: "Coachflow Aquisition",
         modalSubtitle: "Usually replies instantly",
         buttonText: "Start Chat",
         headerColorHex: "#25D366",
@@ -222,7 +227,7 @@ function mergeContent(c: Partial<HomepageContent> | null): HomepageContent {
       phone: c.whatsapp?.phone ?? (homepageDefaults.whatsapp?.phone ?? ""),
       message: c.whatsapp?.message ?? (homepageDefaults.whatsapp?.message ?? ""),
       tooltip: c.whatsapp?.tooltip ?? (homepageDefaults.whatsapp?.tooltip ?? "Chat with us!"),
-      modalTitle: c.whatsapp?.modalTitle ?? (homepageDefaults.whatsapp?.modalTitle ?? "CoachFlow AI"),
+      modalTitle: c.whatsapp?.modalTitle ?? (homepageDefaults.whatsapp?.modalTitle ?? "Coachflow Aquisition"),
       modalSubtitle:
         c.whatsapp?.modalSubtitle ?? (homepageDefaults.whatsapp?.modalSubtitle ?? "Usually replies instantly"),
       buttonText: c.whatsapp?.buttonText ?? (homepageDefaults.whatsapp?.buttonText ?? "Start Chat"),
@@ -231,7 +236,7 @@ function mergeContent(c: Partial<HomepageContent> | null): HomepageContent {
     },
     page: { sections: mergePageSectionsWithDefaults(c.page?.sections) },
     customSections: c.customSections || homepageDefaults.customSections,
-  });
+  }));
 }
 
 function SectionRow({ item, selected, subtitle, children, onSelect, onToggle, onDuplicate }: {
@@ -420,7 +425,6 @@ function InspectorGroup({ title, children }: { title: string; children: ReactNod
 }
 
 export function VisualBuilderPanel({ supabase, onNavigateTab, onSignOut }: Props) {
-  const router = useRouter();
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 6 } }));
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -1023,7 +1027,7 @@ export function VisualBuilderPanel({ supabase, onNavigateTab, onSignOut }: Props
           heading: "",
           subcopy: "",
           ctaText: "",
-          ctaHref: "#lead-form",
+          ctaHref: isRebuiltTemplate ? "#apply" : "#lead-form",
         },
       }));
       return;
@@ -1063,6 +1067,7 @@ export function VisualBuilderPanel({ supabase, onNavigateTab, onSignOut }: Props
     content.socialLinks,
     content.socialLinksV2,
     content.trust.eyebrow,
+    isRebuiltTemplate,
     updateSectionSilent,
   ]);
 
@@ -1268,9 +1273,12 @@ export function VisualBuilderPanel({ supabase, onNavigateTab, onSignOut }: Props
                 type="button"
                 className="ml-2 inline-flex h-9 items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 text-xs font-semibold text-white/80 hover:bg-white/10"
                 onClick={async () => {
-                  if (onSignOut) await onSignOut();
-                  else await supabase.auth.signOut();
-                  router.refresh();
+                  if (onSignOut) {
+                    await onSignOut();
+                    return;
+                  }
+                  void supabase.auth.signOut({ scope: "local" }).catch(() => undefined);
+                  window.location.assign("/admin");
                 }}
               >
                 <LogOut className="h-4 w-4" />
@@ -1295,9 +1303,7 @@ export function VisualBuilderPanel({ supabase, onNavigateTab, onSignOut }: Props
 
             <div className="flex min-w-0 flex-1 items-center gap-2">
               <span className="inline-flex h-2 w-2 rounded-full bg-[var(--cf-accent)]" />
-              <div className="truncate text-sm font-semibold text-white">
-                CoachFlow <span className="text-[var(--cf-accent)]">AI</span>
-              </div>
+              <div className="truncate text-sm font-semibold text-white">Coachflow Aquisition</div>
             </div>
 
             <button
@@ -1663,7 +1669,7 @@ export function VisualBuilderPanel({ supabase, onNavigateTab, onSignOut }: Props
               {selectedSection.type === "footer" ? (
                 <Select
                   label="Show social"
-                  value={(selectedSection.settings as any)?.showSocial ? "yes" : "no"}
+                  value={(selectedSection.settings as any)?.showSocial === false ? "no" : "yes"}
                   onChange={(e) =>
                     updateSection(selectedSection.id, (s) => ({
                       ...s,
@@ -1744,13 +1750,35 @@ export function VisualBuilderPanel({ supabase, onNavigateTab, onSignOut }: Props
               </div>
 
               {supportsBackgroundMedia ? (
-                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <div className="grid grid-cols-1 gap-3">
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                    <Input
+                      label="Desktop background"
+                      value={String(
+                        (selectedSection.settings as any)?.background?.url ||
+                          (selectedSection.settings as any)?.backgroundImage ||
+                          (selectedSection.settings as any)?.backgroundVideo ||
+                          "",
+                      )}
+                      readOnly
+                    />
+                    <Input
+                      label="Mobile background"
+                      value={String(
+                        (selectedSection.settings as any)?.mobileBackground?.url ||
+                          (selectedSection.settings as any)?.mobileBackgroundImage ||
+                          "",
+                      )}
+                      readOnly
+                    />
+                  </div>
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                   <Button
                     variant="secondary"
-                    className="mt-6 h-10"
+                    className="h-10"
                     onClick={() => {
                       openMediaPicker({
-                        title: "Pick background media",
+                        title: "Pick desktop background media",
                         accept: "image/*,video/*",
                         onPick: (asset) => {
                           const lower = asset.url.toLowerCase();
@@ -1769,28 +1797,80 @@ export function VisualBuilderPanel({ supabase, onNavigateTab, onSignOut }: Props
                       });
                     }}
                   >
-                    Pick media
+                    Pick desktop bg
                   </Button>
                   <Button
                     variant="secondary"
-                    className="mt-6 h-10"
+                    className="h-10"
                     onClick={() =>
                       updateSection(selectedSection.id, (s) => ({
                         ...s,
                         settings: {
                           ...(s.settings || {}),
-                          backgroundType: undefined,
+                          backgroundType:
+                            (s.settings as any)?.mobileBackgroundImage || (s.settings as any)?.mobileBackground?.url
+                              ? "image"
+                              : undefined,
                           backgroundColor: undefined,
+                          backgroundColorHex: undefined,
                           backgroundImage: undefined,
                           backgroundVideo: undefined,
-                          overlayColor: undefined,
                           background: undefined,
                         },
                       }))
                     }
                   >
-                    Clear bg
+                    Clear desktop bg
                   </Button>
+                  <Button
+                    variant="secondary"
+                    className="h-10"
+                    onClick={() => {
+                      openMediaPicker({
+                        title: "Pick mobile background media",
+                        accept: "image/*",
+                        onPick: (asset) => {
+                          updateSection(selectedSection.id, (s) => ({
+                            ...s,
+                            settings: {
+                              ...(s.settings || {}),
+                              backgroundType: "image",
+                              mobileBackgroundImage: asset.url,
+                              mobileBackground: { url: asset.url, path: asset.path },
+                            },
+                          }));
+                        },
+                      });
+                    }}
+                  >
+                    Pick mobile bg
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    className="h-10"
+                    onClick={() =>
+                      updateSection(selectedSection.id, (s) => {
+                        const hasDesktop =
+                          Boolean((s.settings as any)?.backgroundImage) ||
+                          Boolean((s.settings as any)?.background?.url) ||
+                          Boolean((s.settings as any)?.backgroundVideo) ||
+                          Boolean((s.settings as any)?.backgroundColor) ||
+                          Boolean((s.settings as any)?.backgroundColorHex);
+                        return {
+                          ...s,
+                          settings: {
+                            ...(s.settings || {}),
+                            backgroundType: hasDesktop ? (s.settings as any)?.backgroundType : undefined,
+                            mobileBackgroundImage: undefined,
+                            mobileBackground: undefined,
+                          },
+                        };
+                      })
+                    }
+                  >
+                    Clear mobile bg
+                  </Button>
+                  </div>
                 </div>
               ) : null}
             </div>
@@ -3059,7 +3139,7 @@ export function VisualBuilderPanel({ supabase, onNavigateTab, onSignOut }: Props
               />
               <Input
                 label="CTA href"
-                value={String((selectedSection.settings as any)?.ctaHref || "#lead-form")}
+                value={String((selectedSection.settings as any)?.ctaHref || (isRebuiltTemplate ? "#apply" : "#lead-form"))}
                 onChange={(e) =>
                   updateSection(selectedSection.id, (s) => ({
                     ...s,
@@ -3740,10 +3820,13 @@ export function VisualBuilderPanel({ supabase, onNavigateTab, onSignOut }: Props
                   variant="secondary"
                   className="h-11 w-full"
                   onClick={async () => {
-                    if (onSignOut) await onSignOut();
-                    else await supabase.auth.signOut();
+                    if (onSignOut) {
+                      await onSignOut();
+                      return;
+                    }
+                    void supabase.auth.signOut({ scope: "local" }).catch(() => undefined);
                     setMobileMenuOpen(false);
-                    router.refresh();
+                    window.location.assign("/admin");
                   }}
                 >
                   <LogOut className="mr-2 h-4 w-4" />

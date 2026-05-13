@@ -13,14 +13,17 @@ const schema = z.object({
   status: z.enum(["new", "contacted", "closed"]),
 });
 
+const idSchema = z.string().uuid();
+
 export async function GET(req: Request, { params }: Props) {
   const gate = await requireAdmin(req);
   if (!gate.ok) return adminJsonError(gate);
   const { id } = await params;
+  if (!idSchema.safeParse(id).success) return NextResponse.json({ ok: false, message: "Invalid lead id" }, { status: 400 });
 
   const { data, error } = await gate.supabase
     .from("leads")
-    .select("id, created_at, name, email, phone, business_type, revenue, message, status")
+    .select("*")
     .eq("id", id)
     .maybeSingle();
   if (error) return NextResponse.json({ ok: false, message: error.message }, { status: 500 });
@@ -32,6 +35,7 @@ export async function PATCH(req: Request, { params }: Props) {
   const gate = await requireAdmin(req);
   if (!gate.ok) return adminJsonError(gate);
   const { id } = await params;
+  if (!idSchema.safeParse(id).success) return NextResponse.json({ ok: false, message: "Invalid lead id" }, { status: 400 });
 
   let json: unknown;
   try {
@@ -52,4 +56,21 @@ export async function PATCH(req: Request, { params }: Props) {
   if (error) return NextResponse.json({ ok: false, message: error.message }, { status: 500 });
   if (!data) return NextResponse.json({ ok: false, message: "Lead not found" }, { status: 404 });
   return NextResponse.json({ ok: true, lead: data }, { status: 200 });
+}
+
+export async function DELETE(req: Request, { params }: Props) {
+  const gate = await requireAdmin(req);
+  if (!gate.ok) return adminJsonError(gate);
+  const { id } = await params;
+  if (!idSchema.safeParse(id).success) return NextResponse.json({ ok: false, message: "Invalid lead id" }, { status: 400 });
+
+  const { data, error } = await gate.supabase
+    .from("leads")
+    .delete()
+    .eq("id", id)
+    .select("id")
+    .maybeSingle();
+  if (error) return NextResponse.json({ ok: false, message: error.message }, { status: 500 });
+  if (!data) return NextResponse.json({ ok: false, message: "Lead not found" }, { status: 404 });
+  return NextResponse.json({ ok: true, deletedId: data.id }, { status: 200 });
 }

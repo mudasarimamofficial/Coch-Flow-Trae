@@ -1,4 +1,4 @@
-CoachFlow AI MVP: landing page + lead capture + admin dashboard.
+Coachflow Aquisition MVP: landing page + lead capture + admin dashboard.
 
 ## Getting Started
 

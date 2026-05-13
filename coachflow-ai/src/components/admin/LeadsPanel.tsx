@@ -1,9 +1,9 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import type { Lead } from "@/components/admin/types";
 import { LeadDetails } from "@/components/admin/LeadDetails";
-import { RefreshCw } from "lucide-react";
+import { RefreshCw, Trash2 } from "lucide-react";
 
 type Props = {
   leads: Lead[];
@@ -17,12 +17,18 @@ type Props = {
   onSelect: (id: string | null) => void;
   onRefresh: () => Promise<void>;
   onUpdateStatus: (id: string, status: Lead["status"]) => Promise<void>;
+  onDeleteLead: (id: string) => Promise<boolean>;
+  onBulkDelete: (ids: string[]) => Promise<boolean>;
 };
 
 function formatDate(iso: string) {
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return iso;
   return d.toLocaleString();
+}
+
+function selectedTier(lead: Lead) {
+  return (lead.selected_tier || lead.business_type || "").trim();
 }
 
 export function LeadsPanel({
@@ -37,7 +43,15 @@ export function LeadsPanel({
   onSelect,
   onRefresh,
   onUpdateStatus,
+  onDeleteLead,
+  onBulkDelete,
 }: Props) {
+  const [selectedLeadIds, setSelectedLeadIds] = useState<string[]>([]);
+  const [confirmDelete, setConfirmDelete] = useState<{ ids: string[]; label: string } | null>(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [deleteNotice, setDeleteNotice] = useState<string | null>(null);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+
   const selected = useMemo(
     () => leads.find((l) => l.id === selectedId) || null,
     [leads, selectedId],
@@ -57,10 +71,41 @@ export function LeadsPanel({
       return (
         l.name.toLowerCase().includes(q) ||
         l.email.toLowerCase().includes(q) ||
-        (l.phone || "").toLowerCase().includes(q)
+        (l.phone || "").toLowerCase().includes(q) ||
+        selectedTier(l).toLowerCase().includes(q)
       );
     });
   }, [leads, query, datePreset]);
+
+  useEffect(() => {
+    const existing = new Set(leads.map((lead) => lead.id));
+    setSelectedLeadIds((ids) => ids.filter((id) => existing.has(id)));
+  }, [leads]);
+
+  const filteredIds = filtered.map((lead) => lead.id);
+  const allFilteredSelected = filteredIds.length > 0 && filteredIds.every((id) => selectedLeadIds.includes(id));
+
+  async function confirmDeleteNow() {
+    if (!confirmDelete?.ids.length) return;
+    setDeleteLoading(true);
+    setDeleteError(null);
+    setDeleteNotice(null);
+    try {
+      const ok =
+        confirmDelete.ids.length === 1
+          ? await onDeleteLead(confirmDelete.ids[0])
+          : await onBulkDelete(confirmDelete.ids);
+      if (!ok) {
+        setDeleteError("Delete failed. Check the error banner above or try again.");
+        return;
+      }
+      setSelectedLeadIds((ids) => ids.filter((id) => !confirmDelete.ids.includes(id)));
+      setDeleteNotice(confirmDelete.ids.length === 1 ? "Lead deleted." : "Selected leads deleted.");
+      setConfirmDelete(null);
+    } finally {
+      setDeleteLoading(false);
+    }
+  }
 
   return (
     <div className="flex flex-1 flex-col gap-4 px-4 pb-8 lg:px-6">
@@ -104,6 +149,29 @@ export function LeadsPanel({
           {leadsError}
         </div>
       ) : null}
+      {deleteError ? (
+        <div className="rounded-2xl border border-rose-500/20 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">
+          {deleteError}
+        </div>
+      ) : null}
+      {deleteNotice ? (
+        <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200">
+          {deleteNotice}
+        </div>
+      ) : null}
+
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white/70">
+        <div>{selectedLeadIds.length} selected</div>
+        <Button
+          variant="secondary"
+          className="h-10"
+          disabled={!selectedLeadIds.length || deleteLoading}
+          onClick={() => setConfirmDelete({ ids: selectedLeadIds, label: `${selectedLeadIds.length} selected leads` })}
+        >
+          <Trash2 className="mr-2 h-4 w-4" />
+          Bulk delete
+        </Button>
+      </div>
 
       <div className="grid flex-1 grid-cols-1 gap-4 lg:grid-cols-[1.2fr_0.8fr]">
         <div className="overflow-hidden rounded-2xl border border-white/10 bg-white/5">
@@ -111,11 +179,28 @@ export function LeadsPanel({
             <table className="min-w-full text-left text-sm">
               <thead className="border-b border-white/10 bg-white/5 text-xs uppercase tracking-wide text-white/50">
                 <tr>
+                  <th className="px-4 py-3">
+                    <input
+                      type="checkbox"
+                      checked={allFilteredSelected}
+                      aria-label="Select all visible leads"
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setSelectedLeadIds((ids) => Array.from(new Set([...ids, ...filteredIds])));
+                        } else {
+                          const visible = new Set(filteredIds);
+                          setSelectedLeadIds((ids) => ids.filter((id) => !visible.has(id)));
+                        }
+                      }}
+                    />
+                  </th>
                   <th className="px-4 py-3">Name</th>
                   <th className="px-4 py-3">Email</th>
                   <th className="px-4 py-3">Phone</th>
+                  <th className="px-4 py-3">Tier</th>
                   <th className="px-4 py-3">Status</th>
                   <th className="px-4 py-3">Date</th>
+                  <th className="px-4 py-3">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -128,6 +213,18 @@ export function LeadsPanel({
                         : "hover:bg-slate-50 dark:hover:bg-white/5"
                     }
                   >
+                    <td className="px-4 py-3">
+                      <input
+                        type="checkbox"
+                        checked={selectedLeadIds.includes(l.id)}
+                        aria-label={`Select ${l.name}`}
+                        onChange={(e) => {
+                          setSelectedLeadIds((ids) =>
+                            e.target.checked ? Array.from(new Set([...ids, l.id])) : ids.filter((id) => id !== l.id),
+                          );
+                        }}
+                      />
+                    </td>
                     <td className="px-4 py-3">
                       <button
                         type="button"
@@ -142,6 +239,9 @@ export function LeadsPanel({
                     </td>
                     <td className="px-4 py-3 text-slate-700 dark:text-slate-300">
                       {l.phone || "—"}
+                    </td>
+                    <td className="px-4 py-3 text-slate-700 dark:text-slate-300">
+                      {selectedTier(l) || "—"}
                     </td>
                     <td className="px-4 py-3">
                       <select
@@ -162,12 +262,22 @@ export function LeadsPanel({
                     <td className="px-4 py-3 text-slate-500 dark:text-slate-400">
                       {formatDate(l.created_at)}
                     </td>
+                    <td className="px-4 py-3">
+                      <button
+                        type="button"
+                        className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-rose-400/20 bg-rose-500/10 text-rose-200 hover:bg-rose-500/20"
+                        aria-label={`Delete ${l.name}`}
+                        onClick={() => setConfirmDelete({ ids: [l.id], label: l.name })}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </td>
                   </tr>
                 ))}
                 {!leadsLoading && filtered.length === 0 ? (
                   <tr>
                     <td
-                      colSpan={5}
+                      colSpan={8}
                       className="px-4 py-10 text-center text-sm text-slate-500 dark:text-slate-400"
                     >
                       No leads yet.
@@ -179,8 +289,35 @@ export function LeadsPanel({
           </div>
         </div>
 
-        <LeadDetails lead={selected} />
+        <LeadDetails
+          lead={selected}
+          onDelete={
+            selected
+              ? () => setConfirmDelete({ ids: [selected.id], label: selected.name })
+              : undefined
+          }
+        />
       </div>
+
+      {confirmDelete ? (
+        <div className="fixed inset-0 z-[10060] flex items-center justify-center bg-black/70 p-4">
+          <div className="w-full max-w-md rounded-2xl border border-white/10 bg-[#0b1414] p-5 shadow-2xl">
+            <div className="text-lg font-bold text-white">Delete leads?</div>
+            <p className="mt-2 text-sm text-white/65">This will permanently delete selected leads.</p>
+            <p className="mt-3 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white/75">
+              {confirmDelete.label}
+            </p>
+            <div className="mt-5 flex items-center justify-end gap-3">
+              <Button variant="secondary" className="h-10" disabled={deleteLoading} onClick={() => setConfirmDelete(null)}>
+                Cancel
+              </Button>
+              <Button className="h-10 bg-rose-500 text-white hover:bg-rose-400" disabled={deleteLoading} onClick={confirmDeleteNow}>
+                {deleteLoading ? "Deleting..." : "Delete"}
+              </Button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

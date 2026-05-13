@@ -7,6 +7,7 @@ export type Lead = {
   business_type: string | null;
   revenue: string | null;
   message: string | null;
+  selected_tier?: string | null;
   status: "new" | "contacted" | "closed";
 };
 

@@ -9,10 +9,11 @@ export const revalidate = 0;
 export default async function Home({
   searchParams,
 }: {
-  searchParams?: Record<string, string | string[] | undefined>;
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const content = await getHomepageContent();
-  const isBuilderPreview = searchParams?.builderPreview === "true";
+  const resolvedSearchParams = searchParams ? await searchParams : {};
+  const isBuilderPreview = resolvedSearchParams.builderPreview === "true";
   let templateHtml: string | null = null;
   try {
     templateHtml = await readFile(path.join(process.cwd(), "public", "coachflow-rebuilt-1.html"), "utf8");

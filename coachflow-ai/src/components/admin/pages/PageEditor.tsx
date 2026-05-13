@@ -83,7 +83,7 @@ export function PageEditor({
             label="Meta description"
             value={metaDescription}
             onChange={(e) => onMetaDescriptionChange(e.target.value)}
-            placeholder="Privacy Policy for CoachFlow AI."
+            placeholder="Privacy Policy for Coachflow Aquisition."
           />
         </div>
         <div className="mt-4 rounded-2xl border border-white/10 bg-[var(--cf-surface-low)] px-4 py-3">

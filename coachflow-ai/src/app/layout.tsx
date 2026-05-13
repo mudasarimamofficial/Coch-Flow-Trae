@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { DM_Sans, Inter, Playfair_Display } from "next/font/google";
 import "./globals.css";
 import { ThemeScript } from "@/components/theme/ThemeScript";
+import { CustomCodeInjector } from "@/components/layout/CustomCodeInjector";
 import { getHomepageContent } from "@/utils/homepageContent";
 import { buildThemeCssVars } from "@/utils/themeCss";
 
@@ -33,19 +34,15 @@ function compactText(value: unknown) {
   return typeof value === "string" ? value.replace(/\s+/g, " ").trim() : "";
 }
 
-function escapeInlineRawText(value: string) {
-  return value.replace(/<\/(script|style)/gi, "<\\/$1");
-}
-
 export async function generateMetadata(): Promise<Metadata> {
   const content = await getHomepageContent();
-  const brand = compactText(content.header?.brandText) || "CoachFlow AI";
+  const brand = compactText(content.header?.brandText) || "Coachflow Aquisition";
   const promise = compactText(`${content.hero?.heading?.prefix || ""} ${content.hero?.heading?.highlight || ""}`);
   const title = promise ? `${brand} | ${promise}` : brand;
   const description =
     compactText(content.hero?.subcopy) ||
     compactText(content.application?.subcopy) ||
-    "CoachFlow AI helps premium coaches build predictable client acquisition systems.";
+    "Coachflow Aquisition helps premium coaches build predictable client acquisition systems.";
   const faviconHref =
     content.site?.favicon?.url ||
     "https://ekwydksbprxebgmhbmtj.supabase.co/storage/v1/object/public/assets/coch%20flow%20favicon.png";
@@ -87,7 +84,6 @@ export default async function RootLayout({
   const appleTouchHref = faviconHref;
   const customCss = content.site?.customCss?.trim() || "";
   const customJs = content.site?.customJs?.trim() || "";
-  const customCssId = "cf-public-custom-css";
   const lower = faviconHref.toLowerCase();
   const type =
     lower.endsWith(".png")
@@ -108,22 +104,6 @@ export default async function RootLayout({
         <link rel="shortcut icon" href={faviconHref} type={type} />
         <link rel="apple-touch-icon" href={appleTouchHref} />
         <style dangerouslySetInnerHTML={{ __html: cssVars }} />
-        {customCss.length ? (
-          <>
-            <style
-              id={customCssId}
-              media="not all"
-              dangerouslySetInnerHTML={{ __html: escapeInlineRawText(customCss) }}
-            />
-            <script
-              dangerouslySetInnerHTML={{
-                __html:
-                  `;(() => { const el = document.getElementById(${JSON.stringify(customCssId)});` +
-                  ` if (!el) return; if (location.pathname.startsWith("/admin") || location.pathname === "/") { el.remove(); return; } el.media = "all"; })();`,
-              }}
-            />
-          </>
-        ) : null}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
         <link
@@ -134,13 +114,7 @@ export default async function RootLayout({
       </head>
       <body className="min-h-full flex flex-col bg-[var(--cf-bg)] text-[var(--cf-text)]">
         {children}
-        {customJs.length ? (
-          <script
-            dangerouslySetInnerHTML={{
-              __html: `;(() => { if (location.pathname.startsWith("/admin") || location.pathname === "/") return;\n${escapeInlineRawText(customJs)}\n})();`,
-            }}
-          />
-        ) : null}
+        <CustomCodeInjector customCss={customCss} customJs={customJs} />
       </body>
     </html>
   );

@@ -134,8 +134,13 @@ export async function getHomepageContent(): Promise<HomepageContent> {
       const heroSecondaryHref = String(value.hero?.secondaryCta?.href || "");
       const isLegacyHeroPrimary = heroPrimaryHref === "#lead-form";
       const isLegacyHeroSecondary = heroSecondaryHref === "#workflow";
+      const pricingHasLegacyCtas = (value.pricing?.tiers || []).some((tier) => String((tier as any)?.ctaHref || "") === "#lead-form");
+      const sectionsHaveLegacyCtas = (value.page?.sections || []).some((section) => {
+        if (section.type === "audit_bridge" && String((section.settings as any)?.ctaHref || "") === "#lead-form") return true;
+        return (section.blocks || []).some((block) => String((block.content as any)?.ctaHref || "") === "#lead-form");
+      });
 
-      if (!isLegacyNav && !isLegacyPrimary && !isLegacyHeroPrimary && !isLegacyHeroSecondary) return value;
+      if (!isLegacyNav && !isLegacyPrimary && !isLegacyHeroPrimary && !isLegacyHeroSecondary && !pricingHasLegacyCtas && !sectionsHaveLegacyCtas) return value;
 
       return {
         ...value,
@@ -154,6 +159,30 @@ export async function getHomepageContent(): Promise<HomepageContent> {
           secondaryCta: isLegacyHeroSecondary
             ? { ...value.hero.secondaryCta, href: homepageDefaults.hero.secondaryCta.href }
             : value.hero.secondaryCta,
+        },
+        pricing: {
+          ...value.pricing,
+          tiers: (value.pricing?.tiers || []).map((tier) => ({
+            ...tier,
+            ctaHref: String((tier as any).ctaHref || "") === "#lead-form" ? "#apply" : tier.ctaHref,
+          })),
+        },
+        page: {
+          ...value.page,
+          sections: (value.page?.sections || []).map((section) => ({
+            ...section,
+            settings:
+              section.type === "audit_bridge" && String((section.settings as any)?.ctaHref || "") === "#lead-form"
+                ? { ...(section.settings || {}), ctaHref: "#apply" }
+                : section.settings,
+            blocks: (section.blocks || []).map((block) => ({
+              ...block,
+              content: {
+                ...(block.content || {}),
+                ctaHref: String((block.content as any)?.ctaHref || "") === "#lead-form" ? "#apply" : (block.content as any)?.ctaHref,
+              },
+            })),
+          })),
         },
       };
     };
@@ -195,6 +224,7 @@ export async function getHomepageContent(): Promise<HomepageContent> {
           ...(c.hero?.revenueVisual || {}),
         },
         backgroundImage: c.hero?.backgroundImage || homepageDefaults.hero.backgroundImage,
+        mobileBackgroundImage: c.hero?.mobileBackgroundImage || (homepageDefaults.hero as any).mobileBackgroundImage,
       },
       trust: {
         ...homepageDefaults.trust,
@@ -206,18 +236,21 @@ export async function getHomepageContent(): Promise<HomepageContent> {
         ...(c.features || {}),
         cards: c.features?.cards || homepageDefaults.features.cards,
         backgroundImage: c.features?.backgroundImage || homepageDefaults.features.backgroundImage,
+        mobileBackgroundImage: c.features?.mobileBackgroundImage || (homepageDefaults.features as any).mobileBackgroundImage,
       },
       workflow: {
         ...homepageDefaults.workflow,
         ...(c.workflow || {}),
         steps: c.workflow?.steps || homepageDefaults.workflow.steps,
         backgroundImage: c.workflow?.backgroundImage || homepageDefaults.workflow.backgroundImage,
+        mobileBackgroundImage: c.workflow?.mobileBackgroundImage || (homepageDefaults.workflow as any).mobileBackgroundImage,
       },
       pricing: {
         ...homepageDefaults.pricing,
         ...(c.pricing || {}),
         tiers: c.pricing?.tiers || homepageDefaults.pricing.tiers,
         backgroundImage: c.pricing?.backgroundImage || homepageDefaults.pricing.backgroundImage,
+        mobileBackgroundImage: c.pricing?.mobileBackgroundImage || (homepageDefaults.pricing as any).mobileBackgroundImage,
       },
       application: {
         ...homepageDefaults.application,
@@ -228,6 +261,7 @@ export async function getHomepageContent(): Promise<HomepageContent> {
           revenueOptions: c.application?.fields?.revenueOptions || homepageDefaults.application.fields.revenueOptions,
         },
         backgroundImage: c.application?.backgroundImage || homepageDefaults.application.backgroundImage,
+        mobileBackgroundImage: c.application?.mobileBackgroundImage || (homepageDefaults.application as any).mobileBackgroundImage,
       },
       footer: {
         ...homepageDefaults.footer,
@@ -250,7 +284,7 @@ export async function getHomepageContent(): Promise<HomepageContent> {
           phone: "",
           message: "",
           tooltip: "Chat with us!",
-          modalTitle: "CoachFlow AI",
+          modalTitle: "Coachflow Aquisition",
           modalSubtitle: "Usually replies instantly",
           buttonText: "Start Chat",
           headerColorHex: "#25D366",
@@ -260,7 +294,7 @@ export async function getHomepageContent(): Promise<HomepageContent> {
         phone: c.whatsapp?.phone ?? (homepageDefaults.whatsapp?.phone ?? ""),
         message: c.whatsapp?.message ?? (homepageDefaults.whatsapp?.message ?? ""),
         tooltip: c.whatsapp?.tooltip ?? (homepageDefaults.whatsapp?.tooltip ?? "Chat with us!"),
-        modalTitle: c.whatsapp?.modalTitle ?? (homepageDefaults.whatsapp?.modalTitle ?? "CoachFlow AI"),
+        modalTitle: c.whatsapp?.modalTitle ?? (homepageDefaults.whatsapp?.modalTitle ?? "Coachflow Aquisition"),
         modalSubtitle:
           c.whatsapp?.modalSubtitle ?? (homepageDefaults.whatsapp?.modalSubtitle ?? "Usually replies instantly"),
         buttonText: c.whatsapp?.buttonText ?? (homepageDefaults.whatsapp?.buttonText ?? "Start Chat"),

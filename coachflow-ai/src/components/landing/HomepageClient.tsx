@@ -258,6 +258,7 @@ function mergeClientContent(c: Partial<HomepageContent> | null): HomepageContent
         ...((c.hero as any)?.revenueVisual || {}),
       },
       backgroundImage: (c.hero as any)?.backgroundImage || homepageDefaults.hero.backgroundImage,
+        mobileBackgroundImage: (c.hero as any)?.mobileBackgroundImage || (homepageDefaults.hero as any).mobileBackgroundImage,
     },
     trust: {
       ...homepageDefaults.trust,
@@ -269,18 +270,21 @@ function mergeClientContent(c: Partial<HomepageContent> | null): HomepageContent
       ...(c.features || {}),
       cards: c.features?.cards || homepageDefaults.features.cards,
       backgroundImage: c.features?.backgroundImage || homepageDefaults.features.backgroundImage,
+        mobileBackgroundImage: c.features?.mobileBackgroundImage || (homepageDefaults.features as any).mobileBackgroundImage,
     },
     workflow: {
       ...homepageDefaults.workflow,
       ...(c.workflow || {}),
       steps: c.workflow?.steps || homepageDefaults.workflow.steps,
       backgroundImage: c.workflow?.backgroundImage || homepageDefaults.workflow.backgroundImage,
+        mobileBackgroundImage: c.workflow?.mobileBackgroundImage || (homepageDefaults.workflow as any).mobileBackgroundImage,
     },
     pricing: {
       ...homepageDefaults.pricing,
       ...(c.pricing || {}),
       tiers: c.pricing?.tiers || homepageDefaults.pricing.tiers,
       backgroundImage: c.pricing?.backgroundImage || homepageDefaults.pricing.backgroundImage,
+        mobileBackgroundImage: c.pricing?.mobileBackgroundImage || (homepageDefaults.pricing as any).mobileBackgroundImage,
     },
     application: {
       ...homepageDefaults.application,
@@ -291,6 +295,7 @@ function mergeClientContent(c: Partial<HomepageContent> | null): HomepageContent
         revenueOptions: c.application?.fields?.revenueOptions || homepageDefaults.application.fields.revenueOptions,
       },
       backgroundImage: c.application?.backgroundImage || homepageDefaults.application.backgroundImage,
+        mobileBackgroundImage: c.application?.mobileBackgroundImage || (homepageDefaults.application as any).mobileBackgroundImage,
     },
     footer: {
       ...homepageDefaults.footer,
