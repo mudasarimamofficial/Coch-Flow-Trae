@@ -103,3 +103,18 @@ export function buildTypographyScaleCss(scale: unknown) {
     `@media (min-width: 1440px){:root{${cssVarsForTier(merged.desktopLarge)}}}`
   );
 }
+
+export function typographyVarsForTier(scale: unknown, tier: TypographyTier) {
+  const merged = mergeTypographyScale(scale);
+  return cssVarsForTier(merged[tier]);
+}
+
+export function buildScopedTypographyScaleCss(scale: unknown, selector: string) {
+  const merged = mergeTypographyScale(scale);
+  return (
+    `${selector}{${cssVarsForTier(merged.mobile)}}` +
+    `@media (min-width: 768px){${selector}{${cssVarsForTier(merged.tablet)}}}` +
+    `@media (min-width: 1024px){${selector}{${cssVarsForTier(merged.laptop)}}}` +
+    `@media (min-width: 1440px){${selector}{${cssVarsForTier(merged.desktopLarge)}}}`
+  );
+}

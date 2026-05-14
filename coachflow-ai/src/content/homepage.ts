@@ -108,6 +108,7 @@ export type HomepageContent = {
     founder?: {
       label: string;
       avatarText: string;
+      image?: { url: string; path?: string; alt?: string };
       name: string;
       title: string;
       quote: string;

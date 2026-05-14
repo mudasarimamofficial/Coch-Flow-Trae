@@ -235,6 +235,55 @@ function mergeContent(c: Partial<HomepageContent> | null): HomepageContent {
       headerColorHex: c.whatsapp?.headerColorHex ?? (homepageDefaults.whatsapp?.headerColorHex || "#25D366"),
       avatar: c.whatsapp?.avatar || homepageDefaults.whatsapp?.avatar,
     },
+    rebuilt: {
+      ...(homepageDefaults.rebuilt || {}),
+      ...((c as any).rebuilt || {}),
+      hero: {
+        ...((homepageDefaults.rebuilt as any)?.hero || {}),
+        ...(((c as any).rebuilt as any)?.hero || {}),
+      },
+      trustStrip: {
+        ...((homepageDefaults.rebuilt as any)?.trustStrip || {}),
+        ...(((c as any).rebuilt as any)?.trustStrip || {}),
+      },
+      founder: {
+        ...((homepageDefaults.rebuilt as any)?.founder || {}),
+        ...(((c as any).rebuilt as any)?.founder || {}),
+        image: (((c as any).rebuilt as any)?.founder?.image as any) || ((homepageDefaults.rebuilt as any)?.founder?.image as any),
+        paragraphs:
+          (((c as any).rebuilt as any)?.founder?.paragraphs as any) ||
+          ((homepageDefaults.rebuilt as any)?.founder?.paragraphs as any) ||
+          [],
+      },
+      promise: {
+        ...((homepageDefaults.rebuilt as any)?.promise || {}),
+        ...(((c as any).rebuilt as any)?.promise || {}),
+        cards:
+          (((c as any).rebuilt as any)?.promise?.cards as any) ||
+          ((homepageDefaults.rebuilt as any)?.promise?.cards as any) ||
+          [],
+      },
+      how: {
+        ...((homepageDefaults.rebuilt as any)?.how || {}),
+        ...(((c as any).rebuilt as any)?.how || {}),
+        steps:
+          (((c as any).rebuilt as any)?.how?.steps as any) ||
+          ((homepageDefaults.rebuilt as any)?.how?.steps as any) ||
+          [],
+      },
+      honest: {
+        ...((homepageDefaults.rebuilt as any)?.honest || {}),
+        ...(((c as any).rebuilt as any)?.honest || {}),
+        paragraphs:
+          (((c as any).rebuilt as any)?.honest?.paragraphs as any) ||
+          ((homepageDefaults.rebuilt as any)?.honest?.paragraphs as any) ||
+          [],
+        pledgeItems:
+          (((c as any).rebuilt as any)?.honest?.pledgeItems as any) ||
+          ((homepageDefaults.rebuilt as any)?.honest?.pledgeItems as any) ||
+          [],
+      },
+    },
     page: { sections: mergePageSectionsWithDefaults(c.page?.sections) },
     customSections: c.customSections || homepageDefaults.customSections,
   }));
@@ -1320,6 +1369,40 @@ export function VisualBuilderPanel({ supabase, onNavigateTab, onSignOut }: Props
     return { subtitle: "", children: [] as string[] };
   };
 
+  const currentLandingSectionOptions = [
+    { value: "hero", label: "Hero" },
+    { value: "trust_strip", label: "Trust Strip" },
+    { value: "founder", label: "Founder" },
+    { value: "promise", label: "Promise" },
+    { value: "how", label: "How It Works" },
+    { value: "honest", label: "Honest" },
+    { value: "pricing", label: "Pricing" },
+    { value: "application", label: "Application" },
+    { value: "footer", label: "Footer" },
+  ] as const;
+  const currentLandingTypes = new Set(currentLandingSectionOptions.map((option) => option.value));
+  const existingSectionTypes = new Set(pageSections.map((section) => String(section.type)));
+  const addSectionOptions = isRebuiltTemplate
+    ? [
+        ...currentLandingSectionOptions.filter((option) => !existingSectionTypes.has(option.value)),
+        { value: "custom_html", label: "Custom HTML" },
+      ]
+    : [
+        { value: "hero", label: "Hero" },
+        { value: "trust_strip", label: "Trust Strip" },
+        { value: "founder", label: "Founder" },
+        { value: "promise", label: "Promise" },
+        { value: "how", label: "How It Works" },
+        { value: "honest", label: "Honest" },
+        { value: "pricing", label: "Pricing" },
+        { value: "application", label: "Application" },
+        { value: "footer", label: "Footer" },
+        { value: "custom_html", label: "Custom HTML" },
+      ];
+  const selectedAddType = addSectionOptions.some((option) => option.value === addType)
+    ? addType
+    : addSectionOptions[0]?.value || "custom_html";
+
   return (
     <div ref={builderRootRef} className="flex h-full min-w-0 flex-col overflow-hidden bg-[var(--cf-bg)]">
       <div className="hidden lg:flex flex-col">
@@ -1646,7 +1729,7 @@ export function VisualBuilderPanel({ supabase, onNavigateTab, onSignOut }: Props
                         selected={selectedId === s.id}
                         subtitle={meta.subtitle}
                         onSelect={() => setSelectedId(s.id)}
-                        onDuplicate={() => duplicateSection(s.id)}
+                        onDuplicate={currentLandingTypes.has(s.type as any) ? undefined : () => duplicateSection(s.id)}
                         onToggle={() => {
                           const next = pageSections.map((x) => (x.id === s.id ? { ...x, enabled: !x.enabled } : x));
                           setContent({ ...content, page: { sections: next } });
@@ -1698,36 +1781,26 @@ export function VisualBuilderPanel({ supabase, onNavigateTab, onSignOut }: Props
             <div className="grid grid-cols-[1fr_auto] gap-2">
               <Select
                 label="Add section"
-                value={addType}
+                value={selectedAddType}
                 onChange={(e) => setAddType(e.target.value)}
-                options={[
-                  { value: "hero", label: "Hero" },
-                  { value: "trust_strip", label: "Trust Strip" },
-                  { value: "founder", label: "Founder" },
-                  { value: "promise", label: "Promise" },
-                  { value: "how", label: "How It Works" },
-                  { value: "honest", label: "Honest" },
-                  { value: "pricing", label: "Pricing" },
-                  { value: "application", label: "Application" },
-                  { value: "footer", label: "Footer" },
-                  { value: "custom_html", label: "Custom HTML" },
-                ]}
+                options={addSectionOptions}
               />
               <Button
                 variant="secondary"
                 className="h-11 px-4"
                 onClick={() => {
-                  const id = `${addType}_${Date.now()}`;
+                  const typeToAdd = selectedAddType;
+                  const id = `${typeToAdd}_${Date.now()}`;
                   const next: PageSection = {
                     id,
-                    type: addType as any,
+                    type: typeToAdd as any,
                     enabled: true,
                     settings:
-                      addType === "custom_html"
+                      typeToAdd === "custom_html"
                         ? { html: "<div></div>", css: "", js: "" }
                         : undefined,
                     blocks:
-                      addType === "pricing"
+                      typeToAdd === "pricing"
                         ? [
                             {
                               id: `tier_${Date.now()}`,
@@ -1735,7 +1808,7 @@ export function VisualBuilderPanel({ supabase, onNavigateTab, onSignOut }: Props
                               content: { name: "", tagline: "", price: "", bullets: [], ctaText: "Select", ctaHref: "#apply" },
                             },
                           ]
-                        : addType === "footer"
+                        : typeToAdd === "footer"
                           ? [{ id: `social_${Date.now()}`, type: "social_link", content: { platform: "instagram", url: "", enabled: true, icon: { type: "library", value: "instagram" } } }]
                           : [],
                   };
@@ -1750,14 +1823,16 @@ export function VisualBuilderPanel({ supabase, onNavigateTab, onSignOut }: Props
               variant="secondary"
               className="h-11 w-full"
               onClick={() => {
-                const id = `custom_${Date.now()}`;
-                const nextSections: PageSection[] = [...pageSections, { id, type: "custom" as const, enabled: true }];
-                const nextCustom = [...(content.customSections || []), { id, enabled: true, html: "<div></div>", css: "", js: "" }];
-                setContent({ ...content, page: { sections: nextSections }, customSections: nextCustom });
+                const id = `custom_html_${Date.now()}`;
+                const nextSections: PageSection[] = [
+                  ...pageSections,
+                  { id, type: "custom_html" as const, enabled: true, settings: { html: "<div></div>", css: "" } },
+                ];
+                setContent({ ...content, page: { sections: nextSections } });
                 setSelectedId(id);
               }}
             >
-              Add Custom Section
+              Add HTML Section
             </Button>
           </div>
         </div>
@@ -1854,13 +1929,14 @@ export function VisualBuilderPanel({ supabase, onNavigateTab, onSignOut }: Props
                       { value: "none", label: "None" },
                       { value: "color", label: "Color" },
                       { value: "image", label: "Image" },
-                      { value: "video", label: "Video" },
+                      ...(!isRebuiltTemplate ? [{ value: "video", label: "Video" }] : []),
                     ]}
                   />
                 ) : (
                   <Input label="Background media" value="Not supported for this section" readOnly />
                 )}
               </div>
+              {!isRebuiltTemplate ? (
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <Input
                   label="Padding top (px)"
@@ -1889,11 +1965,12 @@ export function VisualBuilderPanel({ supabase, onNavigateTab, onSignOut }: Props
                   }}
                 />
               </div>
+              ) : null}
 
-              {selectedSection.type === "features" ||
+              {!isRebuiltTemplate && (selectedSection.type === "features" ||
               selectedSection.type === "workflow" ||
               selectedSection.type === "pricing" ||
-              selectedSection.type === "application" ? (
+              selectedSection.type === "application") ? (
                 <Input
                   label="Label tag"
                   value={String((selectedSection.settings as any)?.label || "")}
@@ -1906,7 +1983,7 @@ export function VisualBuilderPanel({ supabase, onNavigateTab, onSignOut }: Props
                 />
               ) : null}
 
-              {selectedSection.type === "workflow" ? (
+              {!isRebuiltTemplate && selectedSection.type === "workflow" ? (
                 <Select
                   label="Workflow variant"
                   value={String((selectedSection.settings as any)?.variant || "landing")}
@@ -1972,6 +2049,7 @@ export function VisualBuilderPanel({ supabase, onNavigateTab, onSignOut }: Props
                 </div>
               ) : null}
 
+              {!isRebuiltTemplate ? (
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <Select
                   label="Container width"
@@ -2005,6 +2083,7 @@ export function VisualBuilderPanel({ supabase, onNavigateTab, onSignOut }: Props
                   ]}
                 />
               </div>
+              ) : null}
 
               {supportsBackgroundMedia ? (
                 <div className="grid grid-cols-1 gap-3">
@@ -2036,10 +2115,10 @@ export function VisualBuilderPanel({ supabase, onNavigateTab, onSignOut }: Props
                     onClick={() => {
                       openMediaPicker({
                         title: "Pick desktop background media",
-                        accept: "image/*,video/*",
+                        accept: isRebuiltTemplate ? "image/*" : "image/*,video/*",
                         onPick: (asset) => {
                           const lower = asset.url.toLowerCase();
-                          const isVideo = lower.endsWith(".mp4") || lower.endsWith(".webm") || lower.endsWith(".mov");
+                          const isVideo = !isRebuiltTemplate && (lower.endsWith(".mp4") || lower.endsWith(".webm") || lower.endsWith(".mov"));
                           updateSection(selectedSection.id, (s) => ({
                             ...s,
                             settings: {
@@ -2237,6 +2316,7 @@ export function VisualBuilderPanel({ supabase, onNavigateTab, onSignOut }: Props
                   />
                 </InspectorGroup>
               ) : null}
+              {!isRebuiltTemplate ? (
               <InspectorGroup title="Hero Background">
                 <Select
                   label={labelRow("Hero background")}
@@ -2264,7 +2344,9 @@ export function VisualBuilderPanel({ supabase, onNavigateTab, onSignOut }: Props
                   ]}
                 />
               </InspectorGroup>
+              ) : null}
 
+              {!isRebuiltTemplate ? (
               <InspectorGroup title="Content">
                 <Input
                   label={labelRow("Headline prefix", `${content.hero.heading.prefix.length} chars`)}
@@ -2329,7 +2411,9 @@ export function VisualBuilderPanel({ supabase, onNavigateTab, onSignOut }: Props
                   rows={3}
                 />
               </InspectorGroup>
+              ) : null}
 
+              {!isRebuiltTemplate ? (
               <InspectorGroup title="Hero Metrics Panel">
                 <Input
                   label={labelRow("Proof title")}
@@ -2401,6 +2485,7 @@ export function VisualBuilderPanel({ supabase, onNavigateTab, onSignOut }: Props
                   }}
                 />
               </InspectorGroup>
+              ) : null}
 
               <InspectorGroup title="Call To Action">
                 <Input
@@ -2828,20 +2913,6 @@ export function VisualBuilderPanel({ supabase, onNavigateTab, onSignOut }: Props
                       />
                     </div>
                   ))}
-
-                <Textarea
-                  label={labelRow("Legacy socialLinks (JSON fallback)", `${JSON.stringify(content.socialLinks || [], null, 2).length} chars`)}
-                  value={JSON.stringify(content.socialLinks || [], null, 2)}
-                  onChange={(e) => {
-                    try {
-                      const next = JSON.parse(e.target.value) as HomepageContent["socialLinks"];
-                      if (!Array.isArray(next)) return;
-                      setContent({ ...content, socialLinks: next });
-                    } catch {
-                    }
-                  }}
-                  rows={6}
-                />
               </InspectorGroup>
             </div>
           ) : selectedSection?.type === "workflow" ? (
@@ -3354,12 +3425,14 @@ export function VisualBuilderPanel({ supabase, onNavigateTab, onSignOut }: Props
                 onChange={(e) => updateSection(selectedSection.id, (s) => ({ ...s, settings: { ...(s.settings || {}), css: e.target.value } }))}
                 rows={6}
               />
+              {!isRebuiltTemplate ? (
               <Textarea
                 label="Custom JS"
                 value={String((selectedSection.settings as any)?.js || "")}
                 onChange={(e) => updateSection(selectedSection.id, (s) => ({ ...s, settings: { ...(s.settings || {}), js: e.target.value } }))}
                 rows={6}
               />
+              ) : null}
             </div>
           ) : selectedSection?.type === "audit_bridge" ? (
             <div className="flex flex-col gap-4">
@@ -3444,6 +3517,98 @@ export function VisualBuilderPanel({ supabase, onNavigateTab, onSignOut }: Props
                     })
                   }
                 />
+                {(() => {
+                  const founder = ((content.rebuilt as any)?.founder || {}) as any;
+                  const image = founder.image && typeof founder.image === "object" ? founder.image : null;
+                  const imageUrl = typeof image?.url === "string" ? image.url : "";
+                  return (
+                    <div className="rounded-2xl border border-white/10 bg-white/5 p-3">
+                      <div className="mb-2 text-xs font-bold uppercase tracking-wide text-white/50">Founder image</div>
+                      {imageUrl ? (
+                        <div className="mb-3 flex items-center gap-3">
+                          <Image
+                            src={imageUrl}
+                            alt={String(image?.alt || founder.name || "Founder")}
+                            className="h-14 w-14 rounded-full border border-white/10 object-cover"
+                            width={56}
+                            height={56}
+                            unoptimized
+                          />
+                          <div className="min-w-0 flex-1">
+                            <div className="truncate text-xs font-semibold text-white/80">{imageUrl}</div>
+                            <div className="mt-1 text-[11px] text-white/45">Shown instead of avatar text.</div>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="mb-3 text-xs text-white/50">No image set. The avatar text fallback is used.</div>
+                      )}
+                      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                        <Button
+                          variant="secondary"
+                          className="h-10"
+                          onClick={() =>
+                            openMediaPicker({
+                              title: "Pick founder image",
+                              accept: "image/*",
+                              onPick: (asset) => {
+                                const currentFounder = ((content.rebuilt as any)?.founder || {}) as any;
+                                setContent({
+                                  ...content,
+                                  rebuilt: {
+                                    ...(content.rebuilt || {}),
+                                    founder: {
+                                      ...currentFounder,
+                                      image: {
+                                        url: asset.url,
+                                        path: asset.path,
+                                        alt: currentFounder.image?.alt || currentFounder.name || "Founder",
+                                      },
+                                    },
+                                  } as any,
+                                });
+                              },
+                            })
+                          }
+                        >
+                          {imageUrl ? "Replace image" : "Choose image"}
+                        </Button>
+                        <Button
+                          variant="secondary"
+                          className="h-10"
+                          disabled={!imageUrl}
+                          onClick={() =>
+                            setContent({
+                              ...content,
+                              rebuilt: {
+                                ...(content.rebuilt || {}),
+                                founder: { ...founder, image: undefined },
+                              } as any,
+                            })
+                          }
+                        >
+                          Clear image
+                        </Button>
+                      </div>
+                      <Input
+                        label={labelRow("Alt text")}
+                        value={String(image?.alt || "")}
+                        onChange={(e) =>
+                          setContent({
+                            ...content,
+                            rebuilt: {
+                              ...(content.rebuilt || {}),
+                              founder: {
+                                ...founder,
+                                image: imageUrl ? { ...(image || {}), url: imageUrl, alt: e.target.value } : undefined,
+                              },
+                            } as any,
+                          })
+                        }
+                        placeholder={String(founder.name || "Founder")}
+                      />
+                    </div>
+                  );
+                })()}
                 <Input
                   label={labelRow("Name")}
                   value={String((content.rebuilt as any)?.founder?.name || "")}

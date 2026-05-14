@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import type { HomepageContent } from "@/content/homepage";
 import { scopeRebuiltTemplate } from "@/utils/scopeTemplate";
 import { attachLandingBootstrap, LandingDevice } from "@/utils/landingBootstrap";
+import { buildDirectLandingThemeCss } from "@/utils/themeCss";
 
 type Context = "public" | "admin-preview" | "cms-subpage";
 
@@ -59,10 +60,10 @@ const PREVIEW_CONTAINMENT_CSS = `
     min-height: 100vh !important;
   }
   .cf-rebuilt-shell[data-cf-preview-device="desktop"] .hero h1 {
-    font-size: clamp(4rem, 8vw, 7.5rem) !important;
+    font-size: var(--font-size-h1) !important;
   }
   .cf-rebuilt-shell[data-cf-preview-device="desktop"] .hero-sub {
-    font-size: 1.2rem !important;
+    font-size: var(--font-size-body) !important;
     margin-bottom: 3rem !important;
   }
   .cf-rebuilt-shell[data-cf-preview-device="desktop"] .hero-actions {
@@ -126,11 +127,11 @@ const PREVIEW_CONTAINMENT_CSS = `
   }
   .cf-rebuilt-shell[data-cf-preview-device="tablet"] .hero h1,
   .cf-rebuilt-shell[data-cf-preview-device="mobile"] .hero h1 {
-    font-size: clamp(3rem, 14vw, 4.5rem) !important;
+    font-size: var(--font-size-h1) !important;
   }
   .cf-rebuilt-shell[data-cf-preview-device="tablet"] .hero-sub,
   .cf-rebuilt-shell[data-cf-preview-device="mobile"] .hero-sub {
-    font-size: 1rem !important;
+    font-size: var(--font-size-body) !important;
     margin-bottom: 2rem !important;
   }
   .cf-rebuilt-shell[data-cf-preview-device="tablet"] .hero-actions,
@@ -212,16 +213,16 @@ const PREVIEW_CONTAINMENT_CSS = `
     gap: 1rem !important;
   }
   .cf-rebuilt-shell[data-cf-preview-device="mobile"] .hero h1 {
-    font-size: clamp(2.75rem, 16vw, 3.5rem) !important;
+    font-size: var(--font-size-h1) !important;
   }
   .cf-rebuilt-shell[data-cf-preview-device="mobile"] .section-title {
-    font-size: clamp(2rem, 10vw, 2.5rem) !important;
+    font-size: var(--font-size-h2) !important;
   }
   .cf-rebuilt-shell[data-cf-preview-device="mobile"] .promise-num {
-    font-size: 2.5rem !important;
+    font-size: var(--font-size-h3) !important;
   }
   .cf-rebuilt-shell[data-cf-preview-device="mobile"] .tier-price-num {
-    font-size: 2.25rem !important;
+    font-size: var(--font-size-h2) !important;
   }
 `;
 
@@ -326,10 +327,12 @@ export function DirectLandingRenderer({
   if (!scopedHtml) return <div className={className}>Loading...</div>;
 
   const isAdminPreview = context === "admin-preview";
+  const directThemeCss = buildDirectLandingThemeCss(content);
 
   return (
     <div className={className}>
       <style dangerouslySetInnerHTML={{ __html: scopedHtml.css }} />
+      <style dangerouslySetInnerHTML={{ __html: directThemeCss }} />
       {/* Admin preview containment: override fixed positioning inside the preview panel */}
       {isAdminPreview && (
         <style dangerouslySetInnerHTML={{ __html: PREVIEW_CONTAINMENT_CSS }} />

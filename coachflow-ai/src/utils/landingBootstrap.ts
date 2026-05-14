@@ -52,6 +52,13 @@ export function attachLandingBootstrap(
     s = s.replace(/&lt;br\s*\/?&gt;/gi, "<br>");
     (el as HTMLElement).innerHTML = s;
   }
+  function escapeHtml(raw: unknown): string {
+    return String(raw ?? "")
+      .replace(/&/g, "&amp;")
+      .replace(/"/g, "&quot;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;");
+  }
   function safeItems(arr: unknown): string[] {
     return Array.isArray(arr) ? arr.map((v) => (typeof v === "string" ? v : "")).filter(Boolean) : [];
   }
@@ -196,29 +203,89 @@ export function attachLandingBootstrap(
       applyOverlay(el, cfg.overlay);
     }
   }
-  function applySectionEnabled(pageMap: any) {
-    if (!pageMap) return;
-    const byType: Record<string, boolean> = {};
-    if (Array.isArray(pageMap.sections)) {
-      for (const s of pageMap.sections) {
-        if (!s || !s.type) continue;
-        byType[String(s.type)] = s.enabled !== false;
+  const canonicalSectionSelectors: Record<string, string> = {
+    hero: ".hero",
+    trust_strip: ".trust-strip",
+    founder: "#founder",
+    promise: "#promise",
+    how: "#how",
+    honest: "#honest",
+    pricing: "#pricing",
+    application: "#apply",
+    footer: "footer",
+  };
+
+  const canonicalOrder = ["hero", "trust_strip", "founder", "promise", "how", "honest", "pricing", "application", "footer"];
+
+  function findCustomRecord(c: AnyContent, section: any) {
+    const id = String(section?.id || "").trim();
+    if (!id) return null;
+    return Array.isArray(c?.customSections) ? c.customSections.find((item: any) => String(item?.id || "") === id) || null : null;
+  }
+
+  function upsertCustomSectionNode(section: any, c: AnyContent): HTMLElement | null {
+    const id = String(section?.id || "").trim();
+    if (!id) return null;
+    const type = String(section?.type || "");
+    const settings = section?.settings || {};
+    const legacy = type === "custom" ? findCustomRecord(c, section) : null;
+    const html = type === "custom" ? String(legacy?.html || "") : String(settings?.html || "");
+    const css = type === "custom" ? String(legacy?.css || "") : String(settings?.css || "");
+    if (!html.trim() && !css.trim()) return null;
+
+    let node = qa<HTMLElement>(".cf-custom-section").find((item) => item.getAttribute("data-section-id") === id) || null;
+    if (!node) {
+      node = root.ownerDocument!.createElement("section");
+      node.className = "cf-custom-section";
+      node.setAttribute("data-section-id", id);
+    }
+    node.style.display = section.enabled === false || legacy?.enabled === false ? "none" : "";
+    node.innerHTML = `<style>${css}</style><div class="cf-custom-section-inner">${html}</div>`;
+    return node;
+  }
+
+  function applySectionEnabledAndOrder(c: AnyContent) {
+    const pageMap = c?.page || {};
+    const sections = Array.isArray(pageMap.sections) && pageMap.sections.length
+      ? pageMap.sections
+      : canonicalOrder.map((type) => ({ id: type, type, enabled: true }));
+    const seenCanonical = new Set<string>();
+    const ordered: HTMLElement[] = [];
+
+    for (const section of sections) {
+      const type = String(section?.type || "");
+      if (canonicalSectionSelectors[type]) {
+        if (seenCanonical.has(type)) continue;
+        seenCanonical.add(type);
+        const el = q<HTMLElement>(canonicalSectionSelectors[type]);
+        if (!el) continue;
+        el.style.display = section.enabled === false ? "none" : "";
+        ordered.push(el);
+        continue;
+      }
+      if (type === "custom_html" || type === "custom") {
+        const node = upsertCustomSectionNode(section, c);
+        if (node) ordered.push(node);
       }
     }
-    const show = (selector: string, enabled: boolean) => {
-      const el = q<HTMLElement>(selector);
-      if (!el) return;
-      el.style.display = enabled ? "" : "none";
-    };
-    show(".hero", byType.hero !== false);
-    show(".trust-strip", byType.trust_strip !== false);
-    show("#founder", byType.founder !== false);
-    show("#promise", byType.promise !== false);
-    show("#how", byType.how !== false);
-    show("#honest", byType.honest !== false);
-    show("#pricing", byType.pricing !== false);
-    show("#apply", byType.application !== false);
-    show("footer", byType.footer !== false);
+
+    for (const type of canonicalOrder) {
+      if (seenCanonical.has(type)) continue;
+      const el = q<HTMLElement>(canonicalSectionSelectors[type]);
+      if (el) el.style.display = "none";
+    }
+
+    qa<HTMLElement>(".cf-custom-section").forEach((node) => {
+      const id = node.getAttribute("data-section-id") || "";
+      const stillPresent = sections.some((section: any) => String(section?.id || "") === id);
+      if (!stillPresent && node.parentNode) node.parentNode.removeChild(node);
+    });
+
+    for (const el of ordered) {
+      try {
+        root.appendChild(el);
+      } catch {}
+    }
   }
 
   function socialLabel(item: any): string {
@@ -408,7 +475,18 @@ export function attachLandingBootstrap(
 
       const founder = rebuilt.founder || {};
       if (founder.label) setText(q("#founder .founder-label"), founder.label);
-      if (founder.avatarText) setText(q("#founder .founder-avatar"), founder.avatarText);
+      const founderAvatar = q<HTMLElement>("#founder .founder-avatar");
+      const founderImage = founder.image && typeof founder.image === "object" ? founder.image : null;
+      const founderImageUrl = typeof founderImage?.url === "string" ? founderImage.url.trim() : "";
+      if (founderAvatar) {
+        if (founderImageUrl) {
+          founderAvatar.classList.add("has-image");
+          founderAvatar.innerHTML = `<img src="${escapeHtml(founderImageUrl)}" alt="${escapeHtml(founderImage?.alt || founder.name || "Founder")}" loading="lazy" decoding="async" />`;
+        } else {
+          founderAvatar.classList.remove("has-image");
+          setText(founderAvatar, founder.avatarText || "");
+        }
+      }
       if (founder.name) setText(q("#founder .founder-name"), founder.name);
       if (founder.title) setText(q("#founder .founder-title"), founder.title);
       if (founder.quote) setText(q("#founder .founder-quote"), founder.quote);
@@ -587,7 +665,7 @@ export function attachLandingBootstrap(
       if (footer.copyright) setText(q("footer .footer-copy"), footer.copyright);
 
       renderFooterSocials(c);
-      applySectionEnabled(c.page || {});
+      applySectionEnabledAndOrder(c);
       applySectionBackgrounds(c);
     } catch {
       // ignore mutation errors

@@ -1,5 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
@@ -49,8 +49,42 @@ const mergeTheme = (base: any, extra: any) => {
   };
 };
 
+function applyThemeToHomepageContent(
+  current: HomepageContent,
+  themeWithDefaults: NonNullable<HomepageContent["site"]["theme"]>,
+  designPreset: "landing_html_v1" | "classic",
+): HomepageContent {
+  const currentBranding = (current.branding || homepageDefaults.branding || { colors: themeWithDefaults.colors }) as any;
+  const mergedBrandingColors = {
+    ...(homepageDefaults.branding?.colors || {}),
+    ...(currentBranding.colors || {}),
+    ...(themeWithDefaults.colors || {}),
+  };
+
+  return {
+    ...current,
+    site: {
+      ...current.site,
+      designPreset,
+      theme: themeWithDefaults,
+    },
+    branding: {
+      ...currentBranding,
+      enabled: Boolean(themeWithDefaults?.enabled),
+      colors: mergedBrandingColors,
+      typography: {
+        ...(currentBranding.typography || {}),
+        headingFont: themeWithDefaults?.typography?.headingFont || "",
+        bodyFont: themeWithDefaults?.typography?.bodyFont || "",
+        scale: (themeWithDefaults as any)?.typography?.scale,
+      },
+    },
+  };
+}
+
 export function SettingsPanel({ supabase }: Props) {
   const [settingsLoading, setSettingsLoading] = useState(true);
+  const [settingsLoaded, setSettingsLoaded] = useState(false);
   const [settingsError, setSettingsError] = useState<string | null>(null);
   const [settingsSaved, setSettingsSaved] = useState<string | null>(null);
   const [adminEmail, setAdminEmail] = useState("");
@@ -62,8 +96,12 @@ export function SettingsPanel({ supabase }: Props) {
   const [senderEffective, setSenderEffective] = useState<string | null>(null);
   const [theme, setTheme] = useState<HomepageContent["site"]["theme"]>(defaultTheme);
   const [designPreset, setDesignPreset] = useState<"landing_html_v1" | "classic">("landing_html_v1");
+  const loadSeqRef = useRef(0);
 
   const loadSettings = useCallback(async () => {
+    const seq = loadSeqRef.current + 1;
+    loadSeqRef.current = seq;
+    const isCurrentLoad = () => loadSeqRef.current === seq;
     setSettingsSaved(null);
     setSettingsError(null);
     setSettingsLoading(true);
@@ -77,10 +115,12 @@ export function SettingsPanel({ supabase }: Props) {
         .single();
 
       if (error) {
+        if (!isCurrentLoad()) return;
         setSettingsError(error.message);
         return;
       }
 
+      if (!isCurrentLoad()) return;
       setAdminEmail((data as { admin_email: string }).admin_email);
       setResendMasked(String((data as any).resend_api_key_masked || ""));
       setSenderEmail(String((data as any).resend_from_email || ""));
@@ -94,6 +134,7 @@ export function SettingsPanel({ supabase }: Props) {
           headers: { authorization: `Bearer ${token}` },
         });
         const json = (await res.json()) as any;
+        if (!isCurrentLoad()) return;
         if (res.ok && json?.ok) {
           setSenderEffective(String(json.effectiveFrom || "") || null);
           setSenderStatus(String(json.status || "") || null);
@@ -107,11 +148,14 @@ export function SettingsPanel({ supabase }: Props) {
         .eq("id", 1)
         .maybeSingle();
       if (!homeErr && home?.content) {
+        if (!isCurrentLoad()) return;
         const c = home.content as HomepageContent;
         setTheme(mergeTheme(defaultTheme, c.site?.theme));
         setDesignPreset(((c.site as any)?.designPreset as any) === "classic" ? "classic" : "landing_html_v1");
       }
     } finally {
+      if (!isCurrentLoad()) return;
+      setSettingsLoaded(true);
       setSettingsLoading(false);
     }
   }, [supabase]);
@@ -141,6 +185,13 @@ export function SettingsPanel({ supabase }: Props) {
         </div>
       ) : null}
 
+      {!settingsLoaded ? (
+        <div className="rounded-2xl border border-white/10 bg-white/5 p-6 text-sm text-white/60">
+          Loading current settings...
+        </div>
+      ) : null}
+
+      {settingsLoaded ? (
       <div className="rounded-2xl border border-white/10 bg-white/5 p-6">
         <div className="flex flex-col gap-4">
           <Input
@@ -384,7 +435,35 @@ export function SettingsPanel({ supabase }: Props) {
             />
           </div>
 
-          <div className="mt-2 text-sm font-bold">Typography Scale</div>
+          <div className="mt-2 rounded-2xl border border-white/10 bg-white/[0.03] p-4">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+              <div>
+                <div className="text-sm font-bold text-white">Typography Scale</div>
+                <p className="mt-1 text-xs leading-5 text-white/55">
+                  These values now drive the rebuilt landing page, builder preview, and public pages after saving.
+                </p>
+              </div>
+              <Button
+                type="button"
+                variant="secondary"
+                className="h-10 w-full sm:w-auto"
+                onClick={() =>
+                  setTheme((t) => {
+                    const next = mergeTheme(defaultTheme, t || defaultTheme);
+                    return {
+                      ...next,
+                      typography: {
+                        ...(next as any).typography,
+                        scale: (defaultTheme as any)?.typography?.scale,
+                      },
+                    };
+                  })
+                }
+              >
+                Reset scale
+              </Button>
+            </div>
+          </div>
           {TYPOGRAPHY_TIERS.map((tier) => {
             const scale = mergeTypographyScale((theme as any)?.typography?.scale || (defaultTheme as any)?.typography?.scale);
             const tierScale = scale[tier.key];
@@ -464,38 +543,43 @@ export function SettingsPanel({ supabase }: Props) {
                   }
                   const current = home.content as HomepageContent;
                   const themeWithDefaults = mergeTheme(defaultTheme, theme || defaultTheme);
-                  const currentBranding = (current.branding || homepageDefaults.branding || { colors: themeWithDefaults.colors }) as any;
-                  const mergedBrandingColors = {
-                    ...(homepageDefaults.branding?.colors || {}),
-                    ...(currentBranding.colors || {}),
-                    ...(themeWithDefaults.colors || {}),
-                  };
-                  const updated: HomepageContent = {
-                    ...current,
-                    site: {
-                      ...current.site,
-                      designPreset,
-                      theme: themeWithDefaults,
-                    },
-                    branding: {
-                      ...currentBranding,
-                      enabled: Boolean(themeWithDefaults?.enabled),
-                      colors: mergedBrandingColors,
-                      typography: {
-                        ...(currentBranding.typography || {}),
-                        headingFont: themeWithDefaults?.typography?.headingFont || "",
-                        bodyFont: themeWithDefaults?.typography?.bodyFont || "",
-                        scale: (themeWithDefaults as any)?.typography?.scale,
-                      },
-                    },
-                  };
-                  const { error: updateHomeErr } = await supabase
+                  const updated = applyThemeToHomepageContent(current, themeWithDefaults, designPreset);
+                  const { data: updatedHome, error: updateHomeErr } = await supabase
                     .from("homepage_content")
                     .update({ content: updated })
-                    .eq("id", 1);
+                    .eq("id", 1)
+                    .select("updated_at")
+                    .maybeSingle();
                   if (updateHomeErr) {
                     setSettingsError(updateHomeErr.message);
                     return;
+                  }
+
+                  const { data: draftRow, error: draftErr } = await supabase
+                    .from("homepage_content_drafts")
+                    .select("content")
+                    .eq("id", 1)
+                    .maybeSingle();
+                  if (draftErr) {
+                    setSettingsError(draftErr.message);
+                    return;
+                  }
+                  if (draftRow?.content && Object.keys(draftRow.content as Record<string, unknown>).length) {
+                    const draftUpdated = applyThemeToHomepageContent(draftRow.content as HomepageContent, themeWithDefaults, designPreset);
+                    const { error: draftUpdateErr } = await supabase
+                      .from("homepage_content_drafts")
+                      .upsert(
+                        {
+                          id: 1,
+                          content: draftUpdated,
+                          published_updated_at: updatedHome?.updated_at || null,
+                        },
+                        { onConflict: "id" },
+                      );
+                    if (draftUpdateErr) {
+                      setSettingsError(draftUpdateErr.message);
+                      return;
+                    }
                   }
                   await requestAdminRevalidate(supabase, ["/"]);
                   setSettingsSaved("Saved");
@@ -517,6 +601,7 @@ export function SettingsPanel({ supabase }: Props) {
           </div>
         </div>
       </div>
+      ) : null}
     </div>
   );
 }
