@@ -3660,3 +3660,41 @@ small {
     flex-direction: column;
   }
 }
+@media (max-width: 768px) {
+    .cf-rebuilt-shell .hero-actions {
+        flex-direction: row !important;
+        align-items: flex-start;
+        gap: 0.5rem;
+        justify-content: space-between !important;
+margin: 0px -8px !important;
+    }
+}
+.cf-rebuilt-shell .hero-note {
+    margin-top: 0.5rem;
+    font-size: 0.8rem;
+    color: var(--muted);
+    letter-spacing: 0.03em;
+}
+@media (max-width: 768px) {
+    .cf-rebuilt-shell .btn-primary, .cf-rebuilt-shell .btn-ghost {
+        width: fit-content!important;
+        text-align: center;
+    }
+}
+.cf-rebuilt-shell .btn-primary {
+   
+    padding: 0.5rem !important;
+   
+}
+.cf-rebuilt-shell .btn-ghost {
+
+    padding: 0.5rem;
+   
+}
+@media (max-width: 768px) {
+    .cf-rebuilt-shell .hero {
+        padding: 1.5rem!important;
+        min-height: 90vh;
+justify-content: space-between!important;
+    }
+}
