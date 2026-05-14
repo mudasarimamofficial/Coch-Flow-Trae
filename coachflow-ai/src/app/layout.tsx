@@ -1,14 +1,14 @@
 import type { Metadata } from "next";
-import { DM_Sans, Inter, Playfair_Display } from "next/font/google";
+import { DM_Sans, Inter, Bebas_Neue, DM_Serif_Display } from "next/font/google";
 import "./globals.css";
 import { ThemeScript } from "@/components/theme/ThemeScript";
 import { CustomCodeInjector } from "@/components/layout/CustomCodeInjector";
 import { getHomepageContent } from "@/utils/homepageContent";
 import { buildThemeCssVars } from "@/utils/themeCss";
 
-const headingFont = Playfair_Display({
+const headingFont = Bebas_Neue({
   subsets: ["latin"],
-  weight: ["400", "500", "600"],
+  weight: "400",
   variable: "--font-heading",
   display: "swap",
 });
@@ -17,6 +17,14 @@ const bodyFont = DM_Sans({
   subsets: ["latin"],
   weight: ["300", "400", "500"],
   variable: "--font-body",
+  display: "swap",
+});
+
+const serifFont = DM_Serif_Display({
+  subsets: ["latin"],
+  weight: "400",
+  style: ["normal", "italic"],
+  variable: "--font-serif",
   display: "swap",
 });
 
@@ -62,11 +70,20 @@ export async function generateMetadata(): Promise<Metadata> {
       url: "https://coachflow-a1.vercel.app",
       siteName: brand,
       type: "website",
+      images: [
+        {
+          url: faviconHref,
+          width: 800,
+          height: 600,
+          alt: brand,
+        },
+      ],
     },
     twitter: {
       card: "summary_large_image",
       title,
       description,
+      images: [faviconHref],
     },
   };
 }
@@ -97,7 +114,7 @@ export default async function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={`${headingFont.variable} ${bodyFont.variable} ${adminFont.variable} h-full antialiased`}
+      className={`${headingFont.variable} ${bodyFont.variable} ${serifFont.variable} ${adminFont.variable} h-full antialiased`}
     >
       <head>
         <link rel="icon" href={faviconHref} type={type} sizes="any" />

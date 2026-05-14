@@ -23,31 +23,31 @@ export const TYPOGRAPHY_TOKENS: { key: TypographyToken; label: string }[] = [
 
 export const defaultTypographyScale: TypographyScale = {
   mobile: {
-    h1: "56px",
-    h2: "40px",
+    h1: "clamp(2.75rem, 16vw, 3.5rem)",
+    h2: "clamp(2rem, 10vw, 2.5rem)",
     h3: "28px",
-    h4: "20px",
-    h5: "17px",
-    h6: "15px",
-    body: "17px",
-    small: "13px",
-  },
-  tablet: {
-    h1: "72px",
-    h2: "48px",
-    h3: "32px",
     h4: "22px",
     h5: "18px",
     h6: "16px",
     body: "17px",
     small: "13px",
   },
-  laptop: {
-    h1: "96px",
-    h2: "56px",
-    h3: "36px",
+  tablet: {
+    h1: "clamp(3rem, 14vw, 4.5rem)",
+    h2: "clamp(2.5rem, 4vw, 3.5rem)",
+    h3: "32px",
     h4: "24px",
-    h5: "19px",
+    h5: "20px",
+    h6: "16px",
+    body: "17px",
+    small: "13px",
+  },
+  laptop: {
+    h1: "clamp(4rem, 8vw, 7.5rem)",
+    h2: "clamp(2.5rem, 4vw, 3.5rem)",
+    h3: "36px",
+    h4: "26px",
+    h5: "20px",
     h6: "16px",
     body: "17px",
     small: "13px",
@@ -56,7 +56,7 @@ export const defaultTypographyScale: TypographyScale = {
     h1: "120px",
     h2: "56px",
     h3: "40px",
-    h4: "26px",
+    h4: "28px",
     h5: "20px",
     h6: "16px",
     body: "17px",
@@ -66,7 +66,8 @@ export const defaultTypographyScale: TypographyScale = {
 
 function sanitizeTypographyValue(value: unknown, fallback: string) {
   const v = typeof value === "string" ? value.trim() : "";
-  if (/^\d{1,3}(?:\.\d{1,2})?(?:px|rem|em)$/.test(v)) return v;
+  // Support px, rem, em, vw, vh, and clamp()
+  if (/^(\d{1,3}(?:\.\d{1,2})?(?:px|rem|em|vw|vh)|clamp\(.*\))$/.test(v)) return v;
   return fallback;
 }
 
