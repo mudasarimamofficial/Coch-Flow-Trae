@@ -174,6 +174,7 @@ export type HomepageContent = {
   header: {
     brandText: string;
     brandIcon: { type: "material" | "image"; name?: string; url?: string; path?: string };
+    showBrandIcon?: boolean;
     nav: { label: string; href: string }[];
     primaryCta: { text: string; href: string };
   };
@@ -280,34 +281,62 @@ export type HomepageContent = {
   footer: {
     brandText: string;
     brandIcon: { type: "material" | "image"; name?: string; url?: string; path?: string };
+    showBrandIcon?: boolean;
     links: { label: string; href: string }[];
     copyright: string;
   };
 };
 
+// ============================================================
+// CLIENT HTML COLOR SOURCE OF TRUTH (do NOT change these defaults)
+// These match the original client HTML exactly:
+//   --black: #0A0A0A  --white: #F5F2ED  --gold: #C9A84C
+//   --gold-light: #E8D5A3  --gold-dim: #8A6F32
+//   --charcoal: #1A1A1A  --mid: #2E2E2E  --muted: #6B6B6B
+//   --border: rgba(201,168,76,0.2)  --border-subtle: rgba(255,255,255,0.06)
+// ============================================================
+export const CLIENT_HTML_PALETTE = {
+  black: "#0A0A0A",
+  white: "#F5F2ED",
+  gold: "#C9A84C",
+  goldLight: "#E8D5A3",
+  goldDim: "#8A6F32",
+  charcoal: "#1A1A1A",
+  mid: "#2E2E2E",
+  muted: "#6B6B6B",
+  border: "rgba(201,168,76,0.2)",
+  borderSubtle: "rgba(255,255,255,0.06)",
+  // Mapped to branding/theme color keys
+  primary: "#C9A84C",
+  secondary: "#2E2E2E",
+  accent: "#E8D5A3",
+  background: "#0A0A0A",
+  text: "#F5F2ED",
+  surface: "#1A1A1A",
+} as const;
 export const homepageDefaults: HomepageContent = {
   branding: {
     enabled: false,
     colors: {
-      primary: "#C9982A",
-      secondary: "#0F1629",
-      accent: "#E8B84B",
-      background: "#0A0F1E",
-      text: "#FFFFFF",
-      surface: "#141D35",
-      border: "rgba(255,255,255,0.07)",
-      navy: "#0A0F1E",
-      navy2: "#0F1629",
-      navy3: "#141D35",
-      navy4: "#1A2444",
-      white: "#FFFFFF",
-      muted: "#8A8F9E",
-      off: "#F0EDE6",
-      gold: "#C9982A",
-      gold2: "#E8B84B",
-      gold3: "#F5CC6E",
-      borderGold: "rgba(201,152,42,0.18)",
-      border2: "rgba(255,255,255,0.07)",
+      primary: CLIENT_HTML_PALETTE.primary,
+      secondary: CLIENT_HTML_PALETTE.secondary,
+      accent: CLIENT_HTML_PALETTE.accent,
+      background: CLIENT_HTML_PALETTE.background,
+      text: CLIENT_HTML_PALETTE.text,
+      surface: CLIENT_HTML_PALETTE.surface,
+      border: CLIENT_HTML_PALETTE.border,
+      navy: CLIENT_HTML_PALETTE.background,
+      navy2: CLIENT_HTML_PALETTE.secondary,
+      navy3: CLIENT_HTML_PALETTE.surface,
+      navy4: "#1A1A1A",
+      white: CLIENT_HTML_PALETTE.white,
+      muted: CLIENT_HTML_PALETTE.muted,
+      off: "#F5F2ED",
+      gold: CLIENT_HTML_PALETTE.gold,
+      gold2: CLIENT_HTML_PALETTE.goldLight,
+      gold3: CLIENT_HTML_PALETTE.goldDim,
+      borderGold: CLIENT_HTML_PALETTE.border,
+      border2: CLIENT_HTML_PALETTE.borderSubtle,
     },
     typography: {
       headingFont: "var(--font-heading)",
@@ -324,25 +353,22 @@ export const homepageDefaults: HomepageContent = {
     theme: {
       enabled: false,
       colors: {
-        primary: "#C9982A",
-        secondary: "#0F1629",
-        accent: "#E8B84B",
-        background: "#0A0F1E",
-        text: "#FFFFFF",
-        surface: "#141D35",
-        border: "rgba(255,255,255,0.07)",
-        navy: "#0A0F1E",
-        navy2: "#0F1629",
-        navy3: "#141D35",
-        navy4: "#1A2444",
-        white: "#FFFFFF",
-        muted: "#8A8F9E",
-        off: "#F0EDE6",
-        gold: "#C9982A",
-        gold2: "#E8B84B",
-        gold3: "#F5CC6E",
-        borderGold: "rgba(201,152,42,0.18)",
-        border2: "rgba(255,255,255,0.07)",
+        // Client HTML palette -- source of truth
+        primary: CLIENT_HTML_PALETTE.primary,
+        secondary: CLIENT_HTML_PALETTE.secondary,
+        accent: CLIENT_HTML_PALETTE.accent,
+        background: CLIENT_HTML_PALETTE.background,
+        text: CLIENT_HTML_PALETTE.text,
+        surface: CLIENT_HTML_PALETTE.surface,
+        border: CLIENT_HTML_PALETTE.border,
+        // Extended direct-landing tokens
+        white: CLIENT_HTML_PALETTE.white,
+        muted: CLIENT_HTML_PALETTE.muted,
+        gold: CLIENT_HTML_PALETTE.gold,
+        gold2: CLIENT_HTML_PALETTE.goldLight,
+        gold3: CLIENT_HTML_PALETTE.goldDim,
+        borderGold: CLIENT_HTML_PALETTE.border,
+        border2: CLIENT_HTML_PALETTE.borderSubtle,
       },
       typography: {
         headingFont: "var(--font-heading)",
@@ -575,6 +601,7 @@ export const homepageDefaults: HomepageContent = {
       type: "image",
       url: "https://ekwydksbprxebgmhbmtj.supabase.co/storage/v1/object/public/assets/header%20icon.png",
     },
+    showBrandIcon: false,
     nav: [
       { label: "Our Story", href: "#founder" },
       { label: "How It Works", href: "#how" },
@@ -782,6 +809,7 @@ export const homepageDefaults: HomepageContent = {
       type: "image",
       url: "https://ekwydksbprxebgmhbmtj.supabase.co/storage/v1/object/public/assets/header%20icon.png",
     },
+    showBrandIcon: false,
     links: [
       { label: "Privacy Policy", href: "/p/privacy-policy" },
       { label: "Terms of Service", href: "/p/terms-of-service" },

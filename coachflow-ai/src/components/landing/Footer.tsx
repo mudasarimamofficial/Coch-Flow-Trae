@@ -20,7 +20,13 @@ export function Footer({ content, section }: Props) {
       <div className="container">
         <div className="footer-inner">
           <div className="footer-logo">
-            {iconUrl ? <Image className="logo-img" src={iconUrl} alt="Coachflow Aquisition" width={32} height={32} unoptimized /> : null}
+            {content.footer.showBrandIcon !== false && (
+              iconUrl ? (
+                <Image className="logo-img" src={iconUrl} alt="Coachflow Aquisition" width={32} height={32} unoptimized />
+              ) : (
+                <div className="logo-dot" />
+              )
+            )}
             {renderBrandText(content.footer.brandText)}
           </div>
 

@@ -1,4 +1,4 @@
-import { homepageDefaults, type HomepageContent } from "@/content/homepage";
+import { homepageDefaults, CLIENT_HTML_PALETTE, type HomepageContent } from "@/content/homepage";
 import {
   buildScopedTypographyScaleCss,
   buildTypographyScaleCss,
@@ -15,13 +15,14 @@ function themeDefaults() {
   return {
     enabled: false,
     colors: homepageDefaults.site.theme?.colors || homepageDefaults.branding?.colors || {
-      primary: "#C9982A",
-      secondary: "#0F1629",
-      accent: "#E8B84B",
-      background: "#0A0F1E",
-      text: "#FFFFFF",
-      surface: "#141D35",
-      border: "rgba(255,255,255,0.07)",
+      // Client HTML palette fallback
+      primary: "#C9A84C",
+      secondary: "#2E2E2E",
+      accent: "#E8D5A3",
+      background: "#0A0A0A",
+      text: "#F5F2ED",
+      surface: "#1A1A1A",
+      border: "rgba(201,168,76,0.2)",
     },
     typography: {
       headingFont: homepageDefaults.site.theme?.typography?.headingFont || "var(--font-heading)",

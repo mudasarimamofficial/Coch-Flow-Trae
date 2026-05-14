@@ -111,10 +111,12 @@ export function Header({ content }: Props) {
         <nav className={isScrolled ? "is-scrolled" : ""} aria-label="Primary navigation">
           <div className="nav-inner">
             <a href={logoHref} className="nav-logo">
-              {iconUrl ? (
-                <Image className="logo-img" src={iconUrl} alt="Coachflow Aquisition" width={32} height={32} unoptimized />
-              ) : (
-                <div className="logo-dot" />
+              {content.header.showBrandIcon !== false && (
+                iconUrl ? (
+                  <Image className="logo-img" src={iconUrl} alt="Coachflow Aquisition" width={32} height={32} unoptimized />
+                ) : (
+                  <div className="logo-dot" />
+                )
               )}
               {renderBrandText(content.header.brandText)}
             </a>
@@ -154,10 +156,12 @@ export function Header({ content }: Props) {
         <div ref={sheetRef} className="nav-sheet-panel" role="dialog" aria-modal="true" aria-label="Navigation">
           <div className="nav-sheet-top">
             <div className="nav-sheet-brand">
-              {iconUrl ? (
-                <Image className="logo-img" src={iconUrl} alt="Coachflow Aquisition" width={32} height={32} unoptimized />
-              ) : (
-                <div className="logo-dot" />
+              {content.header.showBrandIcon !== false && (
+                iconUrl ? (
+                  <Image className="logo-img" src={iconUrl} alt="Coachflow Aquisition" width={32} height={32} unoptimized />
+                ) : (
+                  <div className="logo-dot" />
+                )
               )}
               <div className="nav-sheet-brand-text">{renderBrandText(content.header.brandText)}</div>
             </div>
