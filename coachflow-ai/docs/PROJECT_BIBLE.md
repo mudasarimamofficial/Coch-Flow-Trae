@@ -9,7 +9,7 @@
 - **Admin URL:** [https://coachflow-a1.vercel.app/admin](https://coachflow-a1.vercel.app/admin)
 - **Repository:** `mudasarimamofficial/Coch-Flow-Trae.git`
 - **Branch:** `main`
-- **Latest Verified Production SHA:** `9fad6c96d8e8538ef3764bb7ff8623b4cca0eff2`
+- **Latest Verified Production SHA:** `f1ae4642d99298c4182903823467e42d631dfb8c`
 
 ## Core Architecture
 ### 1. Iframe-Free Landing Page
@@ -39,7 +39,7 @@ The landing page (`/`) is rendered WITHOUT iframes. It uses a **DirectLandingRen
 - **Brand Icon Toggles:** `showBrandIcon` controls added to Header/Footer and persisted via Admin.
 - **Settings Panel Reorganized:** Shifted to a card-based, Shopify-style UI for better UX.
 - **Project Bible Created:** Established `docs/PROJECT_BIBLE.md` as the repository source of truth.
-- **Final Production SHA:** `9fad6c96d8e8538ef3764bb7ff8623b4cca0eff2`
+- **Final Production SHA:** `f1ae4642d99298c4182903823467e42d631dfb8c`
 
 ## Development Checklist (Pre-Deployment)
 - [ ] Run `npm run build` to ensure production stability.
