@@ -389,7 +389,7 @@ export function SettingsPanel({ supabase }: Props) {
               />
             </div>
             <p className="mt-4 text-xs text-white/40 leading-relaxed">
-              When enabled, the brand logo asset will be displayed before the brand name "Coachflow Aquisition" in the navigation and footer.
+              When enabled, the brand logo asset will be displayed before the brand name &quot;Coachflow Aquisition&quot; in the navigation and footer.
             </p>
           </div>
 
@@ -397,7 +397,7 @@ export function SettingsPanel({ supabase }: Props) {
           <div className="rounded-2xl border border-white/10 bg-white/5 p-6">
             <div className="mb-6 flex items-center justify-between">
               <h2 className="text-lg font-semibold text-white">Theme / Colors</h2>
-              <Button variant="secondary" size="sm" onClick={handleResetToClientPalette}>
+              <Button variant="secondary" onClick={handleResetToClientPalette}>
                 Reset to original client palette
               </Button>
             </div>
@@ -462,7 +462,6 @@ export function SettingsPanel({ supabase }: Props) {
               <h2 className="text-lg font-semibold text-white">Typography</h2>
               <Button
                 variant="secondary"
-                size="sm"
                 onClick={() =>
                   setTheme((t) => {
                     const next = mergeTheme(defaultTheme, t || defaultTheme);
@@ -567,7 +566,7 @@ export function SettingsPanel({ supabase }: Props) {
                 />
                 <div className="flex items-center justify-between">
                    <span className="text-xs text-white/40">{resendMasked ? `Currently active: ${resendMasked}` : "No key configured"}</span>
-                   <Button variant="secondary" size="sm" disabled={settingsLoading || !resendKeyDraft.trim().length} onClick={updateResendKey}>
+                   <Button variant="secondary" disabled={settingsLoading || !resendKeyDraft.trim().length} onClick={updateResendKey}>
                     Update Key
                   </Button>
                 </div>

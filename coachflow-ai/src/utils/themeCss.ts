@@ -1,4 +1,4 @@
-import { homepageDefaults, CLIENT_HTML_PALETTE, type HomepageContent } from "@/content/homepage";
+import { homepageDefaults, type HomepageContent } from "@/content/homepage";
 import {
   buildScopedTypographyScaleCss,
   buildTypographyScaleCss,
